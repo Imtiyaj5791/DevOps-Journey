@@ -356,9 +356,9 @@ DISK_USAGE=$(df / | awk 'NR==2 {print $5}' | tr -d '%')
 
 if [ "$DISK_USAGE" = "$THRESHOLD" ]
 then
-echo "$CURRENT_DATE : WARNING - Disk usage is ${DISK_USAGE}%"
+echo "$CURRENT_DATE : WARNING - Disk usage is ${DISK_USAGE}%" >> "$LOG_FILE"
 else
-echo "$CURRENT_DATE : OK - Disk usage is ${DISK_USAGE}%" >> >> "$LOG_FILE"
+echo "$CURRENT_DATE : OK - Disk usage is ${DISK_USAGE}%" >> "$LOG_FILE"
 fi
 
 
