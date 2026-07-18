@@ -358,7 +358,7 @@ if [ "$DISK_USAGE" = "$THRESHOLD" ]
 then
 echo "$CURRENT_DATE : WARNING - Disk usage is ${DISK_USAGE}%"
 else
-echo "$CURRENT_DATE : OK - Disk usage is ${DISK_USAGE}%"
+echo "$CURRENT_DATE : OK - Disk usage is ${DISK_USAGE}%" >> >> "$LOG_FILE"
 fi
 
 
