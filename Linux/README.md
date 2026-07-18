@@ -1,4 +1,9 @@
-# 🐧 Linux Administration
+
+# 🐧 Linux Fundamentals & Troubleshooting
+
+![Status](https://img.shields.io/badge/Status-Completed-brightgreen)
+![Level](https://img.shields.io/badge/Level-Beginner%20to%20Intermediate-blue)
+![Focus](https://img.shields.io/badge/Focus-Production%20Support-orange)
 
 This section contains Linux administration notes, important commands, interview questions, Bash scripting, and production troubleshooting scenarios.
 
