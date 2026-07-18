@@ -193,10 +193,10 @@ groups=1001(devuser),998(docker)
 **Answer:**
 
 ```text
-/ etc/shadow
+/etc/shadow
 ```
 
-*(Remove the space when typing: `/etc/shadow`)*
+
 
 ---
 
@@ -227,7 +227,18 @@ Example:
 ```bash
 usermod -aG docker john
 ```
+### Q8. Which command deletes a user to a group?
 
+```bash
+sudo gpasswd -d username groupname
+
+```
+
+Example:
+
+```bash
+sudo gpasswd -d  john docker
+```
 ---
 
 # 🚀 Production Notes
