@@ -332,7 +332,7 @@ These are real-world Bash scripts commonly used by Linux Administrators, AWS Sup
 
 # Threshold percentage after which an alert should be generated
 
-Threshold=80
+THRESHOLD=80
 
 # Log file location
 
