@@ -446,7 +446,7 @@ USED=$(free -m | awk 'NR==2 {print $3}')
 MEMORY_USAGE=$(( USED * 100 / TOTAL ))
 
 # Compare current Memory usage with threshold
-if [ "$Memory_USAGE" -ge "$THRESHOLD" ]; then
+if [ "$MEMORY_USAGE" -ge "$THRESHOLD" ]; then
     echo "$CURRENT_DATE : WARNING - Memory usage is ${MEMORY_USAGE}%"
 else
     echo "$CURRENT_DATE : OK - Memory usage is ${MEMORY_USAGE}%"
