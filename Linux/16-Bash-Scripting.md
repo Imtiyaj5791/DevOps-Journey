@@ -328,7 +328,6 @@ These are real-world Bash scripts commonly used by Linux Administrators, AWS Sup
 # Exit Codes  :
 #   0 - Disk usage is within the threshold
 #   1 - Disk usage has crossed the threshold
-#   2 - Script execution or command failure
 ###############################################################################
 
 # Threshold percentage after which an alert should be generated
@@ -357,8 +356,10 @@ DISK_USAGE=$(df / | awk 'NR==2 {print $5}' | tr -d '%')
 if [ "$DISK_USAGE" -ge "$THRESHOLD" ]
 then
 echo "$CURRENT_DATE : WARNING - Disk usage is ${DISK_USAGE}%" >> "$LOG_FILE"
+exit 1
 else
 echo "$CURRENT_DATE : OK - Disk usage is ${DISK_USAGE}%" >> "$LOG_FILE"
+exit 0
 fi
 
 
