@@ -25,7 +25,7 @@ Each topic in this repository includes:
 | No. | Topic | Status |
 |-----|-------|--------|
 | 01 | AWS Introduction | ✅ Completed |
-| 02 | IAM | ⏳ Coming Next |
+| 02 | IAM | ✅ Completed |
 | 03 | Amazon EC2 | ⏳ Pending |
 | 04 | Amazon EBS | ⏳ Pending |
 | 05 | Amazon S3 | ⏳ Pending |
