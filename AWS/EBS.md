@@ -1,4 +1,4 @@
-# 📀 AWS Elastic Block Store (EBS) – Part 1A (Fundamentals)
+# 📀 AWS Elastic Block Store (EBS) – (Fundamentals)
 
 > A complete guide to understanding Amazon Elastic Block Store (EBS) from basics to production concepts.
 
@@ -379,7 +379,7 @@ These will be discussed in **Part-1B**.
 
 ---
 
-# 📀 AWS Elastic Block Store (EBS) – Part 1B
+# 📀 AWS Elastic Block Store (EBS) –
 
 > Understanding EBS Volume Types, Root Volume, Additional Volume, Instance Store, and Production Storage Design.
 
@@ -746,7 +746,7 @@ This prevents the root filesystem from becoming full.
 
 ---
 
-# 📀 AWS Elastic Block Store (EBS) – Part 1C
+# 📀 AWS Elastic Block Store (EBS) –
 
 > Understanding Performance, Encryption, Pricing, Monitoring, and Production Scenarios.
 
