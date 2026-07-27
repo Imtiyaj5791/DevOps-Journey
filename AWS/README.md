@@ -26,9 +26,9 @@ Each topic in this repository includes:
 |-----|-------|--------|
 | 01 | AWS Introduction | ✅ Completed |
 | 02 | IAM | ✅ Completed |
-| 03 | Amazon EC2 | ⏳ Pending |
-| 04 | Amazon EBS | ⏳ Pending |
-| 05 | Amazon S3 | ⏳ Pending |
+| 03 | Amazon EC2 | ✅ Completed |
+| 04 | Amazon EBS | ✅ Completed |
+| 05 | Amazon S3 | ✅ Completed |
 | 06 | Amazon VPC | ⏳ Pending |
 | 07 | Elastic Load Balancer (ELB) | ⏳ Pending |
 | 08 | Auto Scaling | ⏳ Pending |
@@ -37,5 +37,4 @@ Each topic in this repository includes:
 | 11 | Amazon RDS | ⏳ Pending |
 | 12 | AWS Lambda | ⏳ Pending |
 | 13 | Route 53 | ⏳ Pending |
-| 14 | AWS CloudFormation | ⏳ Pending |
-| 15 | AWS Systems Manager (SSM) | ⏳ Pending |
+| 14 | AWS Systems Manager (SSM) | ⏳ Pending |
