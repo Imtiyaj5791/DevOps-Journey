@@ -38,16 +38,35 @@ After resolving the issue, I verify the application, monitor CloudWatch dashboar
 
 ---
 
-# Q3. Which Linux distributions have you worked on?
+# Q3. What is NFS? How do you mount it and how does the end user access it?
 
 ## Answer
 
-I have worked on Ubuntu and Red Hat Linux.
+NFS (Network File System) is a file-level storage protocol that allows multiple Linux servers to access the same shared directory over the network.
 
-Most of our production servers are running on Ubuntu.
+It is commonly used to share application files, backup directories, and common data between multiple servers.
 
-I use these servers for application monitoring, troubleshooting, patching and production support.
+### Steps to mount an NFS share:
 
+1. Check the available NFS exports on the server
+showmount -e <NFS_Server_IP>
+
+2. Create a mount point on the client
+   mkdir /mnt/nfs
+   
+3. Mount the NFS share
+   mount -t nfs <NFS_Server_IP>:/shared_data /mnt/nfs
+
+4. Verify the mount
+   df -h
+mount | grep nfs
+
+5. To make the mount permanent, add an entry in /etc/fstab.
+   10.0.1.10:/shared_data    /mnt/nfs    nfs    defaults    0 0
+
+### How does the end user access it?
+
+The end user does not connect directly to the NFS server. The NFS share is mounted on the Linux application server, and the application accesses the files through the mounted directory. The user only interacts with the application, not the NFS server.
 ---
 
 # Q4. Which Linux commands do you use daily?
