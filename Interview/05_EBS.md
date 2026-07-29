@@ -278,6 +278,14 @@ In my project, I regularly perform:
 
 ## Answer
 
+In gp3, we get 3,000 free IOPS regardless of size, whereas in gp2, IOPS depends on storage size at 3 IOPS per 1 GB.
+
+gp3 is cheaper (around 20% lower cost) compared to gp2.
+
+In gp3, IOPS and throughput are separate from storage size, but in gp2 they are tied together.
+
+Overall, gp3 is more flexible and offers better performance control than gp2."
+
 Both gp2 and gp3 are General Purpose SSD volumes.
 
 ### gp2
