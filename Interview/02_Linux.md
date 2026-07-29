@@ -49,24 +49,35 @@ It is commonly used to share application files, backup directories, and common d
 ### Steps to mount an NFS share:
 
 1. Check the available NFS exports on the server
+```
 showmount -e <NFS_Server_IP>
+```
 
-2. Create a mount point on the client
+3. Create a mount point on the client
+   ```
    mkdir /mnt/nfs
+   ```
    
-3. Mount the NFS share
+4. Mount the NFS share
+   ```
    mount -t nfs <NFS_Server_IP>:/shared_data /mnt/nfs
+   ```
 
-4. Verify the mount
+5. Verify the mount
+```
    df -h
-mount | grep nfs
+   mount | grep nfs
+```
 
-5. To make the mount permanent, add an entry in /etc/fstab.
+6. To make the mount permanent, add an entry in /etc/fstab.
+```
    10.0.1.10:/shared_data    /mnt/nfs    nfs    defaults    0 0
+```
 
 ### How does the end user access it?
 
 The end user does not connect directly to the NFS server. The NFS share is mounted on the Linux application server, and the application accesses the files through the mounted directory. The user only interacts with the application, not the NFS server.
+
 ---
 
 # Q4. Which Linux commands do you use daily?
@@ -310,19 +321,11 @@ Finally, I verify the application is accessible and update the Jira ticket.
 
 ---
 
-# Q10. What is the difference between df and du?
+# Q10. What is iSCSI? How is it different from NFS?
 
 ## Answer
 
-The **df** command shows filesystem usage.
-
-The **du** command shows the size of files and directories.
-
-Normally I first use **df -h** to identify which filesystem is full.
-
-Then I use **du -sh** to identify which directory is consuming more space.
-
-This helps me quickly identify the root cause of disk utilization.
+My production experience is mainly with AWS EBS volumes, which are block storage. I understand that iSCSI is a block storage protocol that provides remote disks over an IP network. Although I haven't configured iSCSI in production, I know its architecture, basic workflow, and how it differs from NFS.
 
 # 🐧 Linux Interview Questions - Part 02
 
@@ -368,13 +371,9 @@ Finally, I verify SSH connectivity and update the Jira ticket.
 
 ## Answer
 
-First I verify the alert in CloudWatch or Grafana.
+First, I will verify the alert in CloudWatch or Grafana and check since when the server is slow. I also verify whether it is affecting one server or multiple servers.
 
-I check whether the issue is continuous or only for a short time.
-
-Then I login to the server using SSH.
-
-I check CPU, Memory and Disk utilization.
+Then I will login to the server using SSH and check the basic resources.
 
 ```bash
 top
@@ -382,7 +381,7 @@ free -h
 df -h
 ```
 
-Then I check the Load Average.
+I check whether the Load Average is high.
 
 ```bash
 uptime
@@ -390,9 +389,16 @@ uptime
 
 I identify whether any process is consuming high resources.
 
-I also check application logs and system logs.
+I also check application logs and system logs to see if there are any errors.
 
 If all server resources are normal, I check with the Application Team whether any deployment or batch job is running.
+
+### If everything looks normal on the Linux server, then I check the AWS infrastructure.
+
+I verify that both EC2 Status Checks are passed.
+I check whether the EBS volume is facing any IOPS or throughput issue.
+If the application is behind a Load Balancer, I verify the Target Group Health.
+If Auto Scaling is configured, I check whether any recent scaling activity has happened.
 
 Finally, I verify server performance, monitor CloudWatch dashboard and update the Jira ticket.
 
@@ -424,9 +430,9 @@ ss -tulnp
 
 If the port is not listening, I check the application logs.
 
-If the application is running, I verify the Load Balancer, Target Group Health Check, Security Group and Route 53 if applicable.
+If the application is running, I verify the Load Balancer, Target Group Health Check, Listener and Route 53 if applicable.
 
-If required, I coordinate with the Application Team.
+If everything looks fine from the infrastructure side, I coordinate with the Application Team to check the application logs and recent deployments..
 
 After fixing the issue, I verify the website from the browser and update the Jira ticket.
 
@@ -661,31 +667,20 @@ Finally, I verify the application, monitor CloudWatch dashboard, update Jira and
 
 ---
 
-# Q22. Filesystem became Read-Only. What will you do?
+# Q22. How do you mount a filesystem permanently? Explain the fields in /etc/fstab.
 
 ## Answer
 
-First I login to the server and verify the filesystem status.
+The /etc/fstab (File System Table) file is used to mount filesystems automatically during system boot.
 
-I review system logs.
+If I mount a filesystem using the mount command, it is only temporary. After a reboot, the mount is lost. To make it permanent, I add an entry in the /etc/fstab file.
 
-```bash
-journalctl -xe
-dmesg
+### Explain the fields in /etc/fstab
 ```
+UUID=2c8f4d7e-xxxx-xxxx-xxxx-xxxxxxxxxxxx   /data   ext4   defaults   0   2
 
-I check whether there are any filesystem errors or disk issues.
-
-I also verify disk utilization.
-
-If required, I inform the Cloud Team or Storage Team.
-
-I do not make unnecessary changes on the production server.
-
-After fixing the issue, I verify that the filesystem is mounted correctly and the application is working.
-
-Finally, I update the Jira ticket and prepare the RCA.
-
+UUID  MountPoint  FileSystem Type    Mount Option  Dump    fsck Order
+```
 ---
 
 # Q23. Cron job is not running. What will you check?
@@ -834,25 +829,23 @@ Finally, I verify the application, update Jira and prepare the RCA.
 
 ---
 
-# Q28. Do you kill a production process if it is consuming high CPU?
+# Q28. Some users can access the application, but others cannot. How will you troubleshoot?
 
 ## Answer
 
-No.
+First, I will check how many users are affected and whether they are from the same location or different locations.
 
-I never kill any production process without approval.
+If only a few users are facing the issue, then I will ask them to check from another network or mobile hotspot. This helps me identify whether the issue is user-side or network-related.
 
-First I identify the process.
+Then I will check whether all affected users are using the same VPN, ISP, or office network.
 
-Then I verify whether it is an expected activity like deployment, backup or batch job.
+If users from the same location are affected, I will coordinate with the Network Team to check DNS resolution, VPN connectivity, firewall rules, or any routing issue.
 
-I collect logs and share all findings with the Application Team.
+If users from different locations are affected, then I will check the Load Balancer and Target Group Health to verify whether traffic is reaching all backend servers properly.
 
-If restart or process termination is required, I take approval first.
+If required, I will also check the application logs to identify whether any requests are failing on a particular backend server.
 
-After taking approval, I perform the activity.
-
-Finally, I verify that the application is working properly and update the incident ticket.
+Finally, after identifying and fixing the issue, I will verify with the affected users that the application is working properly and then update the Jira ticket.
 
 ---
 
