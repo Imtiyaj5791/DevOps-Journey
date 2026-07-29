@@ -221,7 +221,7 @@ As per our company SOP, I first archive the old logs if required.
 
 Then I remove logs which are approved for cleanup.
 
-I also verify whether log rotation is working properly.
+I also verify whether log rotation is working properly.(cat /etc/logrotate.conf)
 
 If logrotate is not working, I fix the issue or coordinate with the Application Team.
 
