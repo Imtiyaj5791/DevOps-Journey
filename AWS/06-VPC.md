@@ -1,1190 +1,2686 @@
-# AWS VPC — Day 01
+# AWS VPC - Day 01
 
-## Topics Covered
-
-1. VPC Basics
-2. CIDR Block
-3. Public vs Private Subnet
-4. Internet Gateway
-5. Route Table
-6. Main vs Custom Route Table
-7. Security Group vs NACL
-8. Public Subnet Hands-on Lab
-9. Private Subnet Hands-on Lab
-10. Public EC2 to Private EC2 SSH
-11. Bastion / Jump Host Concept
-12. Troubleshooting
-13. Interview Questions & Answers
+> In this module, we will learn the fundamentals of Amazon VPC, why it is required, the difference between Default and Custom VPC, CIDR, Subnets, and create our own custom VPC from scratch.
 
 ---
 
-# 1. What is a VPC?
 
-VPC stands for **Virtual Private Cloud**.
+# What is Amazon VPC?
 
-A VPC is a logically isolated virtual network in AWS where we can create and manage our own network resources.
+Amazon VPC (Virtual Private Cloud) is a logically isolated virtual network inside AWS where we can launch AWS resources like:
 
-Inside a VPC, we can configure:
+- EC2
+- RDS
+- Load Balancer
+- Lambda
+- ECS
+- EKS
 
-- IP address ranges
+A VPC gives complete control over your network such as:
+
+- IP Address Range
 - Subnets
 - Route Tables
-- Internet Gateway
-- Security Groups
-- NACLs
-- EC2 instances
+- Internet Connectivity
+- Security
+- Network Isolation
 
-Basic architecture:
+Think of a VPC as your own private data center inside AWS.
 
-```text
-VPC
-│
-├── Public Subnet
-│     └── Web Server
-│
-└── Private Subnet
-      └── Database / Backend Server
+---
+
+# Why do we need VPC?
+
+Without VPC, every server would be in a common network, making it difficult to secure applications.
+
+Using VPC we can:
+
+- Isolate applications
+- Create Public and Private Networks
+- Secure databases
+- Control inbound and outbound traffic
+- Connect AWS with On-Premises
+- Design Production Architecture
+
+---
+
+# Default VPC vs Custom VPC
+
+| Default VPC | Custom VPC |
+|-------------|------------|
+| Created automatically by AWS | Created manually by user |
+| Ready to use | Fully customizable |
+| Public subnets already available | You create your own subnets |
+| Internet Gateway already attached | IGW must be attached manually |
+| Suitable for testing | Suitable for production |
+
+---
+
+# CIDR Block
+
+CIDR (Classless Inter-Domain Routing) defines the IP address range of a VPC.
+
+Example:
+
+```
+10.0.0.0/16
+```
+
+Meaning
+
+```
+Network Address : 10.0.0.0
+
+Subnet Mask
+
+255.255.0.0
+```
+
+Total IPs
+
+```
+65,536
+```
+
+AWS reserves the first four IP addresses and the last IP address in every subnet.
+
+Example
+
+```
+10.0.1.0/24
+
+Reserved
+
+10.0.1.0
+10.0.1.1
+10.0.1.2
+10.0.1.3
+10.0.1.255
+```
+
+Usable IPs
+
+```
+251
 ```
 
 ---
 
-# 2. CIDR Block
+# VPC Architecture
 
-CIDR defines the IP address range of a VPC or subnet.
-
-Example:
-
-```text
-VPC CIDR = 10.0.0.0/16
+```
+                    AWS Cloud
+                         │
+        ┌────────────────────────────────┐
+        │         Custom VPC             │
+        │         10.0.0.0/16            │
+        │                                │
+        │   Public Subnet                │
+        │   10.0.1.0/24                  │
+        │                                │
+        │   Private Subnet               │
+        │   10.0.2.0/24                  │
+        └────────────────────────────────┘
 ```
 
-A `/16` network contains:
+---
 
-```text
-65,536 total IP addresses
+# Public Subnet
+
+A Public Subnet is a subnet that has a route to the Internet Gateway.
+
+Resources generally placed here:
+
+- Bastion Host
+- Public EC2
+- Application Load Balancer
+- NAT Gateway
+
+Example
+
 ```
+Public Subnet
 
-We can divide this VPC into smaller subnets.
-
-Example:
-
-```text
-VPC = 10.0.0.0/16
-
-├── Public Subnet
-│     10.0.1.0/24
-│
-└── Private Subnet
-      10.0.2.0/24
-```
-
-A `/24` subnet contains:
-
-```text
-256 total IP addresses
-```
-
-AWS reserves 5 IP addresses in every subnet.
-
-Therefore:
-
-```text
-/24 = 256 total IP addresses
-       251 available for resources
-```
-
-## CIDR Boundary
-
-Valid subnet examples:
-
-```text
-10.0.0.0/24
 10.0.1.0/24
+```
+
+---
+
+# Private Subnet
+
+A Private Subnet does NOT have a direct route to the Internet Gateway.
+
+Resources generally placed here:
+
+- Application Server
+- Database Server
+- Internal Services
+
+Example
+
+```
+Private Subnet
+
 10.0.2.0/24
 ```
 
-We cannot define a `/24` subnet as:
-
-```text
-10.0.0.1/24
-```
-
-because `10.0.0.1` is an address inside the `10.0.0.0/24` network rather than the `/24` network address.
-
 ---
 
-# 3. Public vs Private Subnet
+# Lab Goal
 
-## Public Subnet
+In today's practical we will create:
 
-A subnet is considered public when its Route Table has a route to an Internet Gateway.
-
-Example:
-
-```text
-Destination      Target
-
-10.0.0.0/16      local
-0.0.0.0/0        IGW
-```
-
-For an EC2 instance in that subnet to communicate directly with the internet over IPv4, it also needs a public IPv4 address and appropriate security rules.
+- One Custom VPC
+- One Public Subnet
+- One Private Subnet
 
 Architecture:
 
-```text
-Internet
-   |
-   |
-  IGW
-   |
-Public Route Table
-   |
-Public Subnet
-   |
-Public EC2
+```
+             Custom VPC
+           10.0.0.0/16
+          /            \
+         /              \
+ Public Subnet      Private Subnet
+ 10.0.1.0/24        10.0.2.0/24
 ```
 
 ---
 
-## Private Subnet
+# Prerequisites
 
-A private subnet does not have a direct route to an Internet Gateway.
+Before starting the lab ensure:
 
-Example:
-
-```text
-Destination      Target
-
-10.0.0.0/16      local
-```
-
-Private subnets are commonly used for:
-
-- Database servers
-- Backend servers
-- Application servers
-- Internal services
-
-Example:
-
-```text
-Public Subnet
-     |
- Web Server
-     |
-Private Subnet
-     |
- Database
-```
+- AWS Account is ready
+- AWS Console access is available
+- Region selected
+- EC2 Key Pair already created
 
 ---
 
-# 4. Internet Gateway — IGW
+# Hands-on Lab - Create Custom VPC
 
-An Internet Gateway enables communication between resources in a VPC and the internet.
+In this lab we will create the following resources:
 
-Architecture:
-
-```text
-Internet
-   |
-   |
-  IGW
-   |
-  VPC
-   |
-Public Subnet
-   |
-  EC2
-```
-
-The Internet Gateway must first be attached to the VPC.
-
-However, simply attaching an IGW does not make a subnet public.
-
-The subnet's Route Table must contain:
-
-```text
-0.0.0.0/0 → IGW
-```
+- Custom VPC
+- Public Subnet
+- Private Subnet
 
 ---
 
-# 5. Route Table
+# Step 1 - Open VPC Dashboard
 
-A Route Table determines where network traffic should be directed based on its destination.
+Login to AWS Console
 
-Example:
+Search
 
-```text
-Destination      Target
-
-10.0.0.0/16      local
-0.0.0.0/0        IGW
 ```
-
-## Local Route
-
-```text
-10.0.0.0/16 → local
-```
-
-This allows routing within the VPC CIDR.
-
-## Internet Route
-
-```text
-0.0.0.0/0 → IGW
-```
-
-This sends matching IPv4 traffic towards the Internet Gateway.
-
-Example flow:
-
-```text
-EC2
- ↓
-Route Table
- ↓
-0.0.0.0/0
- ↓
-IGW
- ↓
-Internet
-```
-
----
-
-# 6. Main vs Custom Route Table
-
-When we create a VPC, AWS automatically creates a **Main Route Table**.
-
-We can also create custom Route Tables.
-
-Example:
-
-```text
 VPC
-│
-├── Public Route Table
-│      ├── Public-Subnet-1
-│      ├── Public-Subnet-2
-│      └── Public-Subnet-3
-│
-└── Private Route Table
-       ├── Private-Subnet-1
-       └── Private-Subnet-2
 ```
 
-## Important Rule
+Open
 
-```text
-1 Subnet      → 1 Route Table at a time
-
-1 Route Table → Multiple Subnets
 ```
-
-Therefore, if three public subnets require the same routing, we can associate all three with the same Public Route Table.
-
-We do not need to create a separate Route Table for every subnet unless their routing requirements are different.
-
-If a subnet is not explicitly associated with a custom Route Table, it uses the VPC's Main Route Table.
-
----
-
-# 7. Security Group vs NACL
-
-Security Groups and NACLs both control network traffic, but they work at different levels.
-
-| Security Group | NACL |
-|---|---|
-| Works at ENI/instance level | Works at subnet level |
-| Stateful | Stateless |
-| Allow rules only | Allow and Deny rules |
-| Return traffic for allowed connections is automatically permitted | Inbound and outbound traffic are evaluated separately |
-| Rules are evaluated collectively | Rules are evaluated in rule-number order |
-
-## Security Group — Stateful
-
-If traffic is allowed in one direction, response traffic for that established connection is automatically allowed.
-
-Example:
-
-```text
-Client
-  ↓ Request
-Security Group
-  ↓
-EC2
-  ↑ Response
-Automatically allowed
-```
-
-## NACL — Stateless
-
-Inbound and outbound traffic are evaluated separately.
-
-Example:
-
-```text
-Inbound traffic
-      ↓
-Inbound NACL Rules
-
-Outbound traffic
-      ↓
-Outbound NACL Rules
-```
-
-Required traffic must therefore be allowed by the applicable rules in both directions.
-
-## Easy Revision
-
-```text
-SG
-= ENI/Instance Level
-+ Stateful
-+ Allow Rules Only
-
-
-NACL
-= Subnet Level
-+ Stateless
-+ Allow & Deny Rules
+VPC Dashboard
 ```
 
 ---
 
-# 8. VPC Day 1 Hands-on Lab
+# Step 2 - Create Custom VPC
 
-Today we created the following architecture:
+Go to
 
-```text
-                         INTERNET
-                            |
-                            |
-                         Lab-IGW
-                            |
-                            |
-                 +--------------------+
-                 |      Lab-VPC       |
-                 |    10.0.0.0/16     |
-                 +--------------------+
-                     /            \
-                    /              \
-                   /                \
-        Public-Subnet-1          Private-Subnet-1
-          10.0.1.0/24             10.0.2.0/24
-               |                        |
-           Public-RT                Private-RT
-               |                        |
-          Public EC2               Private EC2
-           10.0.1.53                10.0.2.212
+```
+VPC
+→ Your VPCs
+→ Create VPC
+```
+
+Select
+
+```
+VPC Only
+```
+
+Enter
+
+```
+Name
+
+Custom-VPC
+
+IPv4 CIDR
+
+10.0.0.0/16
+
+IPv6
+
+None
+
+Tenancy
+
+Default
+```
+
+Click
+
+```
+Create VPC
 ```
 
 ---
 
-# 9. Create Custom VPC
+# Verify
 
-Created:
+After creation verify
 
-```text
-Name      → Lab-VPC
-IPv4 CIDR → 10.0.0.0/16
-Tenancy   → Default
+```
+State
+
+Available
+```
+
+CIDR
+
+```
+10.0.0.0/16
 ```
 
 ---
 
-# 10. Create Public Subnet
+# Production Note
 
-Created:
+Always choose a CIDR that will not overlap with:
 
-```text
-Name      → Public-Subnet-1
-VPC       → Lab-VPC
-IPv4 CIDR → 10.0.1.0/24
+- Another AWS VPC
+- On-Premises Network
+- Future AWS Accounts
+
+Changing CIDR later is difficult.
+
+---
+
+# Step 3 - Create Public Subnet
+
+Go to
+
+```
+Subnets
+
+Create Subnet
+```
+
+Select
+
+```
+VPC
+
+Custom-VPC
+```
+
+Enter
+
+```
+Subnet Name
+
+Public-Subnet
+
+Availability Zone
+
+ap-south-1a
+
+IPv4 CIDR
+
+10.0.1.0/24
+```
+
+Click
+
+```
+Create Subnet
 ```
 
 ---
 
-# 11. Create Internet Gateway
+# Verify
 
-Created:
+Check
 
-```text
-Name → Lab-IGW
 ```
+Subnet
 
-Then attached it to:
+Public-Subnet
 
-```text
-Lab-VPC
-```
+CIDR
 
-Architecture:
-
-```text
-Internet
-   |
-Lab-IGW
-   |
-Lab-VPC
+10.0.1.0/24
 ```
 
 ---
 
-# 12. Create Public Route Table
+# Why Public Subnet?
 
-Created:
+Resources placed here require direct Internet access.
 
-```text
-Name → Public-RT
-VPC  → Lab-VPC
-```
+Examples
 
-Associated:
-
-```text
-Public-Subnet-1
-```
-
-Routes:
-
-```text
-Destination      Target
-
-10.0.0.0/16      local
-0.0.0.0/0        Lab-IGW
-```
-
-The important route is:
-
-```text
-0.0.0.0/0 → Lab-IGW
-```
-
-This makes the associated subnet a public subnet.
+- Bastion Host
+- Load Balancer
+- NAT Gateway
+- Public EC2
 
 ---
 
-# 13. Launch Public EC2
+# Step 4 - Create Private Subnet
 
-Public EC2 was launched with:
+Again click
 
-```text
-VPC       → Lab-VPC
-Subnet    → Public-Subnet-1
-Public IP → Enabled
+```
+Create Subnet
 ```
 
-Security Group:
+Enter
 
-```text
-Type   → SSH
-Port   → 22
-Source → My IP
+```
+Subnet Name
+
+Private-Subnet
+
+Availability Zone
+
+ap-south-1b
+
+IPv4 CIDR
+
+10.0.2.0/24
 ```
 
-Meaning:
+Click
 
-```text
-My Laptop
-    |
-    | SSH 22
-    ↓
-Public EC2
 ```
-
-Only our configured source IP is allowed to initiate SSH to the Public EC2.
+Create Subnet
+```
 
 ---
 
-# 14. Test Public EC2 Internet Connectivity
+# Verify
 
-After connecting to the Public EC2, we tested internet connectivity.
+```
+Private-Subnet
 
-Command:
-
-```bash
-curl -I https://aws.amazon.com
+10.0.2.0/24
 ```
 
-Result:
+---
 
-```text
-HTTP/2 200
+# Why Private Subnet?
+
+Private Subnet is used for resources that should not be accessible from the Internet.
+
+Examples
+
+- Application Server
+- Database Server
+- Internal APIs
+- Backend Services
+
+---
+
+# Verify VPC Architecture
+
+```
+                Custom-VPC
+               10.0.0.0/16
+                      │
+        ┌─────────────┴─────────────┐
+        │                           │
+        │                           │
+ Public-Subnet               Private-Subnet
+ 10.0.1.0/24                  10.0.2.0/24
 ```
 
-This confirmed that our configuration was working:
+---
 
-```text
-Public EC2
-    ↓
+# What We Created
+
+✔ Custom VPC
+
+```
+10.0.0.0/16
+```
+
+✔ Public Subnet
+
+```
+10.0.1.0/24
+```
+
+✔ Private Subnet
+
+```
+10.0.2.0/24
+```
+
+---
+
+# AWS Console Navigation
+
+```
+AWS Console
+
+↓
+
+VPC
+
+↓
+
+Your VPCs
+
+↓
+
+Subnets
+```
+
+---
+
+# Best Practices
+
+- Keep databases in Private Subnet.
+- Use Public Subnet only for Internet-facing resources.
+- Plan CIDR before creating the VPC.
+- Use meaningful resource names.
+- Create separate subnets for different Availability Zones.
+
+---
+
+# Common Mistakes
+
+❌ Using overlapping CIDR ranges.
+
+❌ Creating everything in Public Subnet.
+
+❌ Not planning IP ranges before deployment.
+
+❌ Using Default VPC for Production.
+
+---
+
+# Hands-on Lab - Internet Gateway & Route Table
+
+Now that our VPC and Subnets are ready, the next step is to provide Internet access to the Public Subnet.
+
+---
+
+# Current Architecture
+
+```
+                Custom-VPC
+               10.0.0.0/16
+                      │
+        ┌─────────────┴─────────────┐
+        │                           │
+ Public-Subnet               Private-Subnet
+ 10.0.1.0/24                  10.0.2.0/24
+```
+
+Currently,
+
+❌ No Internet Access
+
+Reason:
+
+- No Internet Gateway
+- No Public Route
+
+---
+
+# Step 5 - Create Internet Gateway
+
+Go to
+
+```
+VPC
+
+↓
+
+Internet Gateways
+
+↓
+
+Create Internet Gateway
+```
+
+Enter
+
+```
+Name
+
+Custom-IGW
+```
+
+Click
+
+```
+Create Internet Gateway
+```
+
+---
+
+# Verify
+
+Status
+
+```
+Detached
+```
+
+This is normal because it is not attached to any VPC.
+
+---
+
+# Step 6 - Attach Internet Gateway
+
+Select
+
+```
+Custom-IGW
+```
+
+Click
+
+```
+Actions
+
+↓
+
+Attach to VPC
+```
+
+Select
+
+```
+Custom-VPC
+```
+
+Click
+
+```
+Attach
+```
+
+---
+
+# Verify
+
+Internet Gateway
+
+```
+State
+
+Attached
+```
+
+VPC
+
+```
+Custom-VPC
+```
+
+---
+
+# Architecture
+
+```
+                 Internet
+                     │
+                     │
+             Internet Gateway
+                     │
+             Custom-VPC
+            10.0.0.0/16
+```
+
+---
+
+# Why Internet Gateway?
+
+Internet Gateway provides communication between
+
+- AWS VPC
+- Internet
+
+Without Internet Gateway,
+
+- Public EC2 cannot access Internet.
+- Internet users cannot access Public EC2.
+
+---
+
+# Step 7 - Create Public Route Table
+
+Go to
+
+```
+VPC
+
+↓
+
+Route Tables
+
+↓
+
+Create Route Table
+```
+
+Enter
+
+```
+Name
+
 Public-RT
-    ↓
+
+VPC
+
+Custom-VPC
+```
+
+Click
+
+```
+Create Route Table
+```
+
+---
+
+# Verify
+
+```
+Route Table
+
+Public-RT
+```
+
+---
+
+# Step 8 - Add Internet Route
+
+Open
+
+```
+Public-RT
+```
+
+Go to
+
+```
+Routes
+
+↓
+
+Edit Routes
+
+↓
+
+Add Route
+```
+
+Enter
+
+```
+Destination
+
 0.0.0.0/0
-    ↓
-Lab-IGW
-    ↓
+
+Target
+
+Internet Gateway
+
+Custom-IGW
+```
+
+Click
+
+```
+Save Changes
+```
+
+---
+
+# Route Table
+
+```
+Destination         Target
+
+10.0.0.0/16         local
+
+0.0.0.0/0           Internet Gateway
+```
+
+---
+
+# What does 0.0.0.0/0 mean?
+
+```
+0.0.0.0/0
+```
+
+Means
+
+```
+Anywhere
+
+Any IPv4 Address
+
+Entire Internet
+```
+
+Whenever AWS cannot find a local route,
+
+Traffic is forwarded to
+
+```
+Internet Gateway
+```
+
+---
+
+# Step 9 - Associate Route Table
+
+Open
+
+```
+Public-RT
+```
+
+Go to
+
+```
+Subnet Associations
+
+↓
+
+Edit Subnet Associations
+```
+
+Select
+
+```
+Public-Subnet
+```
+
+Click
+
+```
+Save
+```
+
+---
+
+# Verify
+
+Associated Subnet
+
+```
+Public-Subnet
+```
+
+---
+
+# Architecture
+
+```
+                  Internet
+                      │
+                      │
+              Internet Gateway
+                      │
+                Public Route
+             0.0.0.0/0 → IGW
+                      │
+             Public Route Table
+                      │
+              Public Subnet
+```
+
+---
+
+# Why Private Subnet is NOT Associated?
+
+Private subnet should never have
+
+```
+0.0.0.0/0
+
+↓
+
+Internet Gateway
+```
+
+Otherwise,
+
+Private EC2 will become Internet accessible.
+
+---
+
+# Production Note
+
+Always create
+
+- Separate Route Table for Public Subnet
+- Separate Route Table for Private Subnet
+
+Never use one Route Table for everything.
+
+---
+
+# Best Practices
+
+✔ Separate Route Tables
+
+✔ Meaningful Names
+
+✔ Verify Route Target
+
+✔ Keep Database in Private Subnet
+
+✔ Review Associations before Launching EC2
+
+---
+
+# Common Mistakes
+
+❌ Forgot to attach Internet Gateway
+
+❌ Forgot Route Table Association
+
+❌ Added wrong Target
+
+❌ Associated Private Subnet with Public Route Table
+
+❌ Deleted Local Route (AWS does not allow this)
+
+---
+# Hands-on Lab - Launch Public EC2 Instance
+
+Now our VPC network is ready.
+
+Next, we will launch a Public EC2 instance inside the Public Subnet and verify Internet connectivity.
+
+---
+
+# Current Architecture
+
+```
+                   Internet
+                       │
+                Internet Gateway
+                       │
+              Public Route Table
+                       │
+                Public Subnet
+                10.0.1.0/24
+```
+
+---
+
+# Step 10 - Launch EC2
+
+Go to
+
+```
+AWS Console
+
+↓
+
+EC2
+
+↓
+
+Launch Instance
+```
+
+---
+
+# Step 11 - Configure Instance
+
+Instance Name
+
+```
+Public-Server
+```
+
+AMI
+
+```
+Ubuntu Server 24.04 LTS
+```
+
+Instance Type
+
+```
+t2.micro
+```
+
+Key Pair
+
+```
+Select Existing Key Pair
+```
+
+---
+
+# Step 12 - Select Network
+
+Network
+
+```
+Custom-VPC
+```
+
+Subnet
+
+```
+Public-Subnet
+```
+
+Auto Assign Public IP
+
+```
+Enable
+```
+
+This is very important.
+
+If disabled,
+
+EC2 will not receive a Public IP.
+
+---
+
+# Step 13 - Create Security Group
+
+Create New Security Group
+
+```
+Public-SG
+```
+
+Inbound Rules
+
+```
+SSH
+Port 22
+Source
+My IP
+```
+
+```
+HTTP
+Port 80
+Source
+0.0.0.0/0
+```
+
+```
+HTTPS
+Port 443
+Source
+0.0.0.0/0
+```
+
+Outbound
+
+```
+Allow All
+```
+
+Launch Instance.
+
+---
+
+# Verify EC2
+
+Check
+
+```
+State
+
+Running
+```
+
+Status Checks
+
+```
+2/2 Checks Passed
+```
+
+Network
+
+```
+Public IPv4
+
+Available
+```
+
+```
+Private IPv4
+
+10.0.1.x
+```
+
+---
+
+# Step 14 - Connect to EC2
+
+Open Terminal
+
+Move to Key Pair location
+
+```
+cd Downloads
+```
+
+Change Permission
+
+```bash
+chmod 400 mykey.pem
+```
+
+Connect
+
+```bash
+ssh -i mykey.pem ubuntu@PUBLIC_IP
+```
+
+Example
+
+```bash
+ssh -i mykey.pem ubuntu@13.xxx.xxx.xxx
+```
+
+---
+
+# Verify Login
+
+Check
+
+```bash
+hostname
+```
+
+```bash
+hostnamectl
+```
+
+```bash
+whoami
+```
+
+Expected
+
+```
+ubuntu
+```
+
+---
+
+# Step 15 - Verify Internet
+
+Check Public IP
+
+```bash
+curl ifconfig.me
+```
+
+Output
+
+```
+13.xxx.xxx.xxx
+```
+
+---
+
+Check Connectivity
+
+```bash
+ping google.com
+```
+
+Expected
+
+```
+64 bytes from...
+```
+
+---
+
+Update Packages
+
+```bash
+sudo apt update
+```
+
+If packages are downloading successfully,
+
+Internet is working correctly.
+
+---
+
+# Step 16 - Verify Network
+
+Check Interface
+
+```bash
+ip a
+```
+
+Check Routing
+
+```bash
+ip route
+```
+
+Expected
+
+```
+default via
+```
+
+---
+
+# Final Architecture
+
+```
+                    Internet
+                        │
+                        │
+                Internet Gateway
+                        │
+             Public Route Table
+         0.0.0.0/0 → Internet Gateway
+                        │
+                Public Subnet
+                  10.0.1.0/24
+                        │
+                 Public EC2
+        Public IP + Private IP
+```
+
+---
+
+# Commands Used
+
+```bash
+ssh
+```
+
+```bash
+chmod 400
+```
+
+```bash
+hostname
+```
+
+```bash
+hostnamectl
+```
+
+```bash
+whoami
+```
+
+```bash
+ip a
+```
+
+```bash
+ip route
+```
+
+```bash
+curl ifconfig.me
+```
+
+```bash
+ping google.com
+```
+
+```bash
+sudo apt update
+```
+
+---
+
+# AWS VPC - Day 02
+
+> In this module, we will build a production-style VPC by creating a NAT Gateway, configuring Public and Private Route Tables, launching a Private EC2 instance, and understanding how Internet access works for private resources.
+
+---
+
+# Table of Contents
+
+- NAT Gateway
+- Elastic IP
+- Public Route Table
+- Private Route Table
+- Launch Private EC2
+- Verify NAT
+- Bastion Host
+- Security Group
+- NACL
+
+---
+
+# Lab Architecture
+
+```
+                         Internet
+                             │
+                     Internet Gateway
+                             │
+                     Public Route Table
+                  0.0.0.0/0 → IGW
+                             │
+         ┌───────────────────┴───────────────────┐
+         │                                       │
+         │                                       │
+ Public Subnet                          Private Subnet
+ 10.0.1.0/24                             10.0.2.0/24
+         │                                       │
+         │                                       │
+     NAT Gateway                           Private EC2
+         │
+     Elastic IP
+```
+
+---
+
+# Why NAT Gateway?
+
+A Private EC2 should be able to:
+
+- Download Packages
+- Install Software
+- Access AWS APIs
+- Download Updates
+
+But...
+
+It should NOT be accessible from the Internet.
+
+AWS solves this problem using
+
+```
+NAT Gateway
+```
+
+---
+
+# How NAT Works
+
+```
+Private EC2
+
+↓
+
+Private Route Table
+
+↓
+
+NAT Gateway
+
+↓
+
+Internet Gateway
+
+↓
+
 Internet
 ```
 
----
+Traffic Flow
 
-# 15. Create Private Subnet
+```
+Outbound
 
-Created:
+Allowed
 
-```text
-Name      → Private-Subnet-1
-VPC       → Lab-VPC
-IPv4 CIDR → 10.0.2.0/24
+Inbound
+
+Blocked
 ```
 
 ---
 
-# 16. Create Private Route Table
+# Step 1 - Allocate Elastic IP
 
-Created:
+Go to
 
-```text
-Name → Private-RT
-VPC  → Lab-VPC
+```
+VPC
+
+↓
+
+Elastic IPs
+
+↓
+
+Allocate Elastic IP Address
 ```
 
-Associated:
+Click
 
-```text
-Private-Subnet-1
 ```
-
-At this stage, the Private Route Table contained the local route:
-
-```text
-10.0.0.0/16 → local
-```
-
-We did NOT configure:
-
-```text
-0.0.0.0/0 → IGW
-```
-
-Therefore, the private subnet does not have a direct route to the Internet Gateway.
-
----
-
-# 17. Launch Private EC2
-
-Private EC2 was launched with:
-
-```text
-VPC       → Lab-VPC
-Subnet    → Private-Subnet-1
-Public IP → Disabled
-```
-
-Our Private EC2 received:
-
-```text
-Private IP → 10.0.2.212
-Public IP  → None
-```
-
-Therefore, we cannot directly SSH from our laptop over the internet to this private IP.
-
----
-
-# 18. Private EC2 Security Group
-
-We created a separate Security Group for the Private EC2.
-
-Inbound rule:
-
-```text
-Type   → SSH
-Port   → 22
-Source → Public EC2 Security Group
-```
-
-The important point is that we did NOT configure:
-
-```text
-SSH → 0.0.0.0/0
-```
-
-for the Private EC2.
-
-Instead:
-
-```text
-Laptop
-   |
-   | SSH 22
-   | Source = My IP
-   ↓
-Public EC2
-   |
-   | SSH 22
-   | Source = Public EC2 SG
-   ↓
-Private EC2
+Allocate
 ```
 
 ---
 
-# 19. Why SSH Rule Was Required on Both EC2 Security Groups
+# Verify
 
-The two SSH rules serve different purposes.
+```
+Elastic IP
 
-## Public EC2 Security Group
-
-Controls:
-
-```text
-Laptop → Public EC2
+Allocated
 ```
 
-Rule:
+Copy the Elastic IP.
 
-```text
+We will use it while creating NAT Gateway.
+
+---
+
+# Why Elastic IP?
+
+A NAT Gateway always requires
+
+```
+Static Public IP
+```
+
+AWS provides that using
+
+```
+Elastic IP
+```
+
+---
+
+# Step 2 - Create NAT Gateway
+
+Go to
+
+```
+VPC
+
+↓
+
+NAT Gateways
+
+↓
+
+Create NAT Gateway
+```
+
+Enter
+
+```
+Name
+
+My-NAT
+```
+
+Subnet
+
+```
+Public-Subnet
+```
+
+Connectivity
+
+```
+Public
+```
+
+Elastic IP
+
+```
+Select Allocated EIP
+```
+
+Click
+
+```
+Create NAT Gateway
+```
+
+---
+
+# Verify
+
+Status
+
+```
+Available
+```
+
+This may take a few minutes.
+
+---
+
+# Important
+
+NAT Gateway must always be created inside
+
+```
+Public Subnet
+```
+
+Never create it inside Private Subnet.
+
+---
+
+# Step 3 - Create Private Route Table
+
+Go to
+
+```
+Route Tables
+
+↓
+
+Create Route Table
+```
+
+Enter
+
+```
+Name
+
+Private-RT
+
+VPC
+
+Custom-VPC
+```
+
+Click
+
+```
+Create
+```
+
+---
+
+# Step 4 - Add NAT Route
+
+Open
+
+```
+Private-RT
+```
+
+Go to
+
+```
+Routes
+
+↓
+
+Edit Routes
+
+↓
+
+Add Route
+```
+
+Enter
+
+```
+Destination
+
+0.0.0.0/0
+```
+
+Target
+
+```
+NAT Gateway
+
+My-NAT
+```
+
+Click
+
+```
+Save Changes
+```
+
+---
+
+# Route Table
+
+```
+Destination
+
+10.0.0.0/16
+
+↓
+
+Local
+
+-------------------------
+
+0.0.0.0/0
+
+↓
+
+NAT Gateway
+```
+
+---
+
+# Step 5 - Associate Private Route Table
+
+Open
+
+```
+Private-RT
+```
+
+Go to
+
+```
+Subnet Associations
+
+↓
+
+Edit Associations
+```
+
+Select
+
+```
+Private-Subnet
+```
+
+Click
+
+```
+Save
+```
+
+---
+
+# Verify
+
+```
+Private Subnet
+
+↓
+
+Private Route Table
+
+↓
+
+NAT Gateway
+```
+
+Connection completed.
+
+---
+
+# Current Architecture
+
+```
+                       Internet
+                           │
+                   Internet Gateway
+                           │
+             ┌─────────────┴─────────────┐
+             │                           │
+      Public Route Table          Private Route Table
+      0.0.0.0 → IGW              0.0.0.0 → NAT
+             │                           │
+      Public Subnet              Private Subnet
+             │                           │
+      NAT Gateway                 Private EC2
+```
+
+---
+# Hands-on Lab - Launch Private EC2 & Verify NAT Gateway
+
+Now our Private Route Table is connected to the NAT Gateway.
+
+Next, we will launch a Private EC2 instance and verify Internet connectivity.
+
+---
+
+# Current Architecture
+
+```
+                        Internet
+                            │
+                    Internet Gateway
+                            │
+                    Public Route Table
+                     0.0.0.0/0 → IGW
+                            │
+         ┌──────────────────┴──────────────────┐
+         │                                     │
+    Public Subnet                        Private Subnet
+     10.0.1.0/24                         10.0.2.0/24
+         │                                     │
+    NAT Gateway                         Private EC2
+```
+
+---
+
+# Step 6 - Launch Private EC2
+
+Go to
+
+```
+EC2
+
+↓
+
+Launch Instance
+```
+
+---
+
+# Configure Instance
+
+Instance Name
+
+```
+Private-Server
+```
+
+AMI
+
+```
+Ubuntu Server 24.04 LTS
+```
+
+Instance Type
+
+```
+t2.micro
+```
+
+Key Pair
+
+```
+Select Existing Key Pair
+```
+
+---
+
+# Network Settings
+
+VPC
+
+```
+Custom-VPC
+```
+
+Subnet
+
+```
+Private-Subnet
+```
+
+Auto Assign Public IP
+
+```
+Disable
+```
+
+Very Important
+
+Private EC2 should NEVER receive a Public IP.
+
+---
+
+# Security Group
+
+Create
+
+```
+Private-SG
+```
+
+Inbound Rules
+
+```
 SSH
+
 Port 22
-Source = My IP
+
+Source
+
+Public-SG
 ```
 
-## Private EC2 Security Group
+or
 
-Controls:
+```
+Source
 
-```text
-Public EC2 → Private EC2
+Bastion Security Group
 ```
 
-Rule:
+Outbound
 
-```text
-SSH
-Port 22
-Source = Public EC2 Security Group
+```
+Allow All
 ```
 
-Therefore:
+Launch Instance.
 
-```text
-Public SG
-→ Who can enter Public EC2?
+---
 
-Private SG
-→ Who can enter Private EC2?
+# Verify
+
+Check
+
+```
+Private IPv4
+
+10.0.2.x
+```
+
+Public IP
+
+```
+None
+```
+
+This confirms the EC2 is private.
+
+---
+
+# Step 7 - Connect to Private EC2
+
+Since there is no Public IP,
+
+SSH from Laptop
+
+❌ Not Possible
+
+Need
+
+```
+Bastion Host
+```
+
+or
+
+```
+AWS Systems Manager
 ```
 
 ---
 
-# 20. Bastion / Jump Host
+# Method 1 - SSH Using Bastion Host
 
-The Private EC2 does not have a public IP.
+Login to Public EC2
 
-Therefore this will not work directly from our laptop:
-
-```text
-Laptop
-   ↓
-10.0.2.212
+```bash
+ssh -i mykey.pem ubuntu@PUBLIC_IP
 ```
 
-Instead we used:
+Copy Key
 
-```text
-Laptop
-   ↓
-Public EC2
-   ↓
+```bash
+scp -i mykey.pem mykey.pem ubuntu@PUBLIC_IP:/home/ubuntu
+```
+
+Login to Bastion
+
+```bash
+ssh -i mykey.pem ubuntu@PUBLIC_IP
+```
+
+Change Permission
+
+```bash
+chmod 400 mykey.pem
+```
+
+Now SSH into Private EC2
+
+```bash
+ssh -i mykey.pem ubuntu@10.0.2.x
+```
+
+Connected Successfully.
+
+---
+
+# Step 8 - Verify Internet Access
+
+Inside Private EC2
+
+Run
+
+```bash
+ping google.com
+```
+
+Expected
+
+```
+64 bytes from...
+```
+
+---
+
+Check
+
+```bash
+sudo apt update
+```
+
+Packages should download successfully.
+
+---
+
+Check Public IP
+
+```bash
+curl ifconfig.me
+```
+
+Output
+
+```
+Elastic IP of NAT Gateway
+```
+
+Notice
+
+Private EC2 does NOT have a Public IP,
+
+but Internet traffic goes through the NAT Gateway.
+
+---
+
+# Verify Routing
+
+Run
+
+```bash
+ip route
+```
+
+Expected
+
+```
+default via
+```
+
+Traffic reaches the subnet gateway, and AWS routes it to the NAT Gateway based on the VPC Route Table.
+
+---
+
+# Traffic Flow
+
+```
+Private EC2
+
+↓
+
+Private Route Table
+
+↓
+
+NAT Gateway
+
+↓
+
+Internet Gateway
+
+↓
+
+Internet
+```
+
+Return Traffic
+
+```
+Internet
+
+↓
+
+NAT Gateway
+
+↓
+
 Private EC2
 ```
 
-The Public EC2 acts as a **Bastion / Jump Host** in this lab.
+Unsolicited inbound traffic from the Internet is NOT allowed.
 
 ---
 
-# 21. First SSH Attempt to Private EC2
+# Verification Checklist
 
-After logging into Public EC2, we tried:
+✅ Private EC2 Created
+
+✅ No Public IP
+
+✅ Private Route Table Associated
+
+✅ NAT Gateway Available
+
+✅ SSH via Bastion
+
+✅ Internet Working
+
+✅ apt update Successful
+
+---
+
+# Commands Used
 
 ```bash
-ssh ubuntu@10.0.2.212
+ssh
 ```
-
-We received:
-
-```text
-Permission denied (publickey)
-```
-
-This was an SSH authentication issue.
-
-The Public EC2 could reach the Private EC2 network path, but the SSH client did not have the required private key for authentication.
-
----
-
-# 22. Convert PuTTY Key for Linux SSH
-
-Our original key was:
-
-```text
-Mumbai.ppk
-```
-
-PuTTY uses `.ppk` format.
-
-We opened the key in **PuTTYgen** and exported an OpenSSH-compatible private key.
-
-Flow:
-
-```text
-Mumbai.ppk
-    ↓
-PuTTYgen
-    ↓
-Export OpenSSH Key
-    ↓
-Mumbai.pem
-```
-
-Now the exported private key could be used with the Linux/OpenSSH `ssh -i` command.
-
----
-
-# 23. Copy Key from Windows to Public EC2
-
-We used SCP from the Windows machine.
-
-Command:
 
 ```bash
-scp -i Mumbai.pem Mumbai.pem ubuntu@<PUBLIC-EC2-PUBLIC-IP>:/home/ubuntu/
+scp
 ```
-
-## SCP Syntax
-
-```text
-scp -i <authentication-key> <local-file> <user>@<server-ip>:<destination>
-```
-
-In our command:
-
-```text
-scp -i Mumbai.pem Mumbai.pem ...
-       ↑          ↑
-       |          |
-       |          File being copied
-       |
-       Authentication key
-```
-
-The same filename appeared twice because the first one was used for authentication and the second one was the file being copied.
-
----
-
-# 24. Set Key Permission
-
-On the Public EC2:
 
 ```bash
-chmod 400 Mumbai.pem
+chmod 400
 ```
-
-This restricts access to the private key file.
-
----
-
-# 25. SSH from Public EC2 to Private EC2
-
-From Public EC2:
 
 ```bash
-ssh -i Mumbai.pem ubuntu@10.0.2.212
+ping google.com
 ```
 
-SSH was successful.
+```bash
+curl ifconfig.me
+```
 
-Final connection:
+```bash
+sudo apt update
+```
 
-```text
-Windows Laptop
-      |
-      | SSH using Public IP
-      ↓
-Public EC2
-10.0.1.53
-      |
-      | SSH using Private IP
-      ↓
-Private EC2
-10.0.2.212
+```bash
+ip route
 ```
 
 ---
 
-# 26. Production Security Note
+# AWS VPC - Day 03
 
-For today's learning lab, we temporarily copied the private key to the Public EC2.
-
-This helped us understand:
-
-```text
-Laptop
-   ↓
-Bastion
-   ↓
-Private Server
-```
-
-However, storing private SSH keys on a bastion host is generally not the preferred production approach.
-
-Production environments can use approaches such as:
-
-- AWS Systems Manager Session Manager
-- SSH agent forwarding where appropriate
-- Properly managed bastion access
-- Short-lived access mechanisms
-
-Private keys should not be unnecessarily stored on intermediate servers.
+> In this module, we will learn advanced VPC networking features used in production environments:
+>
+> - VPC Peering
+> - VPC Endpoints
+> - Flow Logs
+> - Transit Gateway
+> - Site-to-Site VPN
+> - AWS Direct Connect
 
 ---
 
-# 27. Troubleshooting — Public EC2 Cannot Access Internet
+# Table of Contents
 
-Check the following:
-
-```text
-1. Is the EC2 inside the correct Public Subnet?
-
-2. Does the EC2 have a Public IPv4 address?
-
-3. Is an Internet Gateway attached to the VPC?
-
-4. Does the Public Route Table contain:
-
-   0.0.0.0/0 → IGW
-
-5. Is the Public Route Table associated with the correct subnet?
-
-6. Are Security Group rules correct?
-
-7. Are NACL rules blocking the traffic?
-```
+- VPC Peering
+- Gateway Endpoint
+- Interface Endpoint
+- VPC Flow Logs
+- Transit Gateway
+- Site-to-Site VPN
+- AWS Direct Connect
 
 ---
 
-# 28. Troubleshooting — Cannot SSH to Private EC2
+# VPC Peering
 
-Check:
+VPC Peering is used to privately connect two VPCs.
 
-```text
-1. Are Public and Private EC2 using networks with a valid route between them?
+Resources communicate using
 
-2. Are you using the correct Private IP?
+```
+Private IP Address
+```
 
-3. Does Private EC2 SG allow SSH from the Public EC2 SG?
+No Internet Gateway is required.
 
-4. Are NACL rules allowing the required traffic?
+---
 
-5. Is the correct username being used?
+# Lab Architecture
 
-6. Is the correct SSH private key being used?
+```
+          Default VPC
+      172.31.0.0/16
+             │
+             │
+     VPC Peering Connection
+             │
+             │
+       Custom VPC
+       10.0.0.0/16
 ```
 
 ---
 
-# 29. Day 01 Architecture — Final Revision
+# Step 1 - Create Peering Connection
 
-```text
-                          INTERNET
-                             |
-                             |
-                          Lab-IGW
-                             |
-                     0.0.0.0/0
-                             |
-                 +---------------------+
-                 |       Lab-VPC       |
-                 |     10.0.0.0/16     |
-                 +---------------------+
-                     /             \
-                    /               \
-                   /                 \
-          PUBLIC SUBNET           PRIVATE SUBNET
-           10.0.1.0/24             10.0.2.0/24
-                |                        |
-            Public-RT                Private-RT
-                |                        |
-           Public EC2               Private EC2
-            10.0.1.53                10.0.2.212
-                |                        ↑
-                |________________________|
-                      SSH Port 22
+Go to
+
+```
+VPC
+
+↓
+
+Peering Connections
+
+↓
+
+Create Peering Connection
+```
+
+Enter
+
+```
+Name
+
+Default-To-Custom
+```
+
+Requester
+
+```
+Default VPC
+```
+
+Accepter
+
+```
+Custom VPC
+```
+
+Click
+
+```
+Create
 ```
 
 ---
 
-# 30. Important Interview Questions & Answers
+# Step 2 - Accept Request
 
-## Q1. What is a VPC?
+Select
 
-**Answer:**
+```
+Peering Connection
+```
 
-A VPC is a logically isolated virtual network in AWS where we can create and manage our own network resources.
+Click
 
----
+```
+Actions
 
-## Q2. What is CIDR?
+↓
 
-**Answer:**
-
-CIDR defines the IP address range of a VPC or subnet.
-
-Example:
-
-```text
-VPC    → 10.0.0.0/16
-Subnet → 10.0.1.0/24
+Accept Request
 ```
 
 ---
 
-## Q3. How many IP addresses are available in a /24 subnet?
+# Step 3 - Update Route Tables
 
-**Answer:**
+Default Route Table
 
-A `/24` subnet contains 256 total IP addresses.
+Add
 
-AWS reserves 5 IP addresses, leaving 251 addresses available for resources.
+```
+Destination
 
----
+10.0.0.0/16
 
-## Q4. What is the difference between a Public and Private Subnet?
+↓
 
-**Answer:**
+Target
 
-A Public Subnet has a route to an Internet Gateway.
-
-A Private Subnet does not have a direct route to an Internet Gateway.
-
----
-
-## Q5. What makes a subnet public?
-
-**Answer:**
-
-A subnet is considered public when its associated Route Table contains a route to an Internet Gateway.
-
-Example:
-
-```text
-0.0.0.0/0 → IGW
+Peering Connection
 ```
 
 ---
 
-## Q6. Does attaching an Internet Gateway to a VPC automatically make a subnet public?
+Custom Route Table
 
-**Answer:**
+Add
 
-No.
+```
+Destination
 
-The subnet's Route Table must also have a route pointing to the Internet Gateway.
+172.31.0.0/16
 
----
+↓
 
-## Q7. What is an Internet Gateway?
+Target
 
-**Answer:**
-
-An Internet Gateway enables communication between resources in a VPC and the internet.
-
-For a public subnet, the Route Table normally contains:
-
-```text
-0.0.0.0/0 → IGW
+Peering Connection
 ```
 
 ---
 
-## Q8. What is a Route Table?
+# Step 4 - Update Security Group
 
-**Answer:**
+Allow
 
-A Route Table determines where network traffic should be directed based on its destination.
+```
+All ICMP
 
-Example:
+Source
 
-```text
-10.0.0.0/16 → local
-0.0.0.0/0   → IGW
+Other VPC CIDR
 ```
 
 ---
 
-## Q9. What is the difference between Main and Custom Route Tables?
+# Step 5 - Verify
 
-**Answer:**
+From EC2
 
-AWS automatically creates a Main Route Table when a VPC is created.
-
-We can create Custom Route Tables and explicitly associate them with specific subnets based on routing requirements.
-
----
-
-## Q10. Can multiple subnets use the same Route Table?
-
-**Answer:**
-
-Yes.
-
-Multiple subnets can use the same Route Table if they require the same routing.
-
-Example:
-
-```text
-Public-RT
-   ├── Public-Subnet-1
-   ├── Public-Subnet-2
-   └── Public-Subnet-3
+```bash
+ping PRIVATE_IP
 ```
 
-However, one subnet can be associated with only one Route Table at a time.
+Expected
 
----
-
-## Q11. What is the difference between Security Group and NACL?
-
-**Answer:**
-
-Security Group works at the ENI/instance level and is stateful.
-
-NACL works at the subnet level and is stateless.
-
-Security Groups support allow rules only, whereas NACLs support both allow and deny rules.
-
-```text
-SG
-→ ENI/Instance Level
-→ Stateful
-→ Allow only
-
-NACL
-→ Subnet Level
-→ Stateless
-→ Allow + Deny
+```
+0% Packet Loss
 ```
 
 ---
 
-## Q12. What does Stateful mean?
+# VPC Endpoint
 
-**Answer:**
+A VPC Endpoint allows private access to AWS services without using:
 
-Stateful means that if traffic is allowed in one direction, response traffic for that established connection is automatically allowed.
-
-Security Groups are stateful.
-
----
-
-## Q13. What does Stateless mean?
-
-**Answer:**
-
-Stateless means inbound and outbound traffic are evaluated independently.
-
-NACLs are stateless.
+- Internet Gateway
+- NAT Gateway
+- Public IP
 
 ---
 
-## Q14. Why did we reference the Public EC2 Security Group in the Private EC2 Security Group?
+# Types
 
-**Answer:**
+## Gateway Endpoint
 
-We wanted SSH access to the Private EC2 only from the Public EC2.
+Supports
 
-Therefore, the Private EC2 Security Group contains:
-
-```text
-SSH
-Port   → 22
-Source → Public EC2 Security Group
 ```
+Amazon S3
 
-This allows:
-
-```text
-Laptop
-   ↓
-Public EC2
-   ↓
-Private EC2
-```
-
-without opening Private EC2 SSH to the entire internet.
-
----
-
-## Q15. Why can't we directly SSH to a Private EC2 from the internet?
-
-**Answer:**
-
-A Private EC2 normally does not have a public IP and is not directly reachable from the internet.
-
-We can access it through a controlled method such as a Bastion Host or AWS Systems Manager Session Manager.
-
----
-
-## Q16. What is a Bastion Host?
-
-**Answer:**
-
-A Bastion Host is a controlled entry point used to access resources located in a private network.
-
-Example:
-
-```text
-Laptop
-   ↓
-Bastion / Public EC2
-   ↓
-Private EC2
+Amazon DynamoDB
 ```
 
 ---
 
-## Q17. Your Public EC2 has a Public IP but internet is not working. What will you check?
+## Interface Endpoint
 
-**Answer:**
+Supports
 
-I will check:
-
-1. Internet Gateway is attached to the VPC.
-2. Public Route Table has `0.0.0.0/0 → IGW`.
-3. Correct Route Table is associated with the subnet.
-4. EC2 has a Public IPv4 address.
-5. Security Group rules.
-6. NACL rules.
+- EC2 API
+- SSM
+- SNS
+- CloudWatch
+- Secrets Manager
+- Many AWS Services
 
 ---
 
-## Q18. Public EC2 can reach Private EC2 but SSH shows `Permission denied (publickey)`. What does it indicate?
+# Gateway Endpoint Practical
 
-**Answer:**
+Go to
 
-It usually indicates an SSH authentication problem rather than a basic network reachability problem.
+```
+VPC
 
-I will verify:
+↓
 
-- Correct username
-- Correct private key
-- Key permissions
-- Instance key pair configuration
+Endpoints
+
+↓
+
+Create Endpoint
+```
+
+Select
+
+```
+AWS Services
+```
+
+Choose
+
+```
+Amazon S3
+```
+
+Type
+
+```
+Gateway
+```
+
+Select
+
+```
+Custom VPC
+```
+
+Choose
+
+```
+Private Route Table
+```
+
+Click
+
+```
+Create
+```
 
 ---
+
+# Verify
+
+Inside EC2
+
+```bash
+aws s3 ls
+```
+
+Traffic goes privately through AWS Network.
+
+---
+
+# VPC Flow Logs
+
+Flow Logs capture network traffic metadata.
+
+Can be created for
+
+- VPC
+- Subnet
+- ENI
+
+Destination
+
+- CloudWatch
+- Amazon S3
+
+---
+
+# Create Flow Log
+
+Go to
+
+```
+VPC
+
+↓
+
+Your VPC
+
+↓
+
+Flow Logs
+
+↓
+
+Create Flow Log
+```
+
+Choose
+
+```
+Destination
+
+CloudWatch
+```
+
+Create Log Group
+
+```
+/aws/vpc/flowlogs
+```
+
+Click
+
+```
+Create
+```
+
+---
+
+# Verify
+
+Generate traffic
+
+```bash
+ping google.com
+```
+
+or
+
+```bash
+curl google.com
+```
+
+Open
+
+```
+CloudWatch
+
+↓
+
+Log Groups
+
+↓
+
+/aws/vpc/flowlogs
+```
+
+Check
+
+```
+ACCEPT
+
+REJECT
+```
+
+---
+
+# Transit Gateway
+
+Transit Gateway acts as a central router for multiple VPCs.
+
+Instead of
+
+```
+VPC A
+
+↔
+
+VPC B
+
+↔
+
+VPC C
+```
+
+We create
+
+```
+              Transit Gateway
+             /       |        \
+            /        |         \
+         VPC A    VPC B     VPC C
+```
+
+---
+
+# Lab
+
+We connected
+
+```
+Default VPC
+
+↓
+
+Transit Gateway
+
+↓
+
+Custom VPC
+```
+
+---
+
+# Step 1
+
+Create
+
+```
+Transit Gateway
+```
+
+Name
+
+```
+My-TGW
+```
+
+---
+
+# Step 2
+
+Create Attachment
+
+```
+Default VPC
+```
+
+---
+
+# Step 3
+
+Create Attachment
+
+```
+Custom VPC
+```
+
+---
+
+# Step 4
+
+Update Route Table
+
+Default VPC
+
+```
+10.0.0.0/16
+
+↓
+
+Transit Gateway
+```
+
+---
+
+Custom VPC
+
+```
+172.31.0.0/16
+
+↓
+
+Transit Gateway
+```
+
+---
+
+# Step 5
+
+Allow
+
+```
+ICMP
+```
+
+inside Security Group.
+
+---
+
+# Verify
+
+From Default EC2
+
+```bash
+ping 10.0.1.53
+```
+
+Output
+
+```
+4 transmitted
+
+4 received
+
+0% packet loss
+```
+
+Communication successful.
+
+---
+
+# Site-to-Site VPN
+
+Used to connect
+
+```
+On-Premises
+
+↓
+
+AWS VPC
+```
+
+using
+
+```
+Encrypted IPSec Tunnel
+```
+
+Architecture
+
+```
+Office
+
+↓
+
+Customer Gateway
+
+↓
+
+VPN Tunnel
+
+↓
+
+AWS VPN Gateway
+
+↓
+
+VPC
+```
+
+---
+
+# AWS Direct Connect
+
+Provides
+
+```
+Dedicated Private Connection
+```
+
+between
+
+```
+Office
+
+↓
+
+AWS
+```
+
+No Internet involved.
+
+Benefits
+
+- Low Latency
+- High Bandwidth
+- Stable Connection
+
+---
+
+# Verification Commands
+
+```bash
+ping
+```
+
+```bash
+ip route
+```
+
+```bash
+curl
+```
+
+```bash
+aws s3 ls
+```
+
+---
+
+# Final VPC Architecture
+
+```
+                       Internet
+                           │
+                    Internet Gateway
+                           │
+              ┌────────────┴────────────┐
+              │                         │
+      Public Route Table         Private Route Table
+              │                         │
+        Public Subnet             Private Subnet
+              │                         │
+          NAT Gateway              Private EC2
+              │
+          Public EC2
+
+                   │
+        ───────────────────────
+
+          Transit Gateway
+
+        ───────────────────────
+
+         Default VPC
+
+        ───────────────────────
+
+     Site-to-Site VPN
+
+        ───────────────────────
+
+      On-Premises Network
+
+        ───────────────────────
+
+       AWS Direct Connect
+```
+
+---
+
+
+
+
+
