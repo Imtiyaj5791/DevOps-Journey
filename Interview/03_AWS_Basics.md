@@ -215,23 +215,35 @@ Examples:
 
 ---
 
-# Q11. What is the AWS Free Tier?
+# Q11. Why do companies move from On-Premises to AWS?
 
 ## Answer
 
-AWS Free Tier allows new users to use selected AWS services free of cost for a limited period with specific usage limits.
+Companies move from On-Premises to AWS because AWS is more flexible and cost-effective.
 
-It is mainly used for learning and testing AWS services.
+In an on-premises environment, the company has to purchase and maintain physical servers, storage, and networking, which takes both time and money.
+
+In AWS, we can launch resources within a few minutes and pay only for what we use.
+
+AWS also provides High Availability, easy scalability, better security, and backup and disaster recovery options.
+
+Overall, AWS helps companies reduce infrastructure costs, improve availability, and manage resources more efficiently.
 
 ---
 
-# Q12. What is the AWS Management Console?
+# Q12. How do you access AWS resources?
 
 ## Answer
 
-AWS Management Console is a web-based interface used to create, manage and monitor AWS resources.
+We can access AWS resources in different ways.
 
-It allows users to manage services without using the AWS CLI or SDK.
+The most common way is the AWS Management Console, which is a web-based interface.
+
+We can also use the AWS CLI to manage resources from the command line.
+
+For automation, developers use AWS SDKs, and applications communicate with AWS services through APIs.
+
+In my day-to-day work, I mainly use the AWS Management Console for monitoring and troubleshooting, and occasionally the AWS CLI for basic operations.
 
 ---
 
@@ -245,33 +257,25 @@ It helps automate tasks and manage resources using commands.
 
 ---
 
-# Q14. What is an AWS Account?
+# Q14. What is the difference between a Region and an Availability Zone?
 
 ## Answer
 
-An AWS Account is the primary account used to access AWS services.
+A Region is a geographical location where AWS provides its cloud services, for example Mumbai, Singapore, or London.
 
-Each account has a unique Account ID and can create resources like EC2, S3, IAM and VPC.
+An Availability Zone is one or more isolated data centers within a Region.
 
----
+A Region contains multiple Availability Zones.
+
+We deploy applications across multiple Availability Zones to achieve High Availability. If one Availability Zone goes down, the application can continue running from another Availability Zone.
+
 
 # Q15. Which AWS services have you worked on?
 
 ## Answer
 
-I have worked on AWS services such as:
+I have mainly worked on EC2, EBS, S3, IAM, VPC, and CloudWatch.
 
-- EC2
-- EBS
-- IAM
-- S3
-- VPC
-- Security Groups
-- CloudWatch
-- CloudTrail
-- Route 53 (Basic)
-- Auto Scaling (Monitoring)
-- Load Balancer (Basic)
-- Systems Manager (Basic)
+My day-to-day responsibilities include monitoring EC2 instances, troubleshooting Linux server issues, extending EBS volumes, managing IAM users and policies, uploading files to S3, and monitoring infrastructure using CloudWatch.
 
-My responsibilities mainly include monitoring, troubleshooting, EC2 operations, EBS volume extension, CloudWatch alert handling, IAM user management and production support.
+I also coordinate with the Application, Network, and Cloud teams to resolve production incidents and ensure services are running smoothly.
