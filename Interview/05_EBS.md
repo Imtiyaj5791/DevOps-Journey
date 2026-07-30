@@ -288,40 +288,23 @@ In my project, I regularly perform:
 
 -- Both gp2 and gp3 are General Purpose SSD volumes.
 
-### gp2
-
-- Performance depends on volume size.
-- As the volume size increases, IOPS also increase.
-
-### gp3
-
-- Better performance.
-- IOPS and Throughput can be configured independently.
-- Lower cost than gp2 for most workloads.
-
 In our project, we mostly use **gp3** volumes.
 
 ---
 
-# Q14. What is the difference between io1 and io2?
+# Q14. Can you attach an EBS volume to a running EC2 instance?
 
 ## Answer
 
-Both are Provisioned IOPS SSD volumes.
+Yes.
 
-### io1
+We can attach an additional EBS volume to a running EC2 instance without stopping it.
 
-Older generation.
-
-### io2
-
-Latest generation.
-
-Provides higher durability and better performance.
-
-Mostly used for high-performance databases like Oracle or SQL Server.
-
----
+After attaching the volume from the AWS Console, we verify that Linux has detected the new disk.
+```
+lsblk
+````
+If required, we create a partition, create a filesystem, mount the volume, and update /etc/fstab for permanent mounting.
 
 # Q15. Are EBS Snapshots Full or Incremental?
 
@@ -414,19 +397,17 @@ The common approach is:
 
 ---
 
-# Q21. What is Multi-Attach?
+# Q21. Can you detach an EBS volume from a running EC2 instance?
 
 ## Answer
 
-Multi-Attach allows one EBS volume to be attached to multiple EC2 instances at the same time.
+Yes, but it depends on the volume.
 
-It is supported only for **io1** and **io2** volumes.
+An additional EBS volume can be detached from a running EC2 instance, although it is recommended to unmount the filesystem first to avoid data corruption.
 
-It is mainly used for clustered applications.
+The root EBS volume cannot be detached while the instance is running. The EC2 instance must be stopped before detaching the root volume.
 
-In our project, we do not use Multi-Attach.
-
----
+In production, we always take the required approval and ensure no application is using the volume before detaching it.
 
 # Q22. Can you decrease the size of an EBS Volume?
 
@@ -561,22 +542,15 @@ Finally, I update the Jira ticket.
 
 ---
 
-# Q28. What storage-related issues do you handle in production?
+# Q28. Can you reduce the size of an EBS volume?
 
 ## Answer
 
-Some common issues are:
+No.
 
-- High Disk Utilization
-- Filesystem Full
-- Log Files Growing
-- EBS Volume Extension
-- Snapshot Verification
-- Disk Performance Alerts
-- Filesystem Resize
-- Storage Monitoring through CloudWatch
+AWS allows us to increase the size of an EBS volume, but it does not allow reducing the size of an existing volume.
 
----
+If a smaller volume is required, we create a new EBS volume with the required size, copy the data, update the mount point if required, and then replace the old volume.
 
 # Q29. Explain your complete EBS troubleshooting approach.
 
