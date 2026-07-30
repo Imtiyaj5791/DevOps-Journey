@@ -375,15 +375,17 @@ Even if an IAM User has Allow permissions, the action will fail if it is blocked
 
 ---
 
-# Q23. What is an IAM Permission Boundary?
+# Q23. What is the difference between an IAM Policy and an IAM Role?
 
 ## Answer
 
-A Permission Boundary sets the maximum permissions that an IAM User or Role can receive.
+An IAM Policy is a JSON document that defines what permissions are allowed or denied.
 
-Even if an Allow policy is attached, the user cannot perform actions outside the Permission Boundary.
+An IAM Role is an AWS identity that uses those permissions.
 
----
+A Role itself does not contain permissions unless a Policy is attached to it.
+
+For example, if an EC2 instance needs access to an S3 bucket, we attach an IAM Role to the EC2 instance, and the required IAM Policy is attached to that Role.
 
 # Q24. What is Access Key Rotation?
 
@@ -494,19 +496,17 @@ Finally, I updated the Jira ticket and documented the root cause.
 
 ---
 
-# Q30. What IAM activities do you perform regularly?
+# Q30. How do you troubleshoot an Access Denied error in AWS?
 
 ## Answer
 
-In my project, I regularly perform:
+First, identify which user, role, or service is receiving the error.
 
-- Create IAM Users
-- Reset passwords
-- Enable MFA
-- Attach or detach IAM Policies
-- Verify IAM Roles
-- Troubleshoot Access Denied issues
-- Verify IAM permissions
-- Coordinate with the Cloud Team for access requests
-- Update Jira tickets
-- Prepare RCA for permission-related incidents
+Then check the attached IAM Policies and verify whether the required permission is allowed.
+
+Next, review the Resource Policy (if applicable), such as an S3 Bucket Policy.
+
+If required, check Service Control Policies (SCPs) and Permission Boundaries.
+
+Finally, verify the action and resource in the error message, update the required permissions, and test again.
+
