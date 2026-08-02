@@ -449,3 +449,438 @@ sudo systemctl restart <service_name>
 5. **systemd/init (PID 1)** starts system services.
 6. Required filesystems are mounted.
 7. System reaches the login prompt and becomes available for users.
+
+# LVM (Logical Volume Manager) Interview Notes
+
+---
+
+# What is LVM in Linux?
+
+LVM (Logical Volume Manager) is a storage management solution in Linux that provides flexibility in managing disks and filesystems.
+
+It allows us to:
+
+- Extend storage without repartitioning.
+- Combine multiple disks into a single storage pool.
+- Increase filesystem size easily.
+- Manage storage dynamically.
+
+In enterprise environments, LVM is commonly used because storage requirements can grow over time.
+
+---
+
+# LVM Architecture
+
+```text
+Disk
+ ↓
+Physical Volume (PV)
+ ↓
+Volume Group (VG)
+ ↓
+Logical Volume (LV)
+ ↓
+Filesystem
+ ↓
+Mount Point
+```
+
+Example:
+
+```text
+/dev/xvdf
+    ↓
+PV
+    ↓
+vg_data
+    ↓
+lv_data
+    ↓
+ext4 / xfs
+    ↓
+/data
+```
+
+---
+
+# What is a Physical Volume (PV)?
+
+A Physical Volume is a disk or partition that is initialized for LVM.
+
+### Create PV
+
+```bash
+pvcreate /dev/xvdf
+```
+
+### Display PV Information
+
+```bash
+pvs
+```
+
+or
+
+```bash
+pvdisplay
+```
+
+---
+
+# What is a Volume Group (VG)?
+
+A Volume Group is a pool of storage created using one or more Physical Volumes.
+
+### Create VG
+
+```bash
+vgcreate vg_data /dev/xvdf
+```
+
+### View VG Details
+
+```bash
+vgs
+```
+
+or
+
+```bash
+vgdisplay
+```
+
+---
+
+# What is a Logical Volume (LV)?
+
+A Logical Volume is created from a Volume Group and is used like a normal disk partition.
+
+### Create LV
+
+```bash
+lvcreate -L 10G -n lv_data vg_data
+```
+
+### View LV Details
+
+```bash
+lvs
+```
+
+or
+
+```bash
+lvdisplay
+```
+
+---
+
+# How do you create a filesystem on LVM?
+
+## Ext4 Filesystem
+
+```bash
+mkfs.ext4 /dev/vg_data/lv_data
+```
+
+## XFS Filesystem
+
+```bash
+mkfs.xfs /dev/vg_data/lv_data
+```
+
+---
+
+# How do you mount an LVM filesystem?
+
+### Create Mount Point
+
+```bash
+mkdir /data
+```
+
+### Mount Filesystem
+
+```bash
+mount /dev/vg_data/lv_data /data
+```
+
+### Verify Mount
+
+```bash
+df -h
+```
+
+---
+
+# How do you make LVM mount permanent?
+
+### Get UUID
+
+```bash
+blkid
+```
+
+### Edit fstab
+
+```bash
+vi /etc/fstab
+```
+
+Example:
+
+```text
+/dev/vg_data/lv_data   /data   ext4   defaults   0 0
+```
+
+### Verify
+
+```bash
+mount -a
+```
+
+---
+
+# How do you check LVM information?
+
+### Check Physical Volumes
+
+```bash
+pvs
+```
+
+### Check Volume Groups
+
+```bash
+vgs
+```
+
+### Check Logical Volumes
+
+```bash
+lvs
+```
+
+### Complete Details
+
+```bash
+pvdisplay
+vgdisplay
+lvdisplay
+```
+
+---
+
+# Difference Between Partition and LVM
+
+## Traditional Partition
+
+- Fixed size
+- Difficult to resize
+- Less flexible
+
+Examples:
+
+```text
+/dev/sda1
+/dev/sda2
+```
+
+## LVM
+
+- Easy to extend
+- Flexible storage management
+- Supports dynamic resizing
+- Enterprise preferred
+
+Examples:
+
+```text
+/dev/vg_data/lv_data
+```
+
+---
+
+# How do you extend an existing LVM filesystem?
+
+### Step 1: Verify Current Usage
+
+```bash
+df -h
+```
+
+### Step 2: Check LVM Layout
+
+```bash
+pvs
+vgs
+lvs
+```
+
+### Step 3: Extend Logical Volume
+
+```bash
+lvextend -L +10G /dev/vg_data/lv_data
+```
+
+or
+
+```bash
+lvextend -r -L +10G /dev/vg_data/lv_data
+```
+
+### Step 4: Extend Filesystem
+
+For Ext4:
+
+```bash
+resize2fs /dev/vg_data/lv_data
+```
+
+For XFS:
+
+```bash
+xfs_growfs /data
+```
+
+### Step 5: Verify
+
+```bash
+df -h
+```
+
+---
+
+# How do you add a new disk to an existing LVM?
+
+### Verify New Disk
+
+```bash
+lsblk
+```
+
+### Create Physical Volume
+
+```bash
+pvcreate /dev/xvdf
+```
+
+### Extend Volume Group
+
+```bash
+vgextend vg_data /dev/xvdf
+```
+
+### Verify
+
+```bash
+vgs
+```
+
+---
+
+# Interview Scenario: Disk Full and Filesystem is on LVM
+
+## Answer
+
+First, I will check the filesystem utilization.
+
+```bash
+df -h
+```
+
+Then I will verify the LVM structure.
+
+```bash
+pvs
+vgs
+lvs
+```
+
+If free space is available inside the Volume Group, I will extend the Logical Volume.
+
+```bash
+lvextend -L +10G /dev/vg_data/lv_data
+```
+
+Then I will resize the filesystem.
+
+For Ext4:
+
+```bash
+resize2fs /dev/vg_data/lv_data
+```
+
+For XFS:
+
+```bash
+xfs_growfs /data
+```
+
+Finally, I will verify the filesystem size.
+
+```bash
+df -h
+```
+
+If there is no free space available inside the Volume Group, I will attach a new disk and extend the Volume Group before extending the Logical Volume.
+
+---
+
+# Most Important LVM Commands
+
+```bash
+pvs
+```
+
+```bash
+vgs
+```
+
+```bash
+lvs
+```
+
+```bash
+pvcreate
+```
+
+```bash
+vgcreate
+```
+
+```bash
+vgextend
+```
+
+```bash
+lvcreate
+```
+
+```bash
+lvextend
+```
+
+```bash
+resize2fs
+```
+
+```bash
+xfs_growfs
+```
+
+```bash
+df -h
+```
+
+```bash
+lsblk
+```
+
+---
+
+# Quick Interview Answer
+
+### What is LVM?
+
+LVM (Logical Volume Manager) is a storage management layer in Linux that provides flexible disk management. It allows us to create, extend and manage storage volumes dynamically without repartitioning disks. The main components of LVM are Physical Volume (PV), Volume Group (VG) and Logical Volume (LV).
