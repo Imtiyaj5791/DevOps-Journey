@@ -745,3 +745,269 @@ or
 ```text
 Amazon S3
 ```
+
+
+## What is IAM?
+
+IAM (Identity and Access Management) is a global AWS service used for authentication and authorization. It controls who can access AWS resources and what actions they can perform. Using IAM, we can create users, groups, roles and policies to provide secure access to AWS resources.
+
+**Authentication** means verifying the identity of the user (Who are you?).
+
+**Authorization** means deciding what resources and actions the user is allowed to access (What can you do?).
+
+---
+
+## What is the difference between IAM User, Group, Role and Policy?
+
+### User
+User is an identity created in IAM to access AWS resources. There are two types of users:
+
+- Root User – Full access to the AWS account.
+- IAM User – Permissions are assigned based on business requirements following the least privilege principle.
+
+### Group
+Group is a collection of IAM users. Instead of assigning permissions to each user individually, we assign permissions to the group and add users to that group.
+
+### Role
+IAM Role provides temporary permissions. It is mainly used by AWS services like EC2, Lambda, ECS, or users from another AWS account to access AWS resources securely without storing access keys.
+
+### Policy
+Policy is a JSON document that defines what actions are allowed or denied on AWS resources. Policies are attached to users, groups or roles.
+
+---
+
+## Why do we use IAM Role instead of Access Keys on EC2?
+
+IAM Role is more secure because it provides temporary credentials and avoids hardcoded Access Keys.
+
+---
+
+## How do you manage user permissions in your current environment?
+
+In my environment, user permissions are managed using IAM Groups and Policies. When a new user needs access, the Engineering team adds the user to the appropriate IAM Group, and the required permissions are inherited through the attached IAM Policy following the least privilege principle.
+
+---
+
+## What is the principle of Least Privilege?
+
+Least Privilege means providing only the minimum permissions required for a user or application to perform its task. We should not give unnecessary permissions. We also enable MFA for additional security wherever required.
+
+---
+
+## What is MFA?
+
+MFA (Multi-Factor Authentication) provides an extra layer of security. Along with username and password, the user must verify identity using an OTP or authentication app.
+
+---
+
+## What is IAM Policy? What are the types?
+
+IAM Policy is a JSON document that defines permissions.
+
+Types:
+
+- AWS Managed Policy
+- Customer Managed Policy
+
+---
+
+# Amazon S3
+
+## What is Amazon S3? How have you used it in your environment?
+
+Amazon S3 (Simple Storage Service) is an object storage service used to store and retrieve large amounts of data. It provides high availability, scalability and 99.999999999% (11 9's) durability.
+
+In my environment, we use S3 to store application logs, backups and other required files.
+
+---
+
+## What are the different S3 Storage Classes?
+
+- S3 Standard – Frequently accessed data.
+- S3 Standard-IA – Infrequent access data.
+- S3 One Zone-IA – Stored in a single Availability Zone.
+- S3 Intelligent-Tiering – Automatically moves data between storage tiers.
+- S3 Glacier Instant Retrieval – Archive data with fast retrieval.
+- S3 Glacier Flexible Retrieval – Long-term archive.
+- S3 Glacier Deep Archive – Lowest-cost long-term archival storage.
+
+---
+
+## What is Versioning in S3 and why do we use it?
+
+Versioning keeps multiple versions of the same object in an S3 bucket.
+
+If someone accidentally deletes or overwrites a file, we can restore the previous version when versioning is enabled. Without versioning, the data may be permanently lost.
+
+---
+
+## What is S3 Lifecycle Policy?
+
+S3 Lifecycle Policy is used to automatically move data between different storage classes based on access requirements. It can also automatically delete objects after a specified number of days, helping reduce storage cost.
+
+---
+
+## What is the difference between IAM Policy and Bucket Policy?
+
+Both IAM Policy and Bucket Policy are used to provide access to S3.
+
+IAM Policy is attached to IAM Users, Groups or Roles, whereas Bucket Policy is attached directly to the S3 Bucket.
+
+IAM Policy controls user permissions, while Bucket Policy controls access to a specific S3 bucket.
+
+---
+
+# Amazon CloudWatch
+
+## What is Amazon CloudWatch? How have you used it in your environment?
+
+Amazon CloudWatch is a monitoring service used to monitor AWS resources.
+
+We use it to create dashboards, monitor CPU, memory and disk utilization, and configure alarms for notifications.
+
+---
+
+## How do you monitor Memory Utilization in CloudWatch?
+
+By default, CloudWatch provides CPU, Network and Disk metrics.
+
+For Memory Utilization, we install and configure the CloudWatch Agent on the EC2 instance.
+
+---
+
+## What is CloudWatch Dashboard?
+
+CloudWatch Dashboard is a centralized dashboard where we can monitor all AWS resources and quickly check whether they are running properly or not.
+
+---
+
+## What is CloudWatch Alarm?
+
+CloudWatch Alarm is used to monitor AWS resource metrics.
+
+When the configured threshold is crossed, it changes the alarm state and sends a notification through Amazon SNS by email or other configured channels.
+
+**Example:**
+
+If CPU utilization goes above 80%, CloudWatch Alarm triggers and sends a notification to the configured email or SNS topic.
+
+---
+
+## What are CloudWatch Metrics and Logs?
+
+### Metrics
+
+CloudWatch Metrics are used to monitor resource performance like CPU, Memory, Disk and Network utilization.
+
+### Logs
+
+CloudWatch Logs are used to collect and store application logs and system logs for monitoring and troubleshooting.
+
+---
+
+# Amazon CloudTrail
+
+## What is CloudTrail? How have you used it in your environment?
+
+Amazon CloudTrail is used to track and record AWS API activities in an AWS account. It helps us identify who performed an action, what action was performed and when it was performed.
+
+For example, if someone creates or deletes an S3 bucket, we can use CloudTrail to check who performed the action and when it happened.
+
+---
+
+## How have you used CloudTrail in your environment?
+
+In my environment, we mainly use CloudTrail during troubleshooting.
+
+For example, if an EC2 instance is unexpectedly rebooted or an AWS resource is modified, we check CloudTrail to identify who performed the action and when it was performed.
+
+---
+
+## What is the difference between CloudWatch and CloudTrail?
+
+CloudWatch monitors AWS resources.
+
+CloudTrail monitors AWS account activities like who performed an action, what action was performed and when it was performed.
+
+---
+
+# Amazon Route53
+
+## What is Amazon Route53? How have you used it?
+
+Amazon Route53 is a highly available and scalable DNS service.
+
+It is used to map a domain name to an EC2 instance or Load Balancer IP so users can access the application using a domain name instead of an IP address.
+
+**Example:**
+
+Instead of accessing **1.1.1.1**, users can access **abc.com**.
+
+---
+
+## What is a Hosted Zone?
+
+Hosted Zone is a container that stores DNS records for a domain.
+
+### Public Hosted Zone
+
+Used for internet-facing applications and accessible from the internet.
+
+### Private Hosted Zone
+
+Used for internal applications and accessible only within the VPC.
+
+---
+
+## What is the difference between A Record and CNAME Record?
+
+### A Record
+
+Used to map a domain name to an IP address.
+
+**Example:**
+
+```
+abc.com → 1.1.1.1
+```
+
+### CNAME Record
+
+CNAME (Canonical Name) is an alias record used to map one domain name to another domain name.
+
+**Example:**
+
+```
+www.abc.com → abc.com
+```
+
+---
+
+## What are Routing Policies in Route53?
+
+### Simple Routing
+
+One resource serves all the traffic.
+
+### Weighted Routing
+
+Traffic is distributed based on the assigned weight.
+
+Example:
+
+- 30% → Server 1
+- 70% → Server 2
+
+### Latency Routing
+
+Traffic is routed to the AWS Region that provides the lowest network latency to the user.
+
+### Failover Routing
+
+Active-Passive setup.
+
+If the primary resource becomes unhealthy, traffic automatically moves to the secondary resource.
+
+### Geolocation Routing
+
+Routes traffic based on the user's geographic location or country.
