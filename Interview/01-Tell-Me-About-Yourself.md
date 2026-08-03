@@ -6,23 +6,26 @@
 
 ## Interview Answer
 
-Hi, I have around 11 years of experience in IT infrastructure and cloud operations.
+Hi, thank you for giving me this opportunity.
 
-For the last 5 years, I have been working on AWS Cloud and Linux Operations, supporting production environments and ensuring application availability.
+I am Imtiyaz Ansari. I have around 11 years of experience in IT Infrastructure. I started my career as a Desktop Support Engineer, where I worked for around six years. For the last five years, I have been working as a Linux and AWS Support Engineer.
 
-Currently, I am working with Flexis and supporting a US-based client, N-able. My role is focused on AWS infrastructure operations, Linux administration, production troubleshooting, incident handling, and coordinating with different teams for issue resolution.
+In my current organization, my responsibilities are monitoring the Linux servers, handling production incidents, and ensuring all servers are running smoothly.
 
-In my current role, I work with AWS services like EC2, IAM, S3, Elastic Load Balancer, Auto Scaling, CloudWatch, and CloudTrail.
+For AWS, I work with services like EC2, EBS, IAM, S3, VPC, CloudWatch, etc.
 
-My AWS responsibilities include monitoring and troubleshooting EC2 instances, checking system status checks, analyzing CloudWatch metrics and alarms, performing instance start/stop activities, troubleshooting access-related issues using IAM permissions, investigating AWS resource-related incidents, and coordinating with cloud teams for resolution.
+For monitoring and patching activities, we use tools like CloudWatch, Opsgenie, Grafana, and NinjaRMM.
 
-I also work on Linux servers for application and infrastructure support. My responsibilities include troubleshooting CPU, memory, disk utilization, service failures, analyzing system and application logs, and performing basic Linux administration activities.
+We also coordinate with the application team, network team, database team, and cloud team to resolve production incidents.
 
-I handle production incidents by performing impact analysis, troubleshooting issues, coordinating with application and infrastructure teams, implementing approved changes, and preparing RCA with preventive actions.
+My day starts with logging in to the monitoring tools to make sure all servers are running smoothly. After that, I check my emails and Jira tickets for any tasks assigned to me.
 
-I have hands-on experience with monitoring and operational tools like AWS CloudWatch, Nagios, Zabbix, Jira, and Opsgenie.
+On a daily basis, we receive different types of alerts like high CPU utilization, memory utilization, disk utilization, MySQL replication issues, service down, etc. We also have physical servers, so sometimes we receive hardware replacement and power-related tickets.
 
-Currently, I am strengthening my skills in AWS Cloud, Linux troubleshooting, Bash scripting, Terraform, and DevOps tools to move further into Cloud Operations and DevOps roles.
+If we receive any alert, we access the server through SSH, follow the required troubleshooting steps, and try to resolve the issue. If the issue is not resolved, we escalate it to the concerned team and share all our findings in the Jira ticket.
+
+Currently, I am looking for an opportunity where I can utilize my AWS and Linux experience, expand my DevOps knowledge, and contribute to the organization's success.
+
 
 ---
 
