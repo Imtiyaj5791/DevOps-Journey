@@ -1011,3 +1011,368 @@ If the primary resource becomes unhealthy, traffic automatically moves to the se
 ### Geolocation Routing
 
 Routes traffic based on the user's geographic location or country.
+
+# AWS ELB & Auto Scaling Interview Notes
+
+---
+
+# What is Elastic Load Balancer (ELB)?
+
+Elastic Load Balancer is an AWS service which automatically distributes incoming traffic across multiple EC2 instances. It helps improve high availability and fault tolerance of the application.
+
+---
+
+# Why do we need ELB? Why can't we directly access the EC2 instance?
+
+If we access the EC2 instance directly, all user traffic goes to a single server. If that EC2 goes down, the application also becomes unavailable.
+
+Using ELB, user traffic is automatically distributed across multiple EC2 instances. It provides high availability and fault tolerance. Users access the ELB DNS name instead of connecting directly to an EC2 instance.
+
+---
+
+# What are the types of Elastic Load Balancer?
+
+- Application Load Balancer (ALB)
+- Network Load Balancer (NLB)
+- Gateway Load Balancer (GWLB)
+- Classic Load Balancer (CLB) (Legacy)
+
+---
+
+# Which Load Balancer are you using in your environment and why?
+
+Basically, it depends on the requirement.
+
+We use Application Load Balancer (ALB) for HTTP/HTTPS traffic, path-based routing and host-based routing. It works on Layer 7.
+
+If the application requires very high performance and low latency, we use Network Load Balancer (NLB), which works on Layer 4 (TCP/UDP).
+
+---
+
+# What is the difference between ALB and NLB?
+
+ALB works on Layer 7 (Application Layer). It supports HTTP/HTTPS traffic, path-based routing and host-based routing.
+
+NLB works on Layer 4 (TCP/UDP). It is used for high performance applications and handles millions of requests with low latency.
+
+---
+
+# What is Listener in ALB?
+
+Listener listens on a specific port and protocol. When a user send a request , the Listener receives the request and forwards it to the Target Group.
+
+---
+
+# What is Target Group?
+
+Target Group is a collection of EC2 instances where the application is running. The Load Balancer sends traffic to the instances in the Target Group.
+
+---
+
+# What is Health Check?
+
+Health Check checks whether the application running on the EC2 instance is healthy or not. It checks the configured path, port and application response. If the instance is unhealthy, the Load Balancer does not send traffic to it.
+
+---
+
+# Website is down behind ALB. How will you troubleshoot?
+
+First, I will verify whether the issue is affecting one user or multiple users. Then I will check the EC2 system and instance status checks.
+
+After that, I will check the ALB Listener and Target Group health status. If the target is unhealthy, I will verify the health check path, port and ALB-to-EC2 Security Group.
+
+Then I will log in to the EC2 instance and check the application service, listening port and application response using curl.
+
+For an internet-facing ALB, I will also verify that it is configured in public subnets with the proper route to the Internet Gateway.
+
+If the infrastructure side is fine, I will check application logs and coordinate with the application team for recent changes.
+
+---
+
+# Target Group is showing Unhealthy. How will you troubleshoot?
+
+## Health Check is failing continuously. How will you troubleshoot?
+
+First, I will check the EC2 2/2 status checks. Then I will verify the Target Group Health Check configuration like port, path and protocol (HTTP/HTTPS).
+
+After that, I will check the Security Group between ALB and EC2. Then I will log in to the EC2 instance and verify the application service status, listening port and test the application.
+
+### Check Service Status
+
+```bash
+systemctl status <service_name>
+```
+
+### Check Listening Port
+
+```bash
+ss -tulnp
+```
+
+### Test Application
+
+```bash
+curl localhost:<port>
+```
+
+Finally, I will check the application logs to identify the root cause.
+
+---
+
+# How does ALB work / How do you manage traffic in ALB?
+
+When a user sends a request, the ALB Listener receives the request on HTTP or HTTPS port.
+
+Then ALB checks the configured listener rules, like path-based or host-based routing, and forwards the traffic to the appropriate Target Group.
+
+The Target Group contains healthy EC2 instances, and ALB distributes traffic only to healthy targets.
+
+### Example
+
+If the request is for `/api`, ALB sends it to the API Target Group.
+
+If the request is for `/images`, it sends it to another Target Group.
+
+For host-based routing:
+
+```text
+app.example.com
+```
+
+can go to one Target Group and
+
+```text
+admin.example.com
+```
+
+to another.
+
+---
+
+# What is Auto Scaling Group (ASG)?
+
+Auto Scaling Group (ASG) is an AWS service that automatically increases or decreases the number of EC2 instances based on application traffic or demand. It provides scale-out and scale-in functionality and also replaces unhealthy EC2 instances automatically to maintain high availability.
+
+---
+
+# How does ASG know when to launch or terminate EC2 instances?
+
+Initially, ASG launches the Desired Capacity that we configure. After that, it monitors CloudWatch metrics through the configured Scaling Policy.
+
+For example, if we configure a policy that says:
+
+```text
+CPU >= 80%
+```
+
+ASG automatically launches a new EC2 instance (Scale Out).
+
+Similarly, if CPU utilization goes below:
+
+```text
+CPU <= 30%
+```
+
+ASG terminates an extra EC2 instance (Scale In).
+
+---
+
+# What is Launch Template?
+
+Launch Template is a preconfigured template that contains the EC2 configuration, such as:
+
+- AMI
+- Instance Type
+- Security Group
+- Key Pair
+- IAM Role
+- User Data
+- Other Settings
+
+Whenever ASG launches a new EC2 instance, it uses this Launch Template.
+
+---
+
+# What is the difference between Min, Desired and Max Capacity?
+
+## Min Capacity
+
+Min Capacity is the minimum number of EC2 instances that ASG should always maintain.
+
+## Desired Capacity
+
+Desired Capacity is the number of EC2 instances that ASG launches initially and tries to maintain.
+
+## Max Capacity
+
+Max Capacity is the maximum number of EC2 instances that ASG can launch during scale-out.
+
+---
+
+# What are the different Scaling Policies in ASG?
+
+## 1. Target Tracking Scaling
+
+Target Tracking automatically increases or decreases EC2 instances to maintain a target metric like CPU utilization.
+
+### Example
+
+Target CPU:
+
+```text
+60%
+```
+
+ASG automatically adds or removes instances to keep CPU around 60%.
+
+---
+
+## 2. Step Scaling
+
+In Step Scaling, we can define different thresholds.
+
+### Example
+
+```text
+CPU > 70% → Add 1 EC2
+
+CPU > 85% → Add 2 EC2
+
+CPU > 95% → Add 3 EC2
+```
+
+---
+
+## 3. Simple Scaling
+
+One CloudWatch Alarm triggers one scaling action.
+
+After that, ASG waits for the cooldown period before performing another scaling action.
+
+---
+
+# My Auto Scaling Group is launching too many instances. How will you investigate?
+
+First, I will check whether ASG is launching new instances because of scaling or because unhealthy instances are being replaced.
+
+Then I will check the CloudWatch Alarm, Scaling Policy and current CPU utilization. I will also verify whether there is genuine traffic or not.
+
+If everything looks fine, then I will check the application because sometimes high CPU is caused by an application issue, not by actual traffic.
+
+---
+
+# EC2 Instance was terminated by ASG. How will you investigate?
+
+First, I will check the ASG Activity History to verify why ASG terminated the EC2 instance.
+
+Then I will check whether it was terminated because of the Scaling Policy, for example if CPU utilization went below the configured threshold.
+
+After that, I will check the Target Group Health because if the instance becomes unhealthy, ASG may replace it.
+
+I will also verify the EC2 Status Checks.
+
+Finally, I will check CloudTrail logs to confirm whether the instance was terminated by ASG or manually by a user.
+
+---
+
+# How will you perform maintenance on an Auto Scaling Group without downtime?
+
+In this case, I will use Instance Refresh.
+
+I can set the minimum healthy percentage to 50%.
+
+First, ASG launches one new EC2 instance with the new application.
+
+After it becomes healthy, the old EC2 instance is terminated.
+
+Then ASG launches the second new EC2 instance, and after it becomes healthy, the second old EC2 instance is terminated.
+
+This way, there is no downtime.
+
+---
+
+# CPU utilization is high, but ASG is not launching new EC2 instances. How will you troubleshoot?
+
+First, I will check the ASG Activity History to find the exact error.
+
+Then I will verify the Scaling Policy and CloudWatch Alarm to confirm whether the alarm is triggering properly or not.
+
+After that, I will check the Max Capacity because ASG may already be running at the maximum limit.
+
+Then I will verify:
+
+- Launch Template
+- Subnet IP Availability
+- EC2 Quota
+
+I will also check whether ASG is waiting because of cooldown or instance warm-up period.
+
+---
+
+# A new EC2 instance is launched by ASG, but the website is not working. How will you troubleshoot?
+
+First, I will check the Launch Template because there may be an issue with:
+
+- User Data
+- Security Group
+- AMI
+- Other Configuration
+
+Then I will check the Target Group Health Status and verify the Health Check path and port configuration.
+
+After that, I will log in to the EC2 instance and check whether the application service is running properly.
+
+### Service Status
+
+```bash
+systemctl status <service_name>
+```
+
+### Verify Port
+
+```bash
+ss -tulnp
+```
+
+### Test Application
+
+```bash
+curl localhost:<port>
+```
+
+I will also verify whether the User Data script executed successfully.
+
+```bash
+cat /var/log/cloud-init-output.log
+```
+
+Finally, I will check application logs to identify the root cause.
+
+---
+
+
+
+---
+
+# Most Important Interview Questions ⭐⭐⭐⭐⭐
+
+- What is ELB?
+- Why do we need ELB?
+- Types of ELB
+- ALB vs NLB
+- What is Listener?
+- What is Target Group?
+- What is Health Check?
+- Website is down behind ALB. How will you troubleshoot?
+- Target Group is Unhealthy. How will you troubleshoot?
+- Health Check is failing continuously. How will you troubleshoot?
+- How does ALB work?
+- What is ASG?
+- How does ASG launch or terminate instances?
+- What is Launch Template?
+- Min vs Desired vs Max Capacity?
+- Types of Scaling Policies?
+- ASG launching too many instances?
+- EC2 terminated by ASG?
+- CPU high but ASG not scaling?
+- New ASG instance launched but website not working?
