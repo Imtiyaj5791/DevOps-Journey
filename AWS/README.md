@@ -29,8 +29,8 @@ Each topic in this repository includes:
 | 03 | Amazon EC2 | ✅ Completed |
 | 04 | Amazon EBS | ✅ Completed |
 | 05 | Amazon S3 | ✅ Completed |
-| 06 | Amazon VPC | ⏳ Pending |
-| 07 | Elastic Load Balancer (ELB) | ⏳ Pending |
+| 06 | Amazon VPC | ✅ Completed|
+| 07 | Elastic Load Balancer (ELB) | ⏳ In Progress |
 | 08 | Auto Scaling | ⏳ Pending |
 | 09 | Amazon CloudWatch | ⏳ Pending |
 | 10 | AWS CloudTrail | ⏳ Pending |
