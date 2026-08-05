@@ -1031,4 +1031,778 @@ curl http://localhost/image/
 
 ---
 
+# AWS Application Load Balancer (ALB) - Complete Hands-on Lab
 
+## Lab Overview
+
+In this lab, we performed a complete production-style ALB setup including:
+
+- Domain Purchase (GoDaddy)
+- Route 53 Hosted Zone
+- Nameserver Configuration
+- ACM SSL Certificate
+- Application Load Balancer
+- HTTP to HTTPS Redirect
+- Path Based Routing
+- Host Based Routing
+- Network Load Balancer (Basic)
+
+---
+
+# Architecture
+
+```text
+                 GoDaddy Domain
+                        │
+                        ▼
+                 Route 53 Hosted Zone
+                        │
+                        ▼
+                ACM SSL Certificate
+                        │
+                        ▼
+          Application Load Balancer (ALB)
+                 │                 │
+           HTTP :80          HTTPS :443
+                │                 │
+      Redirect to HTTPS      Listener Rules
+                │                 │
+                └──────────┬──────┘
+                           ▼
+                    Target Groups
+                           │
+                           ▼
+                        EC2 Instances
+```
+
+---
+
+# Step 1 - Purchase Domain
+
+Purchased Domain from GoDaddy
+
+Example:
+
+```
+devopsclasses.space
+```
+
+---
+
+# Step 2 - Create Hosted Zone
+
+AWS
+
+Route53
+
+↓
+
+Hosted Zones
+
+↓
+
+Create Hosted Zone
+
+Domain
+
+```
+devopsclasses.space
+```
+
+Type
+
+```
+Public Hosted Zone
+```
+
+---
+
+# Step 3 - Update Nameservers in GoDaddy
+
+Copy Route53 Nameservers
+
+Example
+
+```
+ns-1517.awsdns-61.org
+ns-1913.awsdns-47.co.uk
+ns-548.awsdns-04.net
+ns-401.awsdns-50.com
+```
+
+GoDaddy
+
+↓
+
+Domain
+
+↓
+
+Nameservers
+
+↓
+
+Replace Default Nameservers
+
+↓
+
+Save
+
+---
+
+# Step 4 - Create ACM Certificate
+
+AWS
+
+↓
+
+Certificate Manager
+
+↓
+
+Request Certificate
+
+↓
+
+Public Certificate
+
+Domain
+
+```
+devopsclasses.space
+*.devopsclasses.space
+```
+
+Validation
+
+```
+DNS Validation
+```
+
+Create Record in Route53
+
+Wait until
+
+```
+Issued
+```
+
+---
+
+# Step 5 - Create Target Group
+
+Target Type
+
+```
+Instance
+```
+
+Protocol
+
+```
+HTTP
+```
+
+Port
+
+```
+80
+```
+
+Health Check
+
+```
+/
+```
+
+Register EC2 Instances
+
+---
+
+# Step 6 - Create Application Load Balancer
+
+Type
+
+```
+Internet Facing
+```
+
+Listener
+
+```
+HTTPS :443
+```
+
+Attach
+
+```
+ACM Certificate
+```
+
+Default Action
+
+```
+Forward to web-tg
+```
+
+Create ALB
+
+---
+
+# Step 7 - Route53 Alias Record
+
+Hosted Zone
+
+↓
+
+Create Record
+
+Type
+
+```
+A
+```
+
+Alias
+
+```
+Yes
+```
+
+Target
+
+```
+Application Load Balancer
+```
+
+Now website becomes
+
+```
+https://devopsclasses.space
+```
+
+---
+
+# Step 8 - Add HTTP Listener
+
+Add Listener
+
+```
+HTTP :80
+```
+
+Action
+
+```
+Redirect to HTTPS
+```
+
+Configuration
+
+```
+Protocol : HTTPS
+Port : 443
+Status : 301
+```
+
+Now
+
+```
+http://devopsclasses.space
+```
+
+Automatically redirects to
+
+```
+https://devopsclasses.space
+```
+
+---
+
+# Why Port 80?
+
+Without Port 80
+
+```
+http://domain.com
+```
+
+Fails.
+
+With Port 80
+
+```
+HTTP
+
+↓
+
+Redirect
+
+↓
+
+HTTPS
+
+↓
+
+Website
+```
+
+Production Best Practice
+
+```
+HTTP :80
+
+↓
+
+301 Redirect
+
+↓
+
+HTTPS :443
+```
+
+---
+
+# Step 9 - Path Based Routing
+
+Created Target Groups
+
+```
+tg-app1
+tg-app2
+```
+
+Health Check
+
+```
+/app1/
+/app2/
+```
+
+HTTPS Listener Rules
+
+Rule 1
+
+```
+IF
+
+Path
+
+/app1/*
+
+↓
+
+Forward
+
+tg-app1
+```
+
+Rule 2
+
+```
+IF
+
+Path
+
+/app2/*
+
+↓
+
+Forward
+
+tg-app2
+```
+
+Default
+
+```
+Forward
+
+web-tg
+```
+
+Testing
+
+```
+https://devopsclasses.space/app1
+```
+
+↓
+
+App-1
+
+```
+https://devopsclasses.space/app2
+```
+
+↓
+
+App-2
+
+---
+
+# Path Based Routing
+
+Routes request using
+
+```
+URL Path
+```
+
+Example
+
+```
+/app1
+
+/app2
+
+/images
+
+/api
+```
+
+---
+
+# Step 10 - Host Based Routing
+
+Create Route53 Records
+
+```
+app.devopsclasses.space
+
+admin.devopsclasses.space
+```
+
+Type
+
+```
+A Alias
+```
+
+Target
+
+```
+Same ALB
+```
+
+HTTPS Listener Rules
+
+Rule 1
+
+```
+Host Header
+
+app.devopsclasses.space
+
+↓
+
+Forward
+
+tg-app1
+```
+
+Rule 2
+
+```
+Host Header
+
+admin.devopsclasses.space
+
+↓
+
+Forward
+
+tg-app2
+```
+
+Testing
+
+```
+https://app.devopsclasses.space
+```
+
+↓
+
+App-1
+
+```
+https://admin.devopsclasses.space
+```
+
+↓
+
+App-2
+
+---
+
+# Host Based Routing
+
+Routes request using
+
+```
+Host Name
+
+or
+
+Sub Domain
+```
+
+Examples
+
+```
+app.company.com
+
+admin.company.com
+
+api.company.com
+```
+
+---
+
+# Path vs Host Based
+
+## Path Based
+
+```
+https://domain.com/app1
+
+↓
+
+Path
+
+/app1
+
+↓
+
+tg-app1
+```
+
+## Host Based
+
+```
+https://app.domain.com
+
+↓
+
+Host
+
+app.domain.com
+
+↓
+
+tg-app1
+```
+
+---
+
+# HTTP vs HTTPS
+
+HTTP
+
+```
+Port 80
+
+Not Encrypted
+```
+
+HTTPS
+
+```
+Port 443
+
+Encrypted
+
+SSL Certificate
+```
+
+---
+
+# HTTP to HTTPS Flow
+
+```
+User
+
+↓
+
+http://domain.com
+
+↓
+
+HTTP :80 Listener
+
+↓
+
+Redirect
+
+↓
+
+HTTPS :443 Listener
+
+↓
+
+Target Group
+
+↓
+
+EC2
+```
+
+---
+
+# ALB vs NLB
+
+| ALB | NLB |
+|------|------|
+| Layer 7 | Layer 4 |
+| HTTP/HTTPS | TCP/UDP |
+| Path Based | No |
+| Host Based | No |
+| SSL Supported | TLS |
+| Static IP | Yes |
+| Web Applications | High Performance Applications |
+
+---
+
+# NLB Hands-on
+
+Create Target Group
+
+```
+Protocol
+
+TCP
+```
+
+Port
+
+```
+80
+```
+
+Register EC2
+
+Create NLB
+
+Listener
+
+```
+TCP :80
+```
+
+Forward
+
+```
+TCP Target Group
+```
+
+---
+
+# Interview Questions
+
+## Why ALB?
+
+ALB works at Layer 7 and supports intelligent routing like Path Based and Host Based Routing.
+
+---
+
+## Why NLB?
+
+NLB works at Layer 4 and is used for high performance and low latency applications.
+
+---
+
+## Why HTTPS?
+
+HTTPS encrypts communication between client and Load Balancer.
+
+---
+
+## Why ACM?
+
+ACM manages SSL/TLS certificates and attaches them to the Load Balancer.
+
+---
+
+## Why Route53?
+
+Route53 maps the domain name to the Application Load Balancer.
+
+---
+
+## Why Port 80 if HTTPS already exists?
+
+Port 80 is used only to redirect users from HTTP to HTTPS.
+
+---
+
+## Difference Between Forward and Redirect
+
+Forward
+
+```
+ALB forwards request directly to Target Group.
+```
+
+Redirect
+
+```
+ALB asks the client/browser to send a new request to another URL (HTTP → HTTPS).
+```
+
+---
+
+## Difference Between Path Based and Host Based Routing
+
+Path Based
+
+```
+Routes traffic using URL Path.
+```
+
+Host Based
+
+```
+Routes traffic using Host Name or Sub Domain.
+```
+
+---
+
+# Production Flow
+
+```
+Internet
+
+↓
+
+Route53
+
+↓
+
+Application Load Balancer
+
+↓
+
+HTTP :80
+
+↓
+
+Redirect
+
+↓
+
+HTTPS :443
+
+↓
+
+Path / Host Based Rules
+
+↓
+
+Target Groups
+
+↓
+
+EC2 Instances
+```
+
+# End of ALB Module
