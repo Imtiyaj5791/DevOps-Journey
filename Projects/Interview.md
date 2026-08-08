@@ -198,7 +198,7 @@ Finally, I verify SSH connectivity and update the Jira ticket.
 
 ---
 
-<h1 align="center"><span style="color:red">🚀 A to S Interview Questions</span></h1>
+<h1 align="center"><span style="color:red">🚀 A to S Jublient Interview Questions</span></h1>
 
 > **Status:** ✅ Completed  
 > **Role:** AWS Linux Support Engineer
