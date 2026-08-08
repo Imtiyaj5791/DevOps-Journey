@@ -197,3 +197,173 @@ If required, I can filter the events by:
 - Resource Name
 - Username
 - Time Range
+
+
+<h1 align="center"><span style="color:red">🚀 TCS 2nd Interview Questions</span></h1>
+
+> **Status:** ✅ Completed  
+> **Role:** AWS Linux Support Engineer
+
+---
+
+# 💽 AWS & On-Premises Volume Mounting
+
+## ❓ How do you mount a volume in AWS and on an on-premises Linux server?
+
+In AWS, first I will create a new **EBS volume** and attach it to the EC2 instance.
+
+Then I will log in to the server through SSH and run:
+
+```bash
+lsblk
+```
+
+After that, I will create the filesystem using `mkfs.xfs` for XFS or `mkfs.ext4` for ext4.
+
+```bash
+mkfs.xfs /dev/xvdf
+```
+
+or
+
+```bash
+mkfs.ext4 /dev/xvdf
+```
+
+Then I will create a mount directory and mount the volume using the `mount` command.
+
+```bash
+mkdir /data
+mount /dev/xvdf /data
+```
+
+Finally, for permanent mounting, I will add the entry in `/etc/fstab` and verify it using:
+
+```bash
+df -h
+```
+
+For an **on-premises Linux server**, first we add the new disk to the server.
+
+Then I will verify the disk, create the required partition using `fdisk`, create the filesystem, create a mount directory, and mount it.
+
+For permanent mounting, I will add the entry in `/etc/fstab`.
+
+---
+
+# 📂 NFS Mounting
+
+## ❓ How do you mount an NFS share on a Linux server, and how does an end user access it?
+
+First, I will install the **NFS client package** on the Linux server.
+
+Then I will create a mount point and mount the NFS share using the NFS server IP and exported path.
+
+Example:
+
+```bash
+mkdir /data
+mount -t nfs 10.0.1.10:/shared /data
+```
+
+After that, I will verify it using:
+
+```bash
+df -h
+```
+
+For permanent mounting, I will add the entry in `/etc/fstab`.
+
+Once NFS is mounted, the end user can access the shared files through the mounted directory based on the **user and group permissions**.
+
+---
+
+# 🏗️ Terraform
+
+## ❓ What is the difference between terraform.tfvars and locals in Terraform?
+
+**terraform.tfvars** is used to provide values for input variables, and we can change them as required.
+
+**Locals** are used for internal or reusable values and cannot be directly overridden during `terraform apply`.
+
+---
+
+# 🐳 Docker, ECS & ECR
+
+## ❓ What is Docker, ECS, and ECR?
+
+**Docker** is a containerization tool used to build, run, manage, and deploy applications inside lightweight containers.
+
+**ECS** is an AWS container orchestration service used to run and manage containers.
+
+**ECR** is an AWS container registry used to store and manage Docker images privately.
+
+```text
+Docker → Build & Run Containers
+ECR    → Store Docker Images
+ECS    → Run & Manage Containers
+```
+
+---
+
+# 🐳 CMD vs ENTRYPOINT
+
+## ❓ What is the difference between CMD and ENTRYPOINT in Docker, and where are they defined?
+
+CMD and ENTRYPOINT both are used to run an application when the container starts.
+
+**CMD** is a default command and we can easily override it while creating the container.
+
+**ENTRYPOINT** is the main command and normally we don't change it.
+
+Both are defined in the **Dockerfile**.
+
+---
+
+# 📈 Auto Scaling Group Capacity
+
+## ❓ How does an Auto Scaling Group know how many instances need to run? What happens if Minimum Capacity is set to 0?
+
+When we create an ASG, we define **Minimum, Maximum and Desired capacity**.
+
+ASG initially launches instances based on the **Desired Capacity**.
+
+After that, it scales in or scales out based on the scaling policy.
+
+If Minimum is `0`, ASG can scale down to zero instances if the Desired Capacity or scaling policy allows it.
+
+In that case, the application may become unavailable.
+
+Example:
+
+```text
+Minimum = 0
+Desired = 2
+Maximum = 4
+
+Initial EC2 Instances = 2
+```
+
+---
+
+# 🔧 Linux Server Patching
+
+## ❓ How do you perform patching on Linux servers?
+
+In my organization, we use **NinjaRMM** for patching activity. The Engineering Team pushes the patches from the backend.
+
+Before patching starts, we create a **maintenance window** in the monitoring tool and start the required development servers.
+
+Once patching is completed, we verify the patch status. Then we stop the development servers if required and disable the maintenance window.
+
+If patching fails, first I check the patch history and error in NinjaRMM.
+
+Then I log in to the server and verify whether the required/latest package version is available.
+
+I retry the patch manually through NinjaRMM.
+
+If it still fails, I collect the error details and coordinate with the Engineering Team.
+
+Finally, we make sure all production servers are **up and running properly**.
+
+---
