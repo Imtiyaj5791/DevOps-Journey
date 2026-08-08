@@ -36,34 +36,6 @@ Our application is deployed on AWS and follows a 3-tier architecture. Users acce
 My responsibility includes monitoring Linux servers, handling production incidents, performing initial troubleshooting, and working with AWS services such as EC2, EBS, IAM, S3, CloudWatch, and CloudTrail. If required, I coordinate with the Application, Database, Network, and Cloud teams until the issue is resolved.
 
 ---
-
-# 📚 Project Based Questions
-
-## ❓ Why did you use an Application Load Balancer in your project?
-
-We use an Application Load Balancer because it works at Layer 7 of the OSI model. It supports path-based routing and host-based routing, which helps route requests based on the URL path or hostname.
-
-It also distributes incoming traffic across multiple EC2 instances managed by the Auto Scaling Group, which helps improve application availability.
-
----
-
-## ❓ Why did you use Auto Scaling Group (ASG) in your project?
-
-We use Auto Scaling Group to maintain high availability of the application. It is configured across multiple Availability Zones. If any EC2 instance becomes unhealthy, Auto Scaling automatically terminates it and launches a new EC2 instance using the Launch Template. It can also automatically scale out or scale in based on the traffic and scaling policy.
-
----
-
-## ❓ Why did you use Amazon RDS instead of installing MySQL on an EC2 instance?
-
-We use Amazon RDS because it is a managed database service. It supports Multi-AZ deployment for high availability and provides automated backups. Database administration is handled by the database team. My role is mainly on the infrastructure side.
-
----
-
-## ❓ Why is your RDS deployed in a private subnet instead of a public subnet?
-
-We deploy Amazon RDS in a private subnet because it stores sensitive user data. We don't want the database to be directly accessible from the internet. Keeping it in a private subnet provides better security. Only the application servers running on EC2 can access the database.
-
----
 ---
 
 # 📸 Manual Snapshot Failed
