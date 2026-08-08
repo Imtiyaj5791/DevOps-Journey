@@ -198,7 +198,7 @@ Finally, I verify SSH connectivity and update the Jira ticket.
 
 ---
 
-# 🚀 Atos Jubilant Interview Questions
+# 🚀 AtoS Jubilant Interview Questions
 
 > **Status:** ✅ Completed  
 > **Role:** AWS Linux Support Engineer
