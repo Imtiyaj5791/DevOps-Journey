@@ -30,11 +30,11 @@ Each topic in this repository includes:
 | 04 | Amazon EBS | ✅ Completed |
 | 05 | Amazon S3 | ✅ Completed |
 | 06 | Amazon VPC | ✅ Completed|
-| 07 | Elastic Load Balancer (ELB) | ⏳ In Progress |
-| 08 | Auto Scaling | ⏳ Pending |
-| 09 | Amazon CloudWatch | ⏳ Pending |
-| 10 | AWS CloudTrail | ⏳ Pending |
+| 07 | Elastic Load Balancer (ELB) | ✅ Completed |
+| 08 | Auto Scaling | ✅ Completed |
+| 09 | Amazon CloudWatch + SNS | ✅ Completed |
+| 10 | AWS CloudTrail | ✅ Completed |
 | 11 | Amazon RDS | ⏳ Pending |
-| 12 | AWS Lambda | ⏳ Pending |
-| 13 | Route 53 | ⏳ Pending |
-| 14 | AWS Systems Manager (SSM) | ⏳ Pending |
+| 12 | AWS Lambda + SSM | ⏳ Pending |
+| 13 | Route 53 + Cloud Front | ⏳ Pending |
+
