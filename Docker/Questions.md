@@ -8,24 +8,7 @@
 
 ## Answer
 
-First I will check the container status.
-
-```bash
-docker ps -a
-```
-
-Then I will check the container logs.
-
-```bash
-docker logs <container_name>
-```
-
-If required, I will start the container and go inside.
-
-```bash
-docker start <container_name>
-docker exec -it <container_name> bash
-```
+First, I will check the container status using docker ps -a. Then I will check the container logs using docker logs <container_name> to identify why the container exited. I will also check the exit code using docker inspect. If the main process inside the container has stopped or crashed, the container will also stop. After identifying and fixing the application, configuration, resource, or startup issue, I will start the container again and verify its status and logs.
 
 Then I will check the application, configuration and required files.
 
