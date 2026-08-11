@@ -8,14 +8,20 @@
 
 ## Answer
 
-First, I will check the container status using docker ps -a. Then I will check the container logs using docker logs <container_name> to identify why the container exited. I will also check the exit code using docker inspect. If the main process inside the container has stopped or crashed, the container will also stop. After identifying and fixing the application, configuration, resource, or startup issue, I will start the container again and verify its status and logs.
+First, I will check the container status using ```docker ps -a```. Then I will check the container logs using ```docker logs <container_name>``` to identify why the container exited. I will also check the exit code using ```docker inspect```. If the main process inside the container has stopped or crashed, the container will also stop. After identifying and fixing the application, configuration, resource, or startup issue, I will start the container again and verify its status and logs.
 
 Then I will check the application, configuration and required files.
 
 If the main process is stopping, the container will also stop.
 
 After fixing the issue, I will start the container and verify it is working properly.
-
+```
+docker ps -a
+docker logs <container_name>
+docker inspect <container_name>
+docker start <container_name>
+docker ps
+```
 ---
 
 # 2. Website is not opening but container is running.
@@ -190,23 +196,8 @@ For production I always use Named Volume.
 
 ## Answer
 
-First I will check container resource usage.
+First, I will check the container resource usage using ```docker stats``` and identify which container is consuming high CPU or memory. Then I will check the processes inside that container using ```docker top <container_name>``` and review the application logs using ```docker logs <container_name>```. If required, I will access the running container using docker exec for further troubleshooting. After identifying and fixing the issue, I will monitor the resource utilization again using ```docker stats```.
 
-```bash
-docker stats
-```
-
-Then I will go inside the container.
-
-```bash
-docker exec -it <container_name> bash
-```
-
-I will identify the process causing high usage.
-
-After fixing it, I will monitor again.
-
----
 
 # 11. Docker image size is very large.
 
