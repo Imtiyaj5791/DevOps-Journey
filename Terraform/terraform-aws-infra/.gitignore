@@ -1,0 +1,7 @@
+# Terraform local files
+.terraform/
+*.tfstate
+*.tfstate.*
+
+# Private keys
+keys/terraform-key
