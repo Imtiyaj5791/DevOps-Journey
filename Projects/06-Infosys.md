@@ -111,26 +111,26 @@ I will enable encryption using SSE-S3 or SSE-KMS for data protection.
 I will enable versioning to protect against accidental deletion and use CloudTrail or access logs for monitoring bucket activity.
 
 
-# Which AWS services do you use for security and vulnerability management?
+## Which AWS services do you use for security and vulnerability management?
 
-# How can you create five empty files and add some content only to the third file using a single Linux command?
+## How can you create five empty files and add some content only to the third file using a single Linux command?
 
-# What is the difference between gp2 and gp3 EBS volumes?
+## What is the difference between gp2 and gp3 EBS volumes?
 
-# What are the different ways an EC2 instance can access an S3 bucket?
+## What are the different ways an EC2 instance can access an S3 bucket?
 
-# How would you transfer data from an EC2 instance to an S3 bucket?
+## How would you transfer data from an EC2 instance to an S3 bucket?
 
-# Write a Terraform configuration to create five EC2 instances. If you need to delete only the 1st and 5th instances, how would you do it?
+## Write a Terraform configuration to create five EC2 instances. If you need to delete only the 1st and 5th instances, how would you do it?
 
-# How can you pause a running Docker container for 5 minutes without using the docker stop command? How would you achieve similar behavior in Kubernetes?
+## How can you pause a running Docker container for 5 minutes without using the docker stop command? How would you achieve similar behavior in Kubernetes?
 
-# What resources/specifications do you get with a t2.micro EC2 instance?
+## What resources/specifications do you get with a t2.micro EC2 instance?
 
-# While launching an EC2 instance, what processor/CPU architecture options are available?
+## While launching an EC2 instance, what processor/CPU architecture options are available?
 
-# What is the default monitoring interval in CloudWatch, and how does it differ with Detailed Monitoring?
+## What is the default monitoring interval in CloudWatch, and how does it differ with Detailed Monitoring?
 
-# You have an existing database server. How would you bring it under Terraform management?
+## You have an existing database server. How would you bring it under Terraform management?
 
-# How can you reduce the size of a Docker image?
+## How can you reduce the size of a Docker image?
