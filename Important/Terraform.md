@@ -177,11 +177,7 @@ But in production, I prefer to run terraform plan first because it shows exactly
 
 ## What is Terraform State File or terraform.tfstate?
 
-Terraform state file is the heart of Terraform.
-
-It stores the current infrastructure created by Terraform.
-
-Terraform uses this file to know what resources are already created and what changes are required.
+Terraform state file is the heart of Terraform. It stores all resources created and managed by Terraform. When we run Terraform again, it uses the state file to check what changes are required.
 
 ### Useful Commands
 
