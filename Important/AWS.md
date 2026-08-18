@@ -1595,6 +1595,286 @@ Validate Server & Application
 Verify Vulnerability is Resolved
 ```
 
+# AWS Additional Interview Questions — RDS, DR, SSM, Lambda & End-to-End Scenario
+
+## 1. What is Amazon RDS?
+
+Amazon RDS is a **managed relational database service** in AWS.
+
+AWS manages activities like infrastructure, backups and maintenance, while we use the database for our application.
+
+---
+
+## 2. What is Multi-AZ in RDS?
+
+Multi-AZ is mainly used for **High Availability**.
+
+AWS maintains a standby database in another Availability Zone.
+
+If the primary database has an issue, AWS can fail over to the standby database.
+
+```text
+Primary RDS - AZ1
+       ↓
+   Failure
+       ↓
+Standby RDS - AZ2
+       ↓
+   Failover
+```
+
+---
+
+## 3. Application is unable to connect to RDS. What will you check?
+
+First, I will check whether the **RDS instance is available**.
+
+Then I will verify:
+
+- RDS endpoint
+- Database port
+- Security Group
+- Network connectivity
+
+I will check whether the application server is allowed to connect to the database port.
+
+For example:
+
+```text
+Application SG
+      ↓
+DB Port 3306
+      ↓
+RDS SG
+```
+
+If the AWS and network side is fine, I will coordinate with the **DBA or application team**.
+
+---
+
+# Disaster Recovery
+
+## 4. What is RTO and RPO?
+
+**RTO (Recovery Time Objective)** is the maximum acceptable time to restore the application after a failure.
+
+**RPO (Recovery Point Objective)** is the maximum acceptable amount of data loss measured in time.
+
+Example:
+
+```text
+RTO = 2 Hours
+
+Application should be restored within 2 hours.
+```
+
+```text
+RPO = 30 Minutes
+
+Maximum acceptable data loss is 30 minutes.
+```
+
+Easy way to remember:
+
+```text
+RTO → How much downtime can we accept?
+
+RPO → How much data loss can we accept?
+```
+
+---
+
+## 5. How will you recover an EC2 server if it becomes corrupted?
+
+First, I will check the issue and verify the available **backup or snapshot**.
+
+If recovery is required, we can restore the EBS volume from the latest valid snapshot or launch a new EC2 instance from the available AMI.
+
+After recovery, I will verify:
+
+- Filesystem
+- Mounted volumes
+- Required services
+- Network connectivity
+- Application health
+
+---
+
+## 6. After restoring a server from Snapshot or AMI, what will you validate?
+
+After restoring the server, I will verify:
+
+- EC2 instance status checks
+- Filesystem
+- Mounted volumes
+- Network connectivity
+- Required services
+- Application availability
+
+I will also coordinate with the application team for application-level validation.
+
+```text
+Restore
+   ↓
+Instance Status
+   ↓
+Filesystem / Mount
+   ↓
+Network
+   ↓
+Services
+   ↓
+Application Validation
+```
+
+---
+
+# AWS Systems Manager (SSM)
+
+## 7. What is AWS Systems Manager and how have you used it?
+
+AWS Systems Manager is used to **manage AWS instances centrally**.
+
+I have working knowledge of SSM and have used it in lab for instance management and automation.
+
+It can be used for:
+
+- Session Manager
+- Patching
+- Run Command
+- Instance management
+
+---
+
+## 8. How can you access a private EC2 instance without SSH or Bastion Host?
+
+We can use **AWS Systems Manager Session Manager**.
+
+The EC2 instance should have:
+
+- SSM Agent
+- Required IAM Role
+- Connectivity to Systems Manager endpoints
+
+Using Session Manager, we can access the instance without opening SSH port 22 or using a Bastion Host.
+
+```text
+User
+  ↓
+SSM Session Manager
+  ↓
+Private EC2
+```
+
+---
+
+# AWS Lambda
+
+## 9. What is AWS Lambda?
+
+AWS Lambda is a **serverless compute service** that runs code without managing servers.
+
+I have working knowledge of Lambda and have used it in lab for basic EC2 automation such as starting and stopping EC2 instances.
+
+---
+
+## 10. How can you automatically stop Dev EC2 instances during off hours?
+
+We can create a **Lambda function** to stop the required EC2 instances.
+
+Then we can use **Amazon EventBridge** to trigger the Lambda function on a schedule.
+
+```text
+EventBridge Schedule
+        ↓
+      Lambda
+        ↓
+   Stop Dev EC2
+```
+
+This can help reduce the cost of Dev/Test environments during off hours.
+
+---
+
+# End-to-End AWS Troubleshooting Scenario
+
+## 11. Users report that the application URL is not working. How will you troubleshoot from AWS side?
+
+First, I will check **DNS resolution and Route 53**.
+
+Then I will check the **Load Balancer Listener and Target Group health**.
+
+If the target is unhealthy, I will check:
+
+- EC2 status checks
+- Security Groups
+- Application service
+- Listening port
+- Application logs
+
+If the application server is healthy but there is a database connectivity issue, I will verify:
+
+- RDS status
+- RDS endpoint
+- Database port
+- Security Group connectivity
+
+If the AWS infrastructure side is fine, I will coordinate with the required **application, network or DBA team**.
+
+```text
+User
+ ↓
+Route 53
+ ↓
+Load Balancer
+ ↓
+Target Group
+ ↓
+EC2
+ ↓
+Application
+ ↓
+RDS
+```
+
+---
+
+# Quick Revision
+
+```text
+RDS
+→ Managed Relational Database
+
+Multi-AZ
+→ High Availability / Failover
+
+RDS Connection Issue
+→ Status → Endpoint → Port → SG → Network
+
+RTO
+→ Maximum acceptable recovery time
+
+RPO
+→ Maximum acceptable data loss
+
+EC2 Recovery
+→ Snapshot / AMI → Restore → Validate
+
+SSM
+→ Centralized instance management
+
+Session Manager
+→ Access private EC2 without direct SSH/Bastion
+
+Lambda
+→ Serverless compute / Automation
+
+EventBridge + Lambda
+→ Scheduled EC2 Start/Stop
+
+Application Down
+→ Route53 → ALB → Target Group → EC2 → Application → RDS
+```
 ---
 
 # Quick Revision
