@@ -622,6 +622,163 @@ Then we run terraform plan to verify everything is in sync.
 
 ---
 
+## Multiple engineers are working on the same Terraform project. If two engineers run terraform apply at the same time, what problem can happen and how will you handle it?
+
+If multiple engineers run terraform apply at the same time, it can create a state file conflict.
+
+Terraform uses the state file to track infrastructure, so simultaneous changes can make the state inconsistent.
+
+To avoid this issue, we use remote backend with state locking.
+
+In AWS, we use:
+
+S3 Backend → Store Terraform state file
+DynamoDB → Lock the state file during changes
+
+This allows only one person to modify infrastructure at a time.
+
+## Why do we use remote backend in production instead of local terraform.tfstate?
+
+Local state is not suitable for team environments because every engineer may have a different state file.
+
+In production, we use remote backend like S3 because:
+
+State is stored centrally
+Multiple team members can access it
+State locking can be implemented
+Backup and recovery is easier
+
+## You have created one EC2 module. How will you use the same module for Dev, Test and Prod?
+
+I will create one reusable EC2 module containing the resource code.
+
+Then I will create separate root modules for Dev, Test and Prod.
+
+All environments will call the same child module but pass different variable values.
+
+Example:
+
+Dev:
+ ```
+instance_type = t2.micro
+```
+
+Test:
+```
+instance_type = t2.micro
+```
+
+Prod:
+```
+instance_type = t3.large
+```
+
+## Production is using module version v1.0.0. Developer released v1.1.0. Will production automatically use the new version?
+
+No, production will not automatically update.
+
+The caller uses the version mentioned in the module source.
+
+To upgrade, we update the module version:
+
+Before:
+```
+ref=v1.0.0
+```
+
+After:
+```
+ref=v1.1.0
+```
+
+Then run:
+```
+terraform init -upgrade
+terraform plan
+terraform apply
+```
+
+## An EC2 instance was created manually from AWS Console. Now you want Terraform to manage it. What will you do?
+First, I will create the resource block in Terraform.
+
+Then I will import the existing resource:
+```
+terraform import aws_instance.web instance-id
+```
+After import, I will run:
+```
+terraform plan
+```
+to verify Terraform code and AWS resource are matching.
+
+## Someone changed EC2 instance type manually from AWS Console. What will happen?
+
+This is called Terraform drift.
+
+The actual AWS infrastructure and Terraform code are different.
+
+I will run:
+```
+terraform plan
+```
+
+Terraform will show the difference.
+
+Then I will either:
+
+Update Terraform code if the change is required
+Revert the manual AWS change if it is not required
+
+## How will Terraform deployment work through Jenkins?
+
+Flow:
+
+```
+Developer Commit Code
+
+↓
+
+Jenkins Trigger
+
+↓
+
+terraform init
+
+↓
+
+terraform validate
+
+↓
+
+terraform plan
+
+↓
+
+Approval
+
+↓
+
+terraform apply
+```
+
+## Terraform state file is deleted but AWS resources are still running. What will you do?
+
+First, I will check if state backup is available.
+
+If using S3 backend, I will check S3 versioning and restore the previous state file.
+
+If backup is not available, I will import existing resources using:
+
+```
+terraform import
+```
+
+
+After that I will run:
+```
+terraform plan
+```
+terraform plan
 # Quick Commands Revision
 
 ## Initialize
