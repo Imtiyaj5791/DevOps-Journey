@@ -449,6 +449,322 @@ In the second stage, we use a lightweight JRE image and copy only the JAR file.
 
 We don't copy Maven or the source code, so the final image size is much smaller.
 
+# Docker Additional Scenario Questions
+
+## 1. New Docker image deploy karne ke baad application me issue aa gaya. How will you rollback?
+
+First, I will check the container status and logs to identify the issue.
+
+```bash
+docker ps -a
+docker logs <container_name>
+```
+
+If the issue started after deploying the new Docker image, I will stop and remove the problematic container.
+
+```bash
+docker stop <container_name>
+docker rm <container_name>
+```
+
+Then I will use the **previous stable image version** and create the container again.
+
+For example:
+
+```text
+Current Image   → myapp:v2   → Issue
+
+Previous Image  → myapp:v1   → Stable
+```
+
+Rollback:
+
+```bash
+docker run -d \
+--name myapp \
+-p 8080:80 \
+myapp:v1
+```
+
+After rollback, I will verify:
+
+- Container status
+- Application logs
+- Port
+- Application accessibility
+
+```bash
+docker ps
+docker logs <container_name>
+curl localhost:8080
+```
+
+### Interview Answer
+
+I will first check the container status and logs. If the issue started after deploying the new image, I will stop the problematic container and deploy the previous stable image version.
+
+After rollback, I will verify the container status, logs and application availability.
+
+```text
+New Image v2
+     ↓
+Application Issue
+     ↓
+Check Logs
+     ↓
+Stop/Remove Container
+     ↓
+Deploy Previous Stable Image v1
+     ↓
+Validate Application
+```
+
+---
+
+## 2. Docker container is repeatedly restarting. How will you troubleshoot?
+
+First, I will check the container status.
+
+```bash
+docker ps -a
+```
+
+Then I will check the container logs.
+
+```bash
+docker logs <container_name>
+```
+
+After that, I will inspect the container.
+
+```bash
+docker inspect <container_name>
+```
+
+I will check:
+
+- Exit code
+- Startup command
+- Environment variables
+- Application configuration
+- Volume configuration
+- Required dependencies
+- Resource issues
+
+I will also verify the restart policy.
+
+```bash
+docker inspect <container_name>
+```
+
+If the application process is failing repeatedly and a restart policy is configured, Docker may continuously restart the container.
+
+After identifying the root cause, I will fix the issue and start the container again.
+
+### Interview Answer
+
+First, I will check the container status using `docker ps -a`.
+
+Then I will check `docker logs` and `docker inspect` to identify the reason for the restart.
+
+I will verify the exit code, startup command, environment variables, configuration, dependencies and restart policy.
+
+After identifying and fixing the issue, I will start the container again and verify the application.
+
+```text
+Container Restarting
+       ↓
+docker ps -a
+       ↓
+docker logs
+       ↓
+docker inspect
+       ↓
+Check Exit Code / Command / ENV / Config
+       ↓
+Check Restart Policy
+       ↓
+Fix Root Cause
+       ↓
+Validate Container & Application
+```
+
+# Docker Additional Production Scenarios
+
+## 3. Container is running, but the application inside the container is not starting. How will you troubleshoot?
+
+First, I will check the container status.
+
+```bash
+docker ps
+```
+
+Since the container is running, I will check the container logs to identify the application issue.
+
+```bash
+docker logs <container_name>
+```
+
+Then I will enter the container and verify the application process.
+
+```bash
+docker exec -it <container_name> bash
+```
+
+or:
+
+```bash
+docker exec -it <container_name> sh
+```
+
+I will check:
+
+- Application process
+- Startup command
+- Environment variables
+- Application configuration
+- Required dependencies
+- Application logs
+- Required port
+
+I will also check whether the application is listening on the expected port.
+
+```bash
+ss -tulnp
+```
+
+If required, I will check the container configuration.
+
+```bash
+docker inspect <container_name>
+```
+
+After identifying the issue, I will fix the configuration or application issue and restart/redeploy the container.
+
+### Interview Answer
+
+First, I will check the container status and logs.
+
+Since the container is running but the application is not started, I will enter the container using `docker exec` and check the application process, logs, startup command, environment variables and required dependencies.
+
+I will also verify whether the application is listening on the expected port.
+
+After identifying the root cause, I will fix the issue and validate the application.
+
+```text
+Container Running
+       ↓
+docker logs
+       ↓
+docker exec
+       ↓
+Check Application Process
+       ↓
+Check Logs / ENV / Config / Dependencies
+       ↓
+Check Listening Port
+       ↓
+Fix Issue
+       ↓
+Validate Application
+```
+
+---
+
+## 5. How will you update a Docker application with zero downtime?
+
+For zero-downtime deployment, I will **not stop the existing container first**.
+
+I will start a new container using the new Docker image version while the old container is still serving users.
+
+Example:
+
+```text
+Old Container
+myapp:v1
+Port 8080
+      ↓
+Serving Users
+
+New Container
+myapp:v2
+Port 8081
+      ↓
+Start & Validate
+```
+
+Start the new container:
+
+```bash
+docker run -d \
+--name myapp-v2 \
+-p 8081:80 \
+myapp:v2
+```
+
+Then I will verify the new container.
+
+```bash
+docker ps
+docker logs myapp-v2
+curl localhost:8081
+```
+
+Once the new container is healthy and the application is working properly, I will switch the traffic from the old container to the new container using a **Load Balancer or reverse proxy**.
+
+After confirming that the new version is stable, I will stop and remove the old container.
+
+```bash
+docker stop myapp-v1
+docker rm myapp-v1
+```
+
+### Interview Answer
+
+For zero-downtime deployment, I will start the new container with the new image without stopping the existing container.
+
+I will validate the new container and application first.
+
+Once the new container is healthy, I will switch the traffic from the old container to the new container using a Load Balancer or reverse proxy.
+
+After confirming that the new version is working properly, I will stop the old container.
+
+```text
+Old Version Running
+        ↓
+Start New Version
+        ↓
+Validate / Health Check
+        ↓
+Switch Traffic
+        ↓
+Monitor New Version
+        ↓
+Stop Old Version
+```
+
+---
+
+# Quick Revision
+
+```text
+Container Running but App Not Started
+→ logs → exec → process → ENV/config → dependencies → port → fix
+
+Zero Downtime Deployment
+→ Keep Old Running → Start New → Validate → Switch Traffic → Stop Old
+```
+---
+
+# Quick Revision
+
+```text
+New Image Issue
+→ Logs → Previous Stable Image → Rollback → Validate
+
+Container Restarting
+→ ps -a → logs → inspect → Exit Code → ENV/Config → Restart Policy → Fix
+```
 ---
 
 # Useful Docker Commands
