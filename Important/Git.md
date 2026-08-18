@@ -454,6 +454,310 @@ For any urgent production issue, we create a hotfix branch from the main branch,
 
 After that, we also merge the same changes into the develop branch to keep both branches in sync.
 
+# Git Additional Scenario-Based Interview Questions
+
+## 1. You accidentally committed a password or secret key to Git. What will you do?
+
+First, I will remove the secret from the code and immediately **rotate or revoke the exposed credential** because once a secret is committed, we should consider it compromised.
+
+Then I will move the secret to a secure location such as environment variables or a secret management solution.
+
+I will also add the sensitive file to `.gitignore` to avoid committing it again.
+
+Example:
+
+```text
+.env
+password.txt
+```
+
+Important:
+
+`.gitignore` only prevents untracked files from being added in future.
+
+If the secret is already committed or pushed, adding it to `.gitignore` will **not remove it from Git history**.
+
+For removing sensitive data from repository history, I will follow the organization's approved process and coordinate with the repository/admin team if required.
+
+### Interview Answer
+
+If I accidentally commit a password or secret, first I will rotate or revoke the exposed credential.
+
+Then I will remove the secret from the code and store it securely.
+
+I will also add the sensitive file to `.gitignore` so that it is not committed again.
+
+If it is already pushed to the remote repository, I will follow the approved process to remove it from Git history.
+
+---
+
+## 2. You committed changes to the wrong branch. How will you move the commit to the correct branch?
+
+First, I will identify the commit ID.
+
+```bash
+git log
+```
+
+Then I will switch to the correct branch.
+
+```bash
+git checkout <correct-branch>
+```
+
+I will apply that specific commit using:
+
+```bash
+git cherry-pick <commit-id>
+```
+
+After verifying the changes, I can push the correct branch.
+
+```bash
+git push
+```
+
+Then I will safely remove/undo the wrong commit from the original branch based on whether it has already been pushed.
+
+### Interview Answer
+
+If I commit the changes to the wrong branch, first I will identify the commit ID using `git log`.
+
+Then I will switch to the correct branch and use `git cherry-pick` to apply that specific commit.
+
+After that, I will verify and push the changes.
+
+```text
+Wrong Branch Commit
+       ↓
+Get Commit ID
+       ↓
+Switch Correct Branch
+       ↓
+git cherry-pick <commit-id>
+       ↓
+Verify
+       ↓
+Push
+```
+
+---
+
+## 3. Your local branch is behind the remote branch and git push is rejected. What will you do?
+
+First, I will check the current branch and status.
+
+```bash
+git status
+```
+
+Then I will get the latest changes from the remote repository.
+
+```bash
+git pull
+```
+
+If there is a merge conflict, I will resolve the conflict, add the resolved files and complete the merge.
+
+```bash
+git add <filename>
+git commit
+```
+
+After verifying everything, I will push my changes again.
+
+```bash
+git push
+```
+
+### Interview Answer
+
+If my push is rejected because my local branch is behind the remote branch, first I will pull the latest changes.
+
+If there is any conflict, I will resolve it and verify the code.
+
+After that, I will push my changes again.
+
+```text
+Push Rejected
+     ↓
+git pull
+     ↓
+Resolve Conflict if any
+     ↓
+Verify
+     ↓
+git push
+```
+
+---
+
+## 4. A bad commit has already been pushed to the main branch. How will you safely undo it?
+
+If the commit is already pushed to the shared or main branch, I will prefer **git revert** instead of git reset.
+
+First, I will identify the bad commit.
+
+```bash
+git log
+```
+
+Then I will revert that commit.
+
+```bash
+git revert <commit-id>
+```
+
+Git revert creates a **new commit that reverses the changes** from the bad commit.
+
+Then I will verify and push the revert commit.
+
+```bash
+git push
+```
+
+### Interview Answer
+
+If a bad commit is already pushed to the main branch, I will use `git revert`.
+
+I will identify the commit ID and revert it.
+
+Git revert creates a new commit to undo the changes without deleting the existing commit history, so it is safer for a shared branch.
+
+```text
+Bad Commit Already Pushed
+        ↓
+git log
+        ↓
+git revert <commit-id>
+        ↓
+Verify
+        ↓
+git push
+```
+
+---
+
+## 5. Developer says, "My code is missing after pull or merge." How will you investigate?
+
+First, I will check the current branch and working directory status.
+
+```bash
+git status
+```
+
+Then I will verify which branch the developer is currently using.
+
+```bash
+git branch
+```
+
+After that, I will check the commit history.
+
+```bash
+git log
+```
+
+If required, I will check Git reflog.
+
+```bash
+git reflog
+```
+
+`git reflog` helps us check recent Git activities such as commits, resets, checkouts and branch movements in the local repository.
+
+Based on the history, I will identify where the changes were present and take the required recovery action.
+
+### Interview Answer
+
+First, I will check `git status` and verify the current branch.
+
+Then I will check `git log` to find the commit history.
+
+If I still cannot find the changes, I will use `git reflog` to check recent local Git activities and identify where the changes were lost.
+
+```text
+Code Missing
+    ↓
+git status
+    ↓
+Check Branch
+    ↓
+git log
+    ↓
+git reflog
+    ↓
+Identify Changes
+```
+
+---
+
+## 6. What is git log and how do you check commit history?
+
+`git log` is used to check the commit history of a Git repository.
+
+Command:
+
+```bash
+git log
+```
+
+It provides information such as:
+
+- Commit ID
+- Author
+- Date
+- Commit message
+
+For a shorter view, we can use:
+
+```bash
+git log --oneline
+```
+
+Example:
+
+```text
+a1b2c3d Fix login issue
+d4e5f6g Update configuration
+h7i8j9k Initial commit
+```
+
+### Interview Answer
+
+`git log` is used to check the commit history.
+
+It shows details like commit ID, author, date and commit message.
+
+For a short and simple history, I can use:
+
+```bash
+git log --oneline
+```
+
+---
+
+# Quick Revision
+
+```text
+Secret Committed
+→ Rotate/Revoke → Remove Secret → Secure Storage → .gitignore
+
+Commit on Wrong Branch
+→ git log → Correct Branch → cherry-pick → Verify
+
+Push Rejected
+→ git pull → Resolve Conflict → Verify → git push
+
+Bad Commit Already Pushed
+→ git log → git revert → Verify → git push
+
+Code Missing
+→ git status → Branch → git log → git reflog
+
+Commit History
+→ git log / git log --oneline
+```
 
 ---
 
