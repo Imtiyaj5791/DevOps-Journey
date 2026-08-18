@@ -884,3 +884,673 @@ lsblk
 ### What is LVM?
 
 LVM (Logical Volume Manager) is a storage management layer in Linux that provides flexible disk management. It allows us to create, extend and manage storage volumes dynamically without repartitioning disks. The main components of LVM are Physical Volume (PV), Volume Group (VG) and Logical Volume (LV).
+
+# Linux Additional Interview Questions — Networking, Services, Filesystem, Process & Production Scenarios
+
+## 1. How do you troubleshoot a network connectivity issue in Linux?
+
+First, I will check the IP address of the server.
+
+```bash
+ip a
+```
+
+Then I will check the routing table.
+
+```bash
+ip route
+```
+
+After that, I will check connectivity using:
+
+```bash
+ping <destination_ip>
+```
+
+If it is an application connectivity issue, I will check the required port.
+
+```bash
+ss -tulnp
+```
+
+I can also test the application using:
+
+```bash
+curl http://<server_ip>:<port>
+```
+
+For DNS-related issues, I will use:
+
+```bash
+nslookup <domain>
+```
+
+or
+
+```bash
+dig <domain>
+```
+
+---
+
+## 2. One Linux server cannot communicate with another server. How will you troubleshoot?
+
+First, I will check whether both servers have the correct IP address and network configuration.
+
+```bash
+ip a
+ip route
+```
+
+Then I will test connectivity.
+
+```bash
+ping <destination_ip>
+```
+
+If ping is working, I will check whether the required application port is reachable.
+
+I will also verify:
+
+- Firewall rules
+- Security Group if hosted on AWS
+- NACL if required
+- Route Table
+- Application service
+- Listening port
+
+```bash
+ss -tulnp
+```
+
+---
+
+## 3. DNS is not resolving on a Linux server. How will you troubleshoot?
+
+First, I will check whether the server has network connectivity.
+
+```bash
+ping <gateway_or_ip>
+```
+
+Then I will test DNS resolution.
+
+```bash
+nslookup google.com
+```
+
+or
+
+```bash
+dig google.com
+```
+
+I will check the DNS configuration.
+
+```bash
+cat /etc/resolv.conf
+```
+
+I will also verify `/etc/hosts` if local hostname resolution is being used.
+
+```bash
+cat /etc/hosts
+```
+
+---
+
+## 4. What is `/etc/hosts`?
+
+`/etc/hosts` is used for local hostname-to-IP mapping.
+
+Example:
+
+```text
+10.0.1.10 appserver
+10.0.1.20 dbserver
+```
+
+The server can resolve these hostnames locally without querying an external DNS server.
+
+---
+
+## 5. What is `/etc/resolv.conf`?
+
+`/etc/resolv.conf` contains DNS resolver information used by the Linux system.
+
+Example:
+
+```text
+nameserver 10.0.0.2
+```
+
+If DNS resolution is not working, this is one of the configurations I will verify.
+
+---
+
+# Linux Service Troubleshooting
+
+## 6. A Linux service failed to start. How will you troubleshoot?
+
+First, I will check the service status.
+
+```bash
+systemctl status <service_name>
+```
+
+Then I will check the service logs.
+
+```bash
+journalctl -u <service_name>
+```
+
+or
+
+```bash
+journalctl -xe
+```
+
+I will check:
+
+- Service configuration
+- Application logs
+- Required port
+- File permissions
+- Dependencies
+
+I will also verify whether another process is already using the required port.
+
+```bash
+ss -tulnp
+```
+
+After identifying and fixing the issue, I will start or restart the service.
+
+```bash
+systemctl restart <service_name>
+```
+
+---
+
+## 7. Service is running but application is not accessible. What will you check?
+
+First, I will verify the service status.
+
+```bash
+systemctl status <service_name>
+```
+
+Then I will check whether the application is listening on the expected port.
+
+```bash
+ss -tulnp
+```
+
+I will test the application locally.
+
+```bash
+curl localhost:<port>
+```
+
+If it works locally but not remotely, I will check:
+
+- Firewall
+- Security Group
+- NACL
+- Route
+- Load Balancer
+
+I will also check application logs.
+
+---
+
+# Filesystem & Mount Troubleshooting
+
+## 8. Filesystem is not mounted after server reboot. How will you troubleshoot?
+
+First, I will check the mounted filesystems.
+
+```bash
+df -h
+```
+
+Then I will check the available disks.
+
+```bash
+lsblk
+```
+
+I will verify the `/etc/fstab` configuration.
+
+```bash
+cat /etc/fstab
+```
+
+Then I will validate the entries using:
+
+```bash
+mount -a
+```
+
+If there is an error, I will check:
+
+- Device/UUID
+- Mount point
+- Filesystem type
+- fstab entry
+
+I can verify the UUID using:
+
+```bash
+blkid
+```
+
+---
+
+## 9. Why do we use UUID in `/etc/fstab`?
+
+UUID provides a unique identification for the filesystem.
+
+Device names can sometimes change, but UUID remains associated with the filesystem.
+
+Example:
+
+```text
+UUID=xxxxxxxx /data ext4 defaults 0 0
+```
+
+Using UUID makes permanent mounting more reliable.
+
+---
+
+# Linux Process Management
+
+## 10. How do you check running processes in Linux?
+
+We can use:
+
+```bash
+ps -ef
+```
+
+or:
+
+```bash
+top
+```
+
+To find a specific process:
+
+```bash
+ps -ef | grep <process_name>
+```
+
+---
+
+## 11. What is the difference between a Process and a Service?
+
+A **process** is a running instance of a program.
+
+A **service** is generally a background application managed by the operating system/service manager such as systemd.
+
+Example:
+
+```text
+nginx → Service
+nginx worker process → Process
+```
+
+We can manage a service using:
+
+```bash
+systemctl status nginx
+systemctl start nginx
+systemctl stop nginx
+systemctl restart nginx
+```
+
+---
+
+## 12. What is PID?
+
+PID stands for **Process ID**.
+
+Every running process has a unique PID.
+
+We can check processes using:
+
+```bash
+ps -ef
+```
+
+Example:
+
+```text
+root   1234   nginx
+```
+
+Here:
+
+```text
+1234 = PID
+```
+
+---
+
+## 13. What is the difference between `kill` and `kill -9`?
+
+Normal `kill` sends a termination signal and gives the process a chance to shut down properly.
+
+```bash
+kill <PID>
+```
+
+`kill -9` forcefully terminates the process.
+
+```bash
+kill -9 <PID>
+```
+
+I will normally try a graceful termination first. I will use `kill -9` only when required and after following the proper approval/process in production.
+
+---
+
+## 14. What is a Zombie Process?
+
+A zombie process is a process that has completed execution, but its parent process has not yet collected its exit status.
+
+We can identify process states using:
+
+```bash
+ps -ef
+```
+
+or:
+
+```bash
+ps aux
+```
+
+Zombie processes generally show a `Z` state.
+
+---
+
+# Permission Troubleshooting
+
+## 15. Application is getting "Permission Denied". How will you troubleshoot?
+
+First, I will identify the affected file or directory.
+
+Then I will check its permissions and ownership.
+
+```bash
+ls -l <file_name>
+```
+
+I will verify:
+
+- Owner
+- Group
+- Read permission
+- Write permission
+- Execute permission
+
+If ownership is incorrect, after verification I can correct it using:
+
+```bash
+chown user:group <file_name>
+```
+
+If permissions are incorrect:
+
+```bash
+chmod <permission> <file_name>
+```
+
+I will not directly give `777` permission without understanding the requirement.
+
+---
+
+# Unexpected Reboot / Boot Issue
+
+## 16. A Linux server rebooted unexpectedly. How will you investigate?
+
+First, I will check when the server rebooted.
+
+```bash
+last reboot
+```
+
+Then I will check the uptime.
+
+```bash
+uptime
+```
+
+I will review logs from the previous boot.
+
+```bash
+journalctl -b -1
+```
+
+I will check for:
+
+- Kernel issues
+- System errors
+- Resource issues
+- Scheduled activities
+- Manual reboot
+
+If the server is hosted on AWS, I will also check:
+
+- EC2 Status Checks
+- CloudWatch
+- CloudTrail
+
+CloudTrail can help identify whether someone manually rebooted or stopped the EC2 instance.
+
+---
+
+## 17. Linux server is not booting properly. What will you check?
+
+I will check whether there is any issue with:
+
+- Filesystem
+- `/etc/fstab`
+- Disk
+- GRUB
+- Kernel
+- Failed services
+
+A wrong `/etc/fstab` entry can also create boot issues.
+
+I will review boot/system logs and identify the exact error before making changes.
+
+---
+
+# Package Management
+
+## 18. How do you manage packages in Ubuntu?
+
+First, I update the package information.
+
+```bash
+sudo apt update
+```
+
+To install a package:
+
+```bash
+sudo apt install <package_name>
+```
+
+To check available upgrades:
+
+```bash
+apt list --upgradable
+```
+
+To upgrade approved packages:
+
+```bash
+sudo apt upgrade
+```
+
+To remove a package:
+
+```bash
+sudo apt remove <package_name>
+```
+
+---
+
+## 19. How do you check whether a package is installed and its version?
+
+We can use:
+
+```bash
+dpkg -l | grep <package_name>
+```
+
+or:
+
+```bash
+apt list --installed | grep <package_name>
+```
+
+For some applications, we can directly check the version.
+
+Example:
+
+```bash
+nginx -v
+```
+
+---
+
+# Production Troubleshooting Scenarios
+
+## 20. Server is pinging but SSH is not working. What will you check?
+
+If ping is working, basic network connectivity is available.
+
+Then I will check:
+
+- SSH port 22
+- SSH service
+- Firewall
+- Security Group
+- NACL
+- SSH configuration
+
+Check SSH service:
+
+```bash
+systemctl status ssh
+```
+
+Check listening port:
+
+```bash
+ss -tulnp | grep :22
+```
+
+Check SSH logs:
+
+```bash
+journalctl -u ssh
+```
+
+If it is an AWS EC2 instance, I will also verify Security Group and NACL rules.
+
+---
+
+## 21. DNS is resolving but application port is not reachable. How will you troubleshoot?
+
+If DNS is resolving correctly, I will focus on application and network connectivity.
+
+I will check whether the application service is running.
+
+```bash
+systemctl status <service_name>
+```
+
+Then I will verify whether the application is listening on the required port.
+
+```bash
+ss -tulnp
+```
+
+I will test it locally.
+
+```bash
+curl localhost:<port>
+```
+
+Then I will check:
+
+- Linux firewall
+- Security Group
+- NACL
+- Load Balancer
+- Application logs
+
+---
+
+## 22. Application is accessible locally but users cannot access it remotely. What will you check?
+
+If this works:
+
+```bash
+curl localhost:<port>
+```
+
+then the application is running locally.
+
+I will check:
+
+- Application listening address
+- Linux firewall
+- Security Group
+- NACL
+- Route Table
+- Load Balancer Listener
+- Target Group Health
+
+I will identify where the traffic is getting blocked and take action accordingly.
+
+---
+
+# Quick Revision
+
+```text
+Linux Network Issue
+→ ip a → ip route → ping → ss → curl
+
+DNS Issue
+→ nslookup/dig → /etc/resolv.conf → /etc/hosts
+
+Service Failed
+→ systemctl status → journalctl → config → port → logs
+
+Mount Issue After Reboot
+→ lsblk → fstab → blkid → mount -a
+
+Process
+→ ps → top → PID → kill
+
+Permission Denied
+→ ls -l → owner/group → chmod/chown
+
+Unexpected Reboot
+→ last reboot → uptime → journalctl -b -1
+
+Ubuntu Package
+→ apt update → apt install/upgrade
+
+Ping Working but SSH Failed
+→ Port 22 → SSH service → firewall/SG/NACL → logs
+
+Application Local Working but Remote Failed
+→ Port → Firewall → SG/NACL → Route → ALB
+```
