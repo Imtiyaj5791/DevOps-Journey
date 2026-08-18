@@ -2241,3 +2241,436 @@ Primary / Secondary Failover
 Final DR Test:
 SUCCESSFUL ✅
 ```
+# 3-tier code
+```
+#!/bin/bash
+
+apt-get update -y
+apt-get install -y nginx python3 python3-pip python3-venv default-mysql-client
+
+mkdir -p /opt/shopapp
+cd /opt/shopapp
+
+python3 -m venv venv
+source venv/bin/activate
+
+pip install flask pymysql gunicorn
+
+cat > /opt/shopapp/app.py <<'PYEOF'
+from flask import Flask, render_template_string
+import pymysql
+import socket
+
+app = Flask(__name__)
+
+DB_HOST = "Your DB Endpoint name"
+DB_USER = "dbadmin"
+DB_PASSWORD = "Your Db pass"
+DB_NAME = "Your DB Name"
+
+HTML = """
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>NovaCart | Cloud Commerce</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f7fb;
+            color: #1f2937;
+        }
+
+        nav {
+            background: #111827;
+            color: white;
+            padding: 18px 8%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        nav h2 {
+            font-size: 24px;
+        }
+
+        nav span {
+            color: #60a5fa;
+        }
+
+        .hero {
+            padding: 70px 8%;
+            background: linear-gradient(135deg, #111827, #1e3a8a);
+            color: white;
+        }
+
+        .hero h1 {
+            font-size: 48px;
+            margin-bottom: 15px;
+        }
+
+        .hero p {
+            font-size: 18px;
+            max-width: 650px;
+            line-height: 1.6;
+            color: #dbeafe;
+        }
+
+        .badge {
+            display: inline-block;
+            margin-top: 25px;
+            padding: 10px 18px;
+            background: #22c55e;
+            border-radius: 30px;
+            font-weight: bold;
+        }
+
+        .container {
+            width: 84%;
+            margin: 45px auto;
+        }
+
+        .section-title {
+            margin-bottom: 25px;
+            font-size: 30px;
+        }
+
+        .cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 22px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 14px;
+            padding: 25px;
+            box-shadow: 0 8px 25px rgba(0,0,0,.08);
+        }
+
+        .card h3 {
+            margin-bottom: 10px;
+            color: #1e3a8a;
+        }
+
+        .card p {
+            color: #6b7280;
+            line-height: 1.5;
+        }
+
+        .price {
+            margin-top: 18px;
+            font-size: 22px;
+            font-weight: bold;
+        }
+
+        .status {
+            margin-top: 45px;
+            background: white;
+            padding: 25px;
+            border-radius: 14px;
+            box-shadow: 0 8px 25px rgba(0,0,0,.08);
+        }
+
+        .success {
+            color: #15803d;
+            font-weight: bold;
+        }
+
+        .error {
+            color: #dc2626;
+            font-weight: bold;
+        }
+
+        footer {
+            margin-top: 50px;
+            text-align: center;
+            padding: 25px;
+            background: #111827;
+            color: #9ca3af;
+        }
+    </style>
+</head>
+
+<body>
+
+<nav>
+    <h2>Nova<span>Cart</span></h2>
+    <div>Home &nbsp;&nbsp; Products &nbsp;&nbsp; Cloud Store</div>
+</nav>
+
+<section class="hero">
+
+    <h1>Cloud Shopping, Simplified.</h1>
+
+    <p>
+        A scalable commerce platform designed for fast,
+        reliable and secure shopping experiences across
+        modern cloud infrastructure.
+    </p>
+
+    <div class="badge">
+        ● Application Healthy
+    </div>
+
+</section>
+
+<div class="container">
+
+    <h2 class="section-title">
+        Featured Products
+    </h2>
+
+    <div class="cards">
+
+        {% for product in products %}
+
+        <div class="card">
+
+            <h3>{{ product[1] }}</h3>
+
+            <p>{{ product[2] }}</p>
+
+            <div class="price">
+                ₹{{ product[3] }}
+            </div>
+
+        </div>
+
+        {% endfor %}
+
+    </div>
+
+    <div class="status">
+
+        <h2>Platform Status</h2>
+
+        <br>
+
+        <p>
+            <b>Application Server:</b>
+            {{ hostname }}
+        </p>
+
+        <p>
+            <b>Database:</b>
+
+            {% if db_status %}
+
+            <span class="success">
+                Connected to Amazon RDS ✓
+            </span>
+
+            {% else %}
+
+            <span class="error">
+                Database Connection Failed ✗
+            </span>
+
+            {% endif %}
+
+        </p>
+
+    </div>
+
+</div>
+
+<footer>
+    NovaCart Cloud Commerce Platform
+</footer>
+
+</body>
+</html>
+"""
+
+
+def initialize_database():
+
+    connection = pymysql.connect(
+        host=DB_HOST,
+        user=DB_USER,
+        password=DB_PASSWORD,
+        database=DB_NAME
+    )
+
+    cursor = connection.cursor()
+
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS products (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            name VARCHAR(100),
+            description VARCHAR(255),
+            price INT
+        )
+    """)
+
+    cursor.execute("SELECT COUNT(*) FROM products")
+
+    count = cursor.fetchone()[0]
+
+    if count == 0:
+
+        cursor.executemany(
+            "INSERT INTO products (name, description, price) VALUES (%s,%s,%s)",
+            [
+                (
+                    "CloudBook Pro",
+                    "High-performance laptop for professionals.",
+                    79999
+                ),
+                (
+                    "NovaPods",
+                    "Wireless audio designed for everyday productivity.",
+                    6999
+                ),
+                (
+                    "SmartHub Mini",
+                    "Compact smart-home control center.",
+                    4999
+                ),
+                (
+                    "CloudWatch X",
+                    "Smart wearable with health and productivity features.",
+                    12999
+                )
+            ]
+        )
+
+    connection.commit()
+    connection.close()
+
+
+@app.route("/")
+def home():
+
+    products = []
+    db_status = False
+
+    try:
+
+        initialize_database()
+
+        connection = pymysql.connect(
+            host=DB_HOST,
+            user=DB_USER,
+            password=DB_PASSWORD,
+            database=DB_NAME
+        )
+
+        cursor = connection.cursor()
+
+        cursor.execute("SELECT * FROM products")
+
+        products = cursor.fetchall()
+
+        connection.close()
+
+        db_status = True
+
+    except Exception as e:
+
+        print(e)
+
+    return render_template_string(
+        HTML,
+        products=products,
+        db_status=db_status,
+        hostname=socket.gethostname()
+    )
+
+
+@app.route("/health")
+def health():
+
+    return "healthy", 200
+
+
+if __name__ == "__main__":
+
+    app.run(
+        host="0.0.0.0",
+        port=5000
+    )
+
+PYEOF
+
+
+cat > /etc/systemd/system/shopapp.service <<'EOF'
+
+[Unit]
+Description=NovaCart Flask Application
+After=network.target
+
+[Service]
+User=www-data
+Group=www-data
+WorkingDirectory=/opt/shopapp
+
+ExecStart=/opt/shopapp/venv/bin/gunicorn \
+--workers 2 \
+--bind 127.0.0.1:5000 \
+app:app
+
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
+
+EOF
+
+
+chown -R www-data:www-data /opt/shopapp
+
+
+cat > /etc/nginx/sites-available/shopapp <<'EOF'
+
+server {
+
+    listen 80;
+
+    server_name _;
+
+    location / {
+
+        proxy_pass http://127.0.0.1:5000;
+
+        proxy_set_header Host $host;
+
+        proxy_set_header X-Real-IP $remote_addr;
+
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+}
+
+EOF
+
+
+rm -f /etc/nginx/sites-enabled/default
+
+ln -s /etc/nginx/sites-available/shopapp \
+/etc/nginx/sites-enabled/shopapp
+
+
+systemctl daemon-reload
+
+systemctl enable shopapp
+systemctl start shopapp
+
+nginx -t
+
+systemctl enable nginx
+systemctl restart nginx
+```
+
