@@ -1315,3 +1315,214 @@ each.key
 count    → Index-based identity
 for_each → Key-based identity
 ```
+# Terraform Notes — Part 8: Modules
+
+## 1. What is Terraform Module?
+
+Terraform Module is a collection of Terraform files used to create reusable infrastructure code.
+
+Instead of writing the same resource code multiple times, we create a module once and reuse it.
+
+```text
+Module = Reusable Terraform Code
+
+Benefits:
+
+Avoid code duplication
+Reuse same code
+Easy maintenance
+Standard configuration
+```
+
+## 2. Types of Terraform Module
+
+### Root Module (Caller)
+
+Root Module is where we call the Child Module, Root Module provides input values to Child Module.
+
+Example:
+
+```hcl
+module "ec2" {
+
+  source = "../ec2-module"
+
+  ami_id        = "ami-xxxx"
+  instance_type = "t3.micro"
+
+}
+```
+
+### Child Module
+
+Child Module contains the original Terraform source code.
+
+Example:
+
+```text
+ec2-module/
+
+├── ec2.tf
+├── variable.tf
+└── output.tf
+```
+
+Example:
+
+```hcl
+resource "aws_instance" "web" {
+
+  ami           = var.ami_id
+  instance_type = var.instance_type
+
+}
+```
+
+Child Module contains:
+
+- Resource code
+- Variables
+- Outputs
+
+## 3. Module from Git Repository
+
+If module code is stored in Git repository:
+
+Flow:
+
+```text
+Git Repository
+
+      ↓
+
+git clone
+
+      ↓
+
+terraform init
+
+      ↓
+
+Module Download
+```
+
+Caller:
+
+```hcl
+module "ec2" {
+
+  source = "git::https://github.com/company/ec2-module.git"
+
+  ami_id        = "ami-xxxx"
+  instance_type = "t3.micro"
+
+}
+```
+
+`terraform init` downloads the module from Git.
+
+## 4. Module Versioning
+
+Module owner maintains different versions of the module.
+
+First version:
+
+```text
+Code Change
+
+↓
+
+git add .
+
+↓
+
+git commit
+
+↓
+
+git tag v1.0.0
+
+↓
+
+git push
+```
+
+After some changes:
+
+```text
+New Code Change
+
+↓
+
+git add .
+
+↓
+
+git commit
+
+↓
+
+git tag v1.1.0
+
+↓
+
+git push
+```
+
+Caller can use a specific version:
+
+```hcl
+module "ec2" {
+
+  source = "git::https://github.com/company/ec2-module.git?ref=v1.0.0"
+
+}
+```
+
+Meaning:
+
+Use only `v1.0.0` module code.
+
+## 5. Module with Multiple Environments
+
+Same module can be used for multiple environments.
+
+Example:
+
+```text
+              ec2-module
+
+                   |
+
+        ---------------------
+
+        |          |         |
+
+       Dev       Test      Prod
+```
+
+Different values can be passed:
+
+### Dev
+
+```text
+instance_type = t2.micro
+```
+
+### Test
+
+```text
+instance_type = t2.micro
+```
+
+### Prod
+
+```text
+instance_type = t3.large
+```
+
+Benefits:
+
+- Same code reuse
+- Different environment configuration
+- Less code duplication
