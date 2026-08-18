@@ -1349,7 +1349,277 @@ cat /var/log/cloud-init-output.log
 Finally, I will check application logs to identify the root cause.
 
 ---
+# AWS Cost, Security & Vulnerability — Interview Questions & Answers
 
+## 1. How do you monitor AWS cost?
+
+I use **AWS Cost Explorer** to analyze AWS cost and usage. I can check which AWS service is generating more cost and then identify the reason.
+
+---
+
+## 2. What is AWS Budget?
+
+AWS Budget is used to set a **budget limit**.
+
+We can configure alerts, for example, when our cost reaches **80% of the defined budget**.
+
+```text
+Cost Explorer → Analyze Cost
+AWS Budget    → Set Limit + Alert
+```
+
+---
+
+## 3. EC2 cost is very high. How will you reduce it?
+
+First, I will use **AWS Cost Explorer** to analyze the EC2 cost.
+
+Then I will check:
+
+- Unused EC2 instances
+- Unused EBS volumes
+- Old unnecessary snapshots
+- Unused public IPv4 addresses
+
+After verification and approval, I will remove unused resources.
+
+I will also check whether we are using the **right-sized instances** according to business requirements.
+
+For long-term workloads, I can use **Reserved Instances or Savings Plans**.
+
+For non-critical or testing workloads, I can use **Spot Instances**.
+
+I can also stop Dev/Test instances during **off hours**.
+
+---
+
+## 4. S3 cost suddenly increased 5x. What will you do?
+
+First, I will use **AWS Cost Explorer** to analyze the S3 cost.
+
+Then I will check:
+
+- Storage usage
+- Requests
+- Data transfer
+
+After identifying the reason, I will optimize the cost using **S3 Lifecycle Policy**.
+
+I can move infrequently accessed data to lower-cost storage classes like:
+
+- Standard-IA
+- Glacier
+- Deep Archive
+
+I will also check old object versions and, after verification and approval, remove unnecessary old versions.
+
+---
+
+# AWS Security
+
+## 5. How do you secure IAM users?
+
+I follow the **least privilege principle** and provide only required permissions.
+
+I will:
+
+- Enable MFA
+- Provide only required permissions
+- Prefer IAM Roles instead of long-term access keys for AWS workloads
+- Avoid using the root user for daily activities
+
+---
+
+## 6. How do you secure an AWS environment?
+
+For **user/access security**, I use IAM with least privilege and MFA.
+
+For **data security**, I use KMS encryption.
+
+For **network security**, I use Security Groups and NACLs.
+
+For **S3 security**, I keep buckets private and control access using IAM and bucket policies.
+
+For **auditing**, I use CloudTrail.
+
+For **threat detection**, I can use GuardDuty.
+
+For **vulnerability detection**, I can use Amazon Inspector.
+
+---
+
+## 7. Someone terminated a production EC2 instance. How will you find who did it?
+
+I will check **CloudTrail Event History** and search for the `TerminateInstances` event.
+
+Then I will check:
+
+- Who performed the activity
+- When it was performed
+- Whether it was performed manually by a user or through automation like Lambda
+
+```text
+CloudTrail = Who + When + What API Action
+```
+
+---
+
+## 8. What is AWS Config?
+
+AWS Config is used to track **AWS resource configurations and configuration changes over time**.
+
+For example, if a Security Group configuration was changed, I can check its previous and current configuration using AWS Config.
+
+```text
+AWS Config = Resource Configuration History
+```
+
+---
+
+## 9. Someone changed SSH access in a Security Group. How will you investigate it?
+
+First, I will use **AWS Config** to check what configuration was changed.
+
+If I want to know **who performed the change and when**, I will check **CloudTrail**.
+
+```text
+AWS Config  → What configuration changed?
+CloudTrail  → Who changed it and when?
+```
+
+---
+
+## 10. What is Amazon GuardDuty?
+
+Amazon GuardDuty is used to detect **suspicious or malicious activities** in our AWS environment.
+
+For example:
+
+- Unusual API activity
+- Suspicious network communication
+
+If GuardDuty detects suspicious activity, it generates a **finding**.
+
+```text
+GuardDuty = Threat Detection
+```
+
+---
+
+## 11. How can you receive an email alert for a GuardDuty finding?
+
+We can integrate GuardDuty with **EventBridge and SNS**.
+
+```text
+GuardDuty Finding
+       ↓
+EventBridge
+       ↓
+SNS
+       ↓
+Email Alert
+```
+
+---
+
+## 12. What is AWS Security Hub?
+
+AWS Security Hub provides a **centralized place to monitor security findings** from different AWS security services like GuardDuty and Inspector.
+
+```text
+Security Hub = Centralized Security Findings
+```
+
+---
+
+# AWS Vulnerability
+
+## 13. What is Amazon Inspector?
+
+Amazon Inspector is a **vulnerability management service**.
+
+It scans supported AWS workloads like:
+
+- EC2 instances
+- ECR container images
+
+It helps identify software vulnerabilities and generates findings.
+
+```text
+Inspector = Vulnerability Detection
+```
+
+---
+
+## 14. What is the difference between GuardDuty and Inspector?
+
+**GuardDuty** is mainly used for threat detection and suspicious activities.
+
+**Amazon Inspector** is used to identify software vulnerabilities.
+
+```text
+GuardDuty → Threat Detection
+
+Inspector → Vulnerability Detection
+```
+
+---
+
+## 15. Inspector detected a critical vulnerability on a production EC2 instance. What will you do?
+
+First, I will check the **Inspector finding** and identify:
+
+- Affected EC2 instance
+- Vulnerable package
+- Severity
+
+Then I will verify the impact and coordinate with the required team.
+
+After approval, I will patch or update the vulnerable package.
+
+After patching, I will verify the **server and application health** and confirm that the vulnerability is resolved.
+
+```text
+Identify
+   ↓
+Check Severity
+   ↓
+Verify Impact
+   ↓
+Take Approval
+   ↓
+Patch / Update
+   ↓
+Validate Server & Application
+   ↓
+Verify Vulnerability is Resolved
+```
+
+---
+
+# Quick Revision
+
+```text
+Cost Explorer → Cost Analysis
+
+AWS Budget    → Budget Limit + Alert
+
+IAM           → Access Security
+
+KMS           → Data Encryption
+
+SG / NACL     → Network Security
+
+CloudTrail    → API Activity / Who + When + What
+
+AWS Config    → Resource Configuration History
+
+GuardDuty     → Threat Detection
+
+Inspector     → Vulnerability Detection
+
+Security Hub  → Centralized Security Findings
+```
 
 
 ---
