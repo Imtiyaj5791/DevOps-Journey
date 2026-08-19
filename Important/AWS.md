@@ -2012,6 +2012,11 @@ New Version Live
 
 In production, this complete process is normally automated through a CI/CD pipeline such as Jenkins.
 
+## Q9. How will you migrate an application from EC2 to ECS?
+
+First, I will create a Docker image of the application and push it to ECR. Then I will create an ECS cluster, task definition and service using the existing ALB with a new ECS target group.
+
+I will test ECS using a temporary Route 53 record and host-based ALB rule. After successful testing, I will change the production ALB rule from the EC2 target group to the ECS target group and remove the temporary test configuration.
 
 # Important Quick Revision
 
