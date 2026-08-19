@@ -1837,6 +1837,203 @@ Application
 RDS
 ```
 
+# AWS ECR & ECS – Interview Notes
+
+## Basic Definitions
+
+### ECR
+Amazon ECR (Elastic Container Registry) is an AWS service used to store, manage, and pull Docker/container images.
+
+### ECS
+Amazon ECS (Elastic Container Service) is an AWS container orchestration service used to deploy, manage, and scale containers.
+
+### Task Definition
+A Task Definition is a blueprint for ECS Tasks. It defines the container image, CPU, memory, ports, IAM roles, environment variables, and other container settings.
+
+### Task
+A Task is a running instance of a Task Definition. One Task can contain one or multiple containers.
+
+### Service
+An ECS Service maintains the required number of Tasks and provides features like self-healing, deployment, load balancing, and auto scaling.
+
+
+# Production / Scenario-Based Questions
+
+## Q1. Your application is running on ECS Fargate. How does an end user access the application?
+
+In production, ECS Tasks are normally placed in private subnets without public IPs.
+
+Traffic flow:
+
+User → Route 53 → Public ALB → Target Group → ECS Tasks
+
+The ALB is placed in public subnets and ECS Tasks are placed in private application subnets.
+
+Security Groups:
+
+- ALB-SG: Allow 80/443 from the internet.
+- ECS-App-SG: Allow application port only from ALB-SG.
+
+Users never directly access the ECS Task IP.
+
+
+## Q2. ECS Task is running but the application is not accessible through ALB. How will you troubleshoot?
+
+I will check:
+
+1. ECS Task status and Service events.
+2. Target Group health status.
+3. ALB listener and listener rules.
+4. Target Group port and health check path.
+5. ALB Security Group.
+6. ECS Task Security Group.
+7. Container port mapping.
+8. CloudWatch container logs.
+
+For example, if the application runs on port 5000, the ECS Task Security Group should allow port 5000 from the ALB Security Group.
+
+
+## Q3. How will you deploy a new application version to ECS without downtime?
+
+First, I will build the new Docker image and push it to ECR.
+
+Then:
+
+New Image → ECR → New Task Definition Revision → Update ECS Service → New Tasks Launch → Health Check → Old Tasks Stop
+
+Using Rolling deployment, ECS gradually launches new Tasks and removes old Tasks after the new Tasks become healthy.
+
+For safer deployments, Blue/Green deployment can also be used.
+
+
+## Q4. A new ECS deployment has an issue. How will you roll back?
+
+I can update the ECS Service to use the previous working Task Definition revision.
+
+Flow:
+
+Current bad revision → Select previous Task Definition revision → Update Service → Previous version Tasks launch
+
+If Blue/Green deployment is being used, traffic can be shifted back to the previous Blue environment during the rollback period.
+
+
+## Q5. Desired count is 3 and one ECS Task suddenly stops. What happens?
+
+The ECS Service continuously maintains the desired Task count.
+
+If:
+
+Desired = 3
+Running = 2
+
+ECS automatically launches a replacement Task.
+
+After replacement:
+
+Desired = 3
+Running = 3
+
+This provides self-healing for ECS Services.
+
+
+## Q6. Traffic increases and ECS Tasks have high CPU utilization. How will you handle it?
+
+I will configure ECS Service Auto Scaling.
+
+Example:
+
+Minimum Tasks = 2
+Maximum Tasks = 6
+Target CPU = 60%
+
+When CPU utilization increases, ECS Service Auto Scaling increases the desired Task count.
+
+When CPU utilization decreases, it reduces the desired Task count within the configured minimum and maximum limits.
+
+The ALB distributes traffic across the available healthy Tasks.
+
+
+## Q7. ECS Fargate application is in private subnets and needs to connect to RDS MySQL. How will you configure it?
+
+I will keep both the application and database private.
+
+Architecture:
+
+Internet
+   ↓
+ALB
+   ↓
+ECS Fargate
+   ↓
+RDS MySQL
+
+Networking:
+
+- ALB → Public Subnets
+- ECS Tasks → Private App Subnets
+- RDS → Private DB Subnets
+
+Security Groups:
+
+- ALB-SG → Allow 80/443 from internet.
+- ECS-App-SG → Allow application port from ALB-SG.
+- DB-SG → Allow MySQL port 3306 from ECS-App-SG.
+
+The application will connect to the database using the RDS endpoint on port 3306.
+
+
+## Q8. Developers provided a new application version. Explain the complete flow from Docker image to production deployment on ECS.
+
+The developer provides the application source code.
+
+Then the deployment flow is:
+
+Source Code
+   ↓
+Docker Image Build
+   ↓
+Tag Image
+   ↓
+Login to ECR
+   ↓
+Push Image to ECR
+   ↓
+Create New Task Definition Revision
+   ↓
+Update ECS Service
+   ↓
+New Tasks Launch
+   ↓
+ALB Health Check
+   ↓
+Old Tasks Stop
+   ↓
+New Version Live
+
+In production, this complete process is normally automated through a CI/CD pipeline such as Jenkins.
+
+
+# Important Quick Revision
+
+ECR = Stores container images.
+
+ECS = Manages and orchestrates containers.
+
+Task Definition = Blueprint/configuration of the containers.
+
+Task = Running instance of a Task Definition.
+
+Service = Maintains Tasks and handles deployment, self-healing, load balancing, and auto scaling.
+
+Cluster = Logical place where ECS Services and Tasks run.
+
+Desired Count = Number of Tasks the Service should maintain.
+
+ECS Service Auto Scaling = Automatically changes the desired Task count based on metrics such as CPU or memory.
+
+Production Flow:
+
+Route 53 → ALB → ECS Fargate Tasks → RDS
 ---
 
 # Quick Revision
