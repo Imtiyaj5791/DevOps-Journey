@@ -1,58 +1,60 @@
-# Kubernetes Notes 
+# Kubernetes Day-1
 
-## What is Kubernetes?
+## What is K8s:-
 
-Kubernetes is a container orchestration tool used to deploy, manage and scale containerized applications.
+Kubernetes is a container orchestration tool which is used to deploy, manage and scale containerized applications.
 
 For example, if we have 20 containers, Kubernetes helps us manage all these containers.
 
 ---
 
-## Why Do We Need Kubernetes?
+# Why do we need K8s?
 
-Let's assume we have a large number of containers running in production.
+Let’s assume we have a large number of containers running in production.
 
-- If traffic increases, we need to increase containers.
-- If traffic decreases, we can reduce containers.
-- If any container crashes, we need to replace it.
-- If we have a new application version, we need to update containers safely.
-- If any server/node goes down, we need to keep the application running.
+If traffic increases, we need to increase the containers, and if traffic decreases, we can reduce them.
+
+If any container crashes, we need to replace it.
+
+If we have a new application version, we need to update the containers safely.
+
+Also, if any server or node goes down, we need to keep our application running.
 
 Managing all these things manually is difficult, so we use Kubernetes to manage them automatically.
 
 ---
 
-## Kubernetes Cluster
+# Kubernetes Cluster
 
-A Kubernetes cluster is a group of nodes where we run and manage our containerized applications.
+A Kubernetes cluster is a group of nodes where we run our containerized applications.
 
 ---
 
-# Kubernetes Architecture
+# Architecture
 
 Kubernetes architecture is mainly divided into two parts:
 
 1. Control Plane
 2. Worker Nodes
 
-The **Control Plane** manages the Kubernetes cluster.
+The Control Plane manages the Kubernetes cluster, while the Worker Nodes are where our application runs.
 
-The **Worker Nodes** are where our application Pods and containers run.
-
-### Control Plane Components
+The Control Plane consists of components like:
 
 - API Server
 - Scheduler
 - etcd
 - Controller Manager
 
-### Worker Node Components
+Worker Nodes mainly have:
 
 - kubelet
 - kube-proxy
 - Container Runtime
 
 ---
+
+# Control Plane
 
 ## API Server
 
@@ -62,53 +64,38 @@ If Kubernetes components need to communicate with each other, they communicate t
 
 When we send a request using `kubectl`, it first goes to the API Server.
 
-The API Server authenticates, authorizes and validates the request.
+The API Server:
 
-### Remember
-
-`kubectl → API Server`
+- Authenticates the request
+- Authorizes the request
+- Validates the request
 
 ---
 
 ## etcd
 
-etcd acts like a database for Kubernetes.
+etcd is like a database in Kubernetes.
 
-It stores Kubernetes cluster state and configuration information in key-value format, such as information about Nodes, Pods and Deployments.
+It stores all the cluster information in key-value format, such as:
 
-### Remember
-
-`etcd = Kubernetes cluster state database`
+- Nodes
+- Pods
+- Deployments
+- Cluster configuration/state
 
 ---
 
 ## Scheduler
 
-Scheduler decides on which Worker Node a new Pod should run based on available resources and scheduling requirements.
-
-### Remember
-
-`Scheduler = Select Worker Node for Pod`
+Scheduler decides on which Worker Node the new Pod will run, based on available resources.
 
 ---
 
 ## Controller Manager
 
-Controller Manager continuously checks the current state and desired state of the cluster.
+Controller Manager continuously checks the current and desired state of the cluster.
 
-If there is a mismatch, it takes action to bring the current state to the desired state.
-
-Example:
-
-`Desired Pods = 3`
-
-`Current Pods = 2`
-
-Kubernetes takes action to bring the number back to 3.
-
-### Remember
-
-`Controller Manager = Current State vs Desired State`
+If there is any mismatch, it takes action to match the current state with the desired state.
 
 ---
 
@@ -118,177 +105,1119 @@ Kubernetes takes action to bring the number back to 3.
 
 Kubelet is an agent running on every Worker Node.
 
-Its main job is to make sure the Pods assigned to that Worker Node are running properly.
-
-### Remember
-
-`kubelet = Agent on Worker Node`
+Its main job is to make sure all assigned Pods and containers are running properly on that Worker Node.
 
 ---
 
 ## kube-proxy
 
-kube-proxy manages network traffic on the Worker Node and helps send Service traffic to the correct Pod.
-
-### Remember
-
-`kube-proxy = Service Traffic → Correct Pod`
+kube-proxy manages network traffic and sends Service traffic to the correct Pod.
 
 ---
 
 ## Container Runtime
 
-Container Runtime is responsible for running and managing containers inside Pods.
-
-Examples:
-
-- containerd
-- CRI-O
-
-### Remember
-
-`Container Runtime = Run Containers`
+Container Runtime is responsible for creating and running containers inside the Pod.
 
 ---
 
-# If One Pod Crashes — Flow
+# If 1 Pod is deleted/lost then step-by-step procedure
 
-Assume one Pod becomes unhealthy.
+First, Kubelet detects that one Pod is unhealthy or unavailable.
 
-1. Kubelet detects/reports the Pod status.
-2. Status is communicated through the API Server.
-3. Kubernetes controllers compare the current state with the desired state.
-4. If a replacement Pod is required, Kubernetes creates the required Pod.
-5. Scheduler decides which Worker Node should run the new Pod.
-6. Kubelet on that Worker Node receives the Pod assignment.
-7. Kubelet works with the Container Runtime to run the containers.
+Then it sends the status to the API Server.
 
-### Easy Flow
+After that, Controller Manager checks the current state and desired state.
 
-`Pod Problem → kubelet → API Server → Controller → Scheduler → kubelet → Container Runtime`
+If there is a mismatch, a new Pod is required.
 
----
+Then Scheduler decides on which Worker Node the new Pod will run.
 
-# Kubernetes Core Objects
-
-## Pod
-
-Pod is the smallest deployable unit in Kubernetes.
-
-A Pod can contain one or more containers. Normally, we run one main application container inside a Pod.
-
-### Remember
-
-`Pod → Container`
-
----
-
-## ReplicaSet
-
-ReplicaSet maintains the required number of Pods.
-
-For example, if we define 3 replicas and one Pod goes down or gets deleted, ReplicaSet ensures a new Pod is created to maintain 3 Pods.
-
-### Example
-
-`Required = 3 Pods`
-
-`1 Pod Deleted`
-
-`Current = 2 Pods`
-
-`ReplicaSet → Bring it back to 3 Pods`
-
-### Remember
-
-`ReplicaSet = Maintain Required Pods`
-
----
-
-## Deployment
-
-Deployment manages ReplicaSets.
-
-Deployment is also used for application updates and rollbacks.
+After that, Kubelet asks the Container Runtime to create and run the container.
 
 ### Flow
 
-`Deployment → ReplicaSet → Pods`
-
-### Remember
-
-`Deployment = Manage ReplicaSet + Update + Rollback`
+```text
+Pod lost
+   ↓
+Kubelet detects/reports status
+   ↓
+API Server
+   ↓
+Controller Manager checks desired vs current state
+   ↓
+New Pod required
+   ↓
+Scheduler selects Worker Node
+   ↓
+Kubelet
+   ↓
+Container Runtime
+   ↓
+New Pod/Container running
+```
 
 ---
+
+# What happens if a container inside a Pod becomes unhealthy/crashes?
+
+Kubelet detects the container problem and reports the status to the API Server.
+
+Based on the restart policy, Kubelet asks the Container Runtime to restart the container inside the same Pod.
+
+A new Pod is not created.
+
+### Flow
+
+```text
+Container crashes
+      ↓
+Kubelet detects
+      ↓
+Container Runtime
+      ↓
+Container restarted
+      ↓
+Same Pod continues
+```
+
+---
+
+# If desired state and current state do not match
+
+Controller Manager checks the desired state and current state.
+
+For example, if desired Pods are 3 but current Pods are 2, ReplicaSet Controller creates one new Pod through the API Server.
+
+Then Scheduler decides on which Worker Node the new Pod should run.
+
+Kubelet on that Worker Node sees the assigned Pod and asks Container Runtime to run the container.
+
+### Example
+
+```text
+Desired Pods = 3
+Current Pods = 2
+
+Difference = 1
+
+ReplicaSet Controller
+        ↓
+Creates required Pod
+        ↓
+Scheduler
+        ↓
+Worker Node
+        ↓
+Kubelet
+        ↓
+Container Runtime
+```
+
+---
+
+# If I create a Deployment using command/YAML
+
+When I apply the Deployment YAML using `kubectl`, `kubectl` sends the request to the API Server.
+
+Deployment Controller creates the ReplicaSet, and ReplicaSet Controller creates the required Pods.
+
+Then Scheduler assigns the Pods to Worker Nodes.
+
+Kubelet sees the assigned Pods and asks Container Runtime to run the containers.
+
+### Flow
+
+```text
+kubectl apply -f deployment.yml
+          ↓
+      API Server
+          ↓
+ Deployment Controller
+          ↓
+      ReplicaSet
+          ↓
+ ReplicaSet Controller
+          ↓
+        Pods
+          ↓
+      Scheduler
+          ↓
+    Worker Nodes
+          ↓
+       Kubelet
+          ↓
+ Container Runtime
+          ↓
+      Containers
+```
+
+---
+
+# Pod
+
+Pod is the smallest deployable unit in Kubernetes.
+
+A Pod contains one or more containers, and normally we run one application container inside a Pod.
+
+## Create Pod
+
+### pod.yml
+
+```yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: nginx-pod
+  namespace: dev
+spec:
+  containers:
+  - name: nginx
+    image: nginx
+```
+
+### Create Pod
+
+```bash
+kubectl apply -f pod.yml
+```
+
+### Check Pod
+
+```bash
+kubectl get pods -n dev
+```
+
+---
+
+# ReplicaSet
+
+ReplicaSet is used to maintain the required number of Pods.
+
+For example, if we define 3 replicas and one Pod goes down or gets deleted, ReplicaSet will automatically create a new Pod to maintain 3 replicas.
+
+### ReplicaSet hierarchy
+
+```text
+ReplicaSet
+    ↓
+Pods
+    ↓
+Containers
+```
+
+## ReplicaSet YAML
+
+```yaml
+apiVersion: apps/v1
+kind: ReplicaSet
+metadata:
+  name: nginx-rs
+  namespace: dev
+
+spec:
+  replicas: 2
+
+  selector:
+    matchLabels:
+      env: dev
+
+  template:
+    metadata:
+      labels:
+        env: dev
+
+    spec:
+      containers:
+      - name: nginx
+        image: nginx
+```
+
+### Create ReplicaSet
+
+```bash
+kubectl apply -f rs.yml
+```
+
+### Check ReplicaSet
+
+```bash
+kubectl get rs -n dev
+```
+
+### Check Pods
+
+```bash
+kubectl get pods -n dev
+```
+
+---
+
+# Deployment
+
+Deployment manages the ReplicaSet.
+
+Deployment is also used for application updates and rollback.
+
+### Deployment hierarchy
+
+```text
+Deployment
+    ↓
+ReplicaSet
+    ↓
+Pods
+    ↓
+Containers
+```
+
+Deployment does not directly manage individual Pods.
+
+Deployment manages the ReplicaSet, and ReplicaSet maintains the required number of Pods.
+
+## Create Deployment
+
+### deployment.yml
+
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dep-nginx
+  namespace: dev
+
+spec:
+  replicas: 2
+
+  selector:
+    matchLabels:
+      env: dev
+
+  template:
+    metadata:
+      labels:
+        env: dev
+
+    spec:
+      containers:
+      - name: nginx
+        image: nginx
+```
+
+### Create Deployment
+
+```bash
+kubectl apply -f deployment.yml
+```
+
+### Check Deployment
+
+```bash
+kubectl get deployment -n dev
+```
+
+### Check ReplicaSet
+
+```bash
+kubectl get rs -n dev
+```
+
+### Check Pods
+
+```bash
+kubectl get pods -n dev
+```
+
+---
+
+# Labels
+
+Labels are key-value tags used to identify and organize Kubernetes resources.
+
+Example:
+
+```yaml
+labels:
+  env: dev
+```
+
+---
+
+# Selectors
+
+Selectors are used to select resources based on matching labels.
+
+Example:
+
+```yaml
+selector:
+  env: dev
+```
+
+If Pod has:
+
+```yaml
+labels:
+  env: dev
+```
+
+then Service/ReplicaSet can select that Pod using:
+
+```yaml
+selector:
+  env: dev
+```
+
+### Simple Memory
+
+```text
+Label
+  ↓
+Tag / Identity
+
+Selector
+  ↓
+Select matching label
+```
+
+---
+
+# Service
+
+Service provides a stable endpoint to access Pods because Pod IPs can change.
+
+Pod IPs can change when Pods are recreated, but the Service endpoint remains stable and sends traffic to the available Pods.
+
+Service uses a selector to find the required Pods.
+
+---
+
+# Service Types
+
+We covered three Service types:
+
+1. ClusterIP
+2. NodePort
+3. LoadBalancer
+
+---
+
+# 1. ClusterIP
+
+ClusterIP is mainly used for internal communication within the Kubernetes cluster.
+
+### Flow
+
+```text
+Application / Pod
+       ↓
+ClusterIP Service
+       ↓
+Backend Pods
+```
+
+ClusterIP is the default Service type.
+
+## ClusterIP YAML
+
+```yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx-service
+  namespace: dev
+
+spec:
+  selector:
+    env: dev
+
+  ports:
+  - protocol: TCP
+    port: 80
+    targetPort: 80
+```
+
+### Create Service
+
+```bash
+kubectl apply -f service.yml
+```
+
+### Check Service
+
+```bash
+kubectl get service -n dev
+```
+
+Example:
+
+```text
+NAME            TYPE        CLUSTER-IP    EXTERNAL-IP   PORT(S)
+nginx-service   ClusterIP   10.96.67.58   <none>        80/TCP
+```
+
+### Test ClusterIP
+
+From inside a Pod:
+
+```bash
+kubectl exec -n dev -it <pod-name> -- curl http://10.96.67.58
+```
+
+If everything is working, we get the nginx response.
+
+### Check Endpoints
+
+```bash
+kubectl get endpoints nginx-service -n dev
+```
+
+Example:
+
+```text
+10.244.1.4:80
+10.244.2.4:80
+```
+
+These are the backend Pod endpoints selected by the Service.
+
+---
+
+# 2. NodePort
+
+NodePort is used for external communication.
+
+It exposes the Service through:
+
+```text
+Node IP + NodePort
+```
+
+### Flow
+
+```text
+External User
+      ↓
+Node IP : NodePort
+      ↓
+Service
+      ↓
+Pods
+```
+
+## NodePort YAML
+
+```yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx-service
+  namespace: dev
+
+spec:
+  type: NodePort
+
+  selector:
+    env: dev
+
+  ports:
+  - protocol: TCP
+    port: 80
+    targetPort: 80
+```
+
+### Check NodePort
+
+```bash
+kubectl get service -n dev
+```
+
+Example:
+
+```text
+NAME            TYPE       CLUSTER-IP    EXTERNAL-IP   PORT(S)
+nginx-service   NodePort   10.96.67.58   <none>        80:32759/TCP
+```
+
+Here:
+
+```text
+80
+↓
+Service Port
+
+32759
+↓
+NodePort
+```
+
+External access concept:
+
+```text
+Node IP:32759
+      ↓
+NodePort
+      ↓
+Service
+      ↓
+Pod:80
+```
+
+---
+
+# 3. LoadBalancer
+
+LoadBalancer is used for external communication through an external/cloud Load Balancer.
+
+### Flow
+
+```text
+External User
+      ↓
+Load Balancer DNS/IP
+      ↓
+Kubernetes Service
+      ↓
+Pods
+```
+
+## LoadBalancer YAML
+
+```yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx-service
+  namespace: dev
+
+spec:
+  type: LoadBalancer
+
+  selector:
+    env: dev
+
+  ports:
+  - protocol: TCP
+    port: 80
+    targetPort: 80
+```
+
+### Check LoadBalancer
+
+```bash
+kubectl get service -n dev
+```
+
+In our KIND lab:
+
+```text
+NAME            TYPE           CLUSTER-IP    EXTERNAL-IP   PORT(S)
+nginx-service   LoadBalancer   10.96.67.58   <pending>     80:32759/TCP
+```
+
+### Why `<pending>`?
+
+Our cluster is running using KIND.
+
+KIND is running inside Docker and is not automatically integrated with AWS to provision an AWS Load Balancer.
+
+Therefore:
+
+```text
+LoadBalancer Service
+        ↓
+Needs external/cloud LB
+        ↓
+KIND does not automatically provision AWS LB
+        ↓
+EXTERNAL-IP = <pending>
+```
+
+In a cloud-integrated Kubernetes environment such as EKS, the appropriate AWS integration/controller can provision the Load Balancer.
+
+---
+
+# Service Port vs TargetPort
+
+Example:
+
+```yaml
+ports:
+- protocol: TCP
+  port: 80
+  targetPort: 80
+```
+
+## port
+
+`port` is the port on which the Service receives traffic.
+
+## targetPort
+
+`targetPort` is the backend Pod/container port where the Service forwards the traffic.
+
+### Flow
+
+```text
+Client
+  ↓
+Service:80
+  ↓
+Pod:80
+  ↓
+nginx
+```
+
+### Simple Memory
+
+```text
+port
+  ↓
+Service port
+
+targetPort
+  ↓
+Pod/container port
+```
+
+---
+
+# Namespace
+
+Namespace helps us logically separate, organize, and manage resources in the same Kubernetes cluster.
+
+## Create Namespace
+
+### namespace.yml
+
+```yaml
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: dev
+```
+
+### Create Namespace
+
+```bash
+kubectl apply -f namespace.yml
+```
+
+### Check Namespace
+
+```bash
+kubectl get namespace
+```
+
+---
+
+# apiVersion
+
+`apiVersion` tells Kubernetes which API group and version should be used for the resource.
+
+Examples:
+
+### Pod
+
+```yaml
+apiVersion: v1
+kind: Pod
+```
+
+### Service
+
+```yaml
+apiVersion: v1
+kind: Service
+```
+
+### Namespace
+
+```yaml
+apiVersion: v1
+kind: Namespace
+```
+
+### ReplicaSet
+
+```yaml
+apiVersion: apps/v1
+kind: ReplicaSet
+```
+
+### Deployment
+
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+```
+
+Simple memory:
+
+```text
+v1
+↓
+Core API resources
+
+apps/v1
+↓
+apps API group + v1
+```
+
+---
+
+# kind
+
+`kind` tells Kubernetes what type of resource we want to create.
+
+Examples:
+
+```yaml
+kind: Pod
+```
+
+```yaml
+kind: ReplicaSet
+```
+
+```yaml
+kind: Deployment
+```
+
+```yaml
+kind: Service
+```
+
+```yaml
+kind: Namespace
+```
+
+---
+
+# metadata
+
+`metadata` contains information about the Kubernetes resource.
+
+Common fields:
+
+```yaml
+metadata:
+  name: nginx-service
+  namespace: dev
+```
+
+### name
+
+Identifies the resource.
+
+### namespace
+
+Defines which Namespace the resource belongs to.
+
+### labels
+
+Labels can also be defined under metadata.
+
+Example:
+
+```yaml
+metadata:
+  labels:
+    env: dev
+```
+
+---
+
+# spec
+
+`spec` defines the desired configuration/state of the resource.
+
+The contents of `spec` depend on the resource.
+
+### Pod
+
+```yaml
+spec:
+  containers:
+```
+
+### ReplicaSet
+
+```yaml
+spec:
+  replicas:
+  selector:
+  template:
+```
+
+### Deployment
+
+```yaml
+spec:
+  replicas:
+  selector:
+  template:
+```
+
+### Service
+
+```yaml
+spec:
+  selector:
+  ports:
+```
+
+---
+
+# Basic Kubernetes YAML Structure
+
+Most Kubernetes YAML files contain:
+
+```yaml
+apiVersion:
+kind:
+
+metadata:
+
+spec:
+```
+
+Meaning:
+
+```text
+apiVersion
+↓
+Which API group/version
+
+kind
+↓
+What resource
+
+metadata
+↓
+Resource information
+
+spec
+↓
+Desired configuration
+```
+
+---
+
+# Important Difference: Deployment/ReplicaSet vs Service
+
+## Deployment / ReplicaSet
+
+Deployment and ReplicaSet create/manage Pods, so they need a Pod blueprint called `template`.
+
+```text
+Deployment / ReplicaSet
+        ↓
+     template
+        ↓
+       Pod
+```
 
 ## Service
 
-Service provides a stable endpoint to access Pods because Pod IP addresses can change.
+Service does not create Pods.
 
-If a Pod is deleted and recreated, its IP may change, but the Service endpoint remains stable and sends traffic to the available Pods.
+Service selects existing Pods using a selector.
 
-### Example
+```yaml
+selector:
+  env: dev
+```
 
-`Service → Pod-1 / Pod-2 / Pod-3`
-
-### Remember
-
-`Service = Stable Endpoint`
-
-`Pod IP = Can Change`
+Therefore Service does not have a `template`.
 
 ---
+
+# Important Commands Used
 
 ## Namespace
 
-Namespace is used to separate and organize resources inside the same Kubernetes cluster.
+```bash
+kubectl get namespace
+```
 
-For example, we can create separate namespaces for Dev, Test and Prod.
+## Pods
 
-Each namespace can have its own Pods, Services and Deployments.
+```bash
+kubectl get pods -n dev
+kubectl get pods -n dev --show-labels
+kubectl get pods -n dev -o wide
+```
 
-### Example
+## ReplicaSet
 
-`One Kubernetes Cluster`
+```bash
+kubectl get rs -n dev
+```
 
-`→ DEV Namespace`
+## Deployment
 
-`→ TEST Namespace`
+```bash
+kubectl get deployment -n dev
+```
 
-`→ PROD Namespace`
+## Service
 
-### Remember
+```bash
+kubectl get service -n dev
+```
 
-`Namespace = Separate + Organize Resources in Same Cluster`
+## Endpoints
+
+```bash
+kubectl get endpoints nginx-service -n dev
+```
+
+## Apply YAML
+
+```bash
+kubectl apply -f <file>.yml
+```
+
+## Delete Pod
+
+```bash
+kubectl delete pod <pod-name> -n dev
+```
+
+## Test Service from Pod
+
+```bash
+kubectl exec -n dev -it <pod-name> -- curl http://<cluster-ip>
+```
 
 ---
 
-# Quick Revision
+# Day-1 Final Architecture
 
-`Kubernetes = Container Orchestration`
+```text
+                     Deployment
+                          ↓
+                     ReplicaSet
+                          ↓
+                         Pods
+                          ↓
+                     Containers
 
-`Cluster = Control Plane + Worker Nodes`
 
-`API Server = Main Entry Point / Gatekeeper`
+                      Service
+                         ↓
+                      Selector
+                         ↓
+                   Matching Pods
+```
 
-`etcd = Cluster State Database`
+## Service Types
 
-`Scheduler = Select Worker Node for Pod`
+```text
+ClusterIP
+    ↓
+Internal communication
 
-`Controller Manager = Current State vs Desired State`
 
-`kubelet = Worker Node Agent`
+NodePort
+    ↓
+External communication
+Node IP + NodePort
 
-`kube-proxy = Service Traffic → Correct Pod`
 
-`Container Runtime = Run Containers`
+LoadBalancer
+    ↓
+External communication
+Load Balancer DNS/IP
+```
 
-`Pod = Smallest Deployable Unit`
+---
 
-`ReplicaSet = Maintain Required Pods`
+# Final Interview Revision
 
-`Deployment = Manage ReplicaSet + Update + Rollback`
+## What is Kubernetes?
 
-`Service = Stable Endpoint for Pods`
+Kubernetes is a container orchestration tool used to deploy, manage and scale containerized applications.
 
-`Namespace = Separate + Organize Resources in Same Cluster`
+## What is a Kubernetes Cluster?
+
+A Kubernetes cluster is a group of nodes where we run our containerized applications.
+
+## What is a Pod?
+
+Pod is the smallest deployable unit in Kubernetes. A Pod contains one or more containers, and normally we run one application container inside a Pod.
+
+## What is a ReplicaSet?
+
+ReplicaSet maintains the required number of Pods. If a Pod is deleted, ReplicaSet automatically creates a replacement Pod.
+
+## What is a Deployment?
+
+Deployment manages the ReplicaSet and is used for application updates and rollback.
+
+## What is a Service?
+
+Service provides a stable endpoint to access Pods because Pod IPs can change when Pods are recreated.
+
+## What is ClusterIP?
+
+ClusterIP provides internal communication within the Kubernetes cluster.
+
+## What is NodePort?
+
+NodePort provides external communication through Node IP and NodePort.
+
+## What is LoadBalancer?
+
+LoadBalancer provides external communication through an external/cloud Load Balancer DNS/IP.
+
+## What is Namespace?
+
+Namespace helps us logically separate, organize, and manage resources in the same Kubernetes cluster.
+
+## What is a Label?
+
+Label is a key-value tag used to identify and organize resources.
+
+## What is a Selector?
+
+Selector selects resources based on matching labels.
+
+## What is `port`?
+
+`port` is the port on which the Service receives traffic.
+
+## What is `targetPort`?
+
+`targetPort` is the backend Pod/container port where the Service forwards traffic.
+
+---
+
+# Day-1 Status
+
+- [x] Kubernetes Introduction
+- [x] Why Kubernetes
+- [x] Kubernetes Cluster
+- [x] Architecture
+- [x] Control Plane
+- [x] Worker Node
+- [x] Pod
+- [x] ReplicaSet
+- [x] Deployment
+- [x] Namespace
+- [x] apiVersion
+- [x] kind
+- [x] metadata
+- [x] spec
+- [x] Labels
+- [x] Selectors
+- [x] ClusterIP
+- [x] NodePort
+- [x] LoadBalancer
+- [x] port vs targetPort
+- [x] Service testing
+- [x] Deployment → ReplicaSet → Pod hierarchy
+- [x] Hands-on
+
+# Kubernetes Day-1 COMPLETE
