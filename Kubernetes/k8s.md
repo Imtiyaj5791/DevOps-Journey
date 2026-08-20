@@ -1,4 +1,4 @@
-# Kubernetes Notes — Topic 1 to 3
+# Kubernetes Notes 
 
 ## What is Kubernetes?
 
