@@ -1,1556 +1,1474 @@
-# Linux Administration Interview Notes
+# Linux Administration Interview README
+## L2 / 5–6 Years Linux + AWS Support Level
 
-## What is Linux? What is your experience with Linux administration?
-
-Linux is an open-source operating system that supports multitasking and multi-user functionality.
-
-### Experience
-- Managing more than **5000 Linux production servers**.
-- Primary operating system: **Ubuntu 24.04**.
-- Daily responsibilities:
-  - Server monitoring
-  - Production issue troubleshooting
-  - CPU, memory, and disk utilization analysis
-  - Log analysis
-  - User and permission management
-  - SSH troubleshooting
-  - Incident coordination with multiple teams
+> **Interview Style:** Simple English, troubleshooting flow, production-safe answers.
+> First explain the approach, then give commands if interviewer asks.
 
 ---
 
-## How do you check CPU, Memory, and Disk utilization in Linux?
+# 1. What is Linux? What is your experience with Linux administration?
 
-### CPU Utilization
-```bash
-top
-# or
-htop
-```
+Linux is an open-source operating system.
 
-### Memory Utilization
-```bash
-free -h
-```
+I have around 5 years of experience in Linux and AWS support. In my environment, I support Linux production servers.
 
-### Disk Utilization
-```bash
-df -h
-```
+My day-to-day Linux activities include:
 
-To identify large directories/files:
-
-```bash
-du -sh /*
-du -sh /var/*
-```
+- Server monitoring
+- Production incident troubleshooting
+- CPU, memory and disk utilization
+- Service troubleshooting
+- Log analysis
+- User and permission management
+- SSH troubleshooting
+- Patching coordination
+- Working with application, network, cloud and database teams
 
 ---
 
-## If CPU utilization is 95%, how will you troubleshoot?
+# 2. How do you check CPU, memory and disk utilization?
 
-### Step 1: Check Monitoring Tool
-Verify whether it is a temporary spike or a continuous issue using AWS CloudWatch.
+For CPU utilization, I normally use `top` or `htop`.
 
-### Step 2: Connect to Server
-```bash
-ssh user@server_ip
-```
+For memory utilization, I use:
 
-### Step 3: Identify High CPU Process
-```bash
-top
-# or
-htop
-```
+    free -h
 
-### Step 4: Analyze the Process
-```bash
-ps -ef | grep <process_name>
-```
+For disk utilization, I use:
 
-### Step 5: Check Scheduled Jobs
-```bash
-crontab -l
-```
+    df -h
 
-### Step 6: Coordinate with Application Team
-- Verify business impact.
-- Take approval before restarting services or killing processes.
+If disk utilization is high, I use `du` to find which directory is consuming more space.
 
-### Step 7: Perform Approved Action
-```bash
-kill -9 <PID>
-```
+Commands:
 
-Or restart service:
-
-```bash
-sudo systemctl restart <service_name>
-```
+    top
+    htop
+    free -h
+    df -h
+    du -sh /*
+    du -sh /var/*
 
 ---
 
-## If Memory utilization is 95%, how will you troubleshoot?
+# 3. CPU utilization is 95%. How will you troubleshoot?
 
-### Check CloudWatch
-Identify whether memory usage is sustained or temporary.
+First, I will check the monitoring tool to confirm whether CPU utilization is a temporary spike or continuously high.
 
-### Verify Memory Usage
-```bash
-free -h
-```
+Then I will log in to the server and use `top` to identify which process is consuming high CPU.
 
-### Check Swap Usage
-```bash
-swapon --show
-```
+After that, I will check the process details and verify whether any scheduled job is running.
 
-### Identify High Memory Processes
-```bash
-top
-# or
-htop
-```
+If an application process is consuming high CPU, I will check the logs and coordinate with the application team.
 
-```bash
-ps aux --sort=-%mem | head
-```
+I will not directly kill the process or restart the service without checking the impact and taking approval.
 
-### Take Action
-- Monitor scheduled jobs.
-- Coordinate with application owners.
-- Restart application after approval if required.
+Commands:
+
+    top
+    ps -ef | grep <process_name>
+    crontab -l
+
+If restart is approved:
+
+    systemctl restart <service_name>
 
 ---
 
-## Disk utilization reached 100%. How will you troubleshoot?
+# 4. Memory utilization is 95%. How will you troubleshoot?
 
-### Check Filesystem Usage
-```bash
-df -h
-```
+First, I will check whether memory utilization is continuously high or it is only a temporary spike.
 
-### Find Large Directories
-```bash
-du -sh /*
-```
+Then I will use `free -h` to check total, used and available memory.
 
-### Find Large Files
-```bash
-find / -type f -size +500M 2>/dev/null
-```
+I will also check swap utilization.
 
-### Check Log Directory
-```bash
-du -sh /var/log/*
-```
+After that, I will identify which process is consuming high memory.
 
-### Remove Old Logs (As Per SOP)
-```bash
-find /var/log -type f -mtime +60
-```
+If an application process is consuming high memory, I will check the logs and coordinate with the application team before taking any restart or process-level action.
 
-### Clean Temporary Files
-```bash
-du -sh /tmp/*
-```
+Commands:
 
-### Extend AWS EBS Volume
-Verify new disk size:
+    free -h
+    swapon --show
+    top
+    ps aux --sort=-%mem | head
 
-```bash
-lsblk
-```
+---
 
-For Ext4:
+# 5. Disk utilization reached 100%. How will you troubleshoot?
 
-```bash
-resize2fs /dev/<device>
-```
+First, I will use `df -h` to identify which filesystem is full.
+
+Then I will use `du` to find which directory is consuming more space.
+
+After that, I will check for large log files, temporary files or unnecessary old files.
+
+I will clean only unnecessary files as per SOP.
+
+If we cannot release enough space and additional capacity is required, I will extend the disk/filesystem after approval.
+
+Commands:
+
+    df -h
+    du -sh /*
+    du -sh /var/*
+    du -sh /var/log/*
+    find / -type f -size +500M 2>/dev/null
+
+For an extended EBS volume:
+
+    lsblk
+
+For ext4:
+
+    resize2fs /dev/<device>
 
 For XFS:
 
-```bash
-xfs_growfs <mount_point>
-```
+    xfs_growfs <mount_point>
 
 ---
 
-## SSH is not working. How will you troubleshoot?
+# 6. Server is running out of disk space because of logs. How will you troubleshoot and prevent it again?
 
-### Check Connectivity
-```bash
-ping <server_ip>
-```
+First, I will check which filesystem is consuming more space using `df -h`.
 
-### AWS Validation
-- EC2 System Status Checks
-- Instance Status Checks
-- Security Groups
-- NACL Rules
-- Route Tables
-- Internet Gateway
+Then I will identify which log directory or log file is consuming the space.
 
-### Verify SSH Port
-```bash
-ss -tulnp | grep :22
-```
+I will check old and large log files and clean or archive them as per company SOP.
 
-### Check SSH Service
-```bash
-sudo systemctl status ssh
-# or
-sudo systemctl status sshd
-```
+After resolving the immediate issue, I will check whether log rotation is configured properly.
 
-### Review SSH Logs
-```bash
-journalctl -u ssh
-# or
-journalctl -u sshd
-```
+If required, I will configure or correct `logrotate` so old logs are rotated, compressed and retained only for the required period.
+
+Commands:
+
+    df -h
+    du -sh /var/log/*
+    ls -lh /var/log
+    cat /etc/logrotate.conf
+    ls /etc/logrotate.d/
 
 ---
 
-## How do you create a user in Linux and manage permissions?
+# 7. SSH is not working. How will you troubleshoot?
 
-### Create User
-```bash
-sudo useradd username
-sudo passwd username
-```
+First, I will check whether the server itself is reachable.
 
-### Force Password Change on First Login
-```bash
-sudo chage -d 0 username
-```
+If it is an AWS EC2 instance, I will check EC2 status checks.
 
-### Add User to Existing Group
-```bash
-sudo usermod -aG groupname username
-```
+Then I will check Security Group, NACL and routing based on the network configuration.
 
-### Change Permissions
-```bash
-chmod 755 file_name
-```
+After that, I will check whether SSH port 22 is listening and whether the SSH service is running.
 
-### Change Ownership
-```bash
-chown user:group file_name
-```
+Finally, I will check SSH logs to find the exact error.
+
+Commands:
+
+    ss -tulnp | grep :22
+    systemctl status ssh
+    journalctl -u ssh
 
 ---
 
-## What are file permissions in Linux? Explain chmod 755.
+# 8. Server is pinging but SSH is not working. What will you check?
 
-Linux permissions are based on:
+If ping is working, basic network connectivity is available.
 
-- Read (r) = 4
-- Write (w) = 2
-- Execute (x) = 1
+Then I will focus on SSH.
 
-### chmod 755
+I will check whether port 22 is allowed and listening.
 
-```text
-Owner = 7 (rwx)
-Group = 5 (r-x)
-Others = 5 (r-x)
-```
+After that, I will check SSH service status, firewall, Security Group and NACL.
 
-Command:
+Finally, I will check SSH logs to find the exact issue.
 
-```bash
-chmod 755 file_name
-```
+Commands:
+
+    systemctl status ssh
+    ss -tulnp | grep :22
+    journalctl -u ssh
 
 ---
 
-## Difference between chmod and chown
+# 9. How do you create a Linux user and manage permissions?
 
-### chmod
-Changes file or directory permissions.
+I can create a user using `useradd`, set the password and add the user to the required group.
 
-```bash
-chmod 755 file_name
-```
+For file access, I use `chmod` to manage permissions and `chown` to manage ownership.
 
-### chown
-Changes ownership.
+I provide only the required permissions instead of giving unnecessary access.
 
-```bash
-chown user:group file_name
-```
+Commands:
 
----
+    useradd username
+    passwd username
+    usermod -aG groupname username
+    chage -d 0 username
 
-## What is a cron job and how do you schedule one?
+Permissions:
 
-Cron jobs automate tasks at scheduled times.
+    chmod 755 file_name
 
-### Edit Crontab
-```bash
-crontab -e
-```
+Ownership:
 
-### Example
-Run backup script every day at 2 AM:
-
-```bash
-0 2 * * * /opt/scripts/backup.sh
-```
-
-### View Existing Cron Jobs
-```bash
-crontab -l
-```
+    chown user:group file_name
 
 ---
 
-## What is log analysis in Linux?
+# 10. Explain Linux file permissions and chmod 755.
 
-Log analysis is the process of reviewing system, application, and security logs to identify root causes.
+Linux mainly has three permissions:
 
-### Authentication Logs
-```bash
-cat /var/log/auth.log
-```
+- Read = 4
+- Write = 2
+- Execute = 1
 
-### Using Journalctl
-```bash
-journalctl -xe
-journalctl -u ssh
-```
+For `755`:
 
-### Monitor Logs in Real Time
-```bash
-tail -f /var/log/syslog
-```
+    Owner  = 7 = rwx
+    Group  = 5 = r-x
+    Others = 5 = r-x
+
+So the owner has read, write and execute permission.
+
+Group and others have read and execute permission.
 
 ---
 
-## How do you perform Linux patching in a production environment?
+# 11. What is the difference between chmod and chown?
 
-### Current Process
-- Using NinjaRMM for patching.
-- Engineering team pushes patches.
-- Operations team coordinates and monitors.
+`chmod` is used to change file or directory permissions.
 
-### Validate Available Updates
-```bash
-sudo apt update
-sudo apt list --upgradable
-```
+Example:
 
-### Manual Upgrade (If Approved)
-```bash
-sudo apt upgrade -y
-```
+    chmod 755 file_name
 
-### Post Checks
-```bash
-uptime
-systemctl --failed
-```
+`chown` is used to change the owner or group of a file or directory.
+
+Example:
+
+    chown user:group file_name
 
 ---
 
-## Do you have experience with Bash scripting?
+# 12. Application is getting "Permission Denied". How will you troubleshoot?
 
-Yes. I have worked with Bash scripting for system health monitoring and automation.
+First, I will identify which file or directory is giving the permission error.
 
-### Example Commands Used in Scripts
+Then I will check its owner, group and permissions.
 
-```bash
-free -h
-```
+I will also check which user the application is running with.
 
-```bash
-df -h
-```
+If ownership is incorrect, I will correct the ownership.
 
-```bash
-top -bn1
-```
+If permission is incorrect, I will provide only the required permission.
 
-Use cases:
+I will not directly give `777` permission without understanding the requirement.
+
+Commands:
+
+    ls -l <file_or_directory>
+    ps -ef | grep <application>
+    chown user:group <file_or_directory>
+    chmod <required_permission> <file_or_directory>
+
+---
+
+# 13. What is a cron job?
+
+Cron is used to automatically run commands or scripts at a scheduled time.
+
+For example, if I need to run a backup script every day at 2 AM, I can configure it in crontab.
+
+Edit crontab:
+
+    crontab -e
+
+Check existing cron jobs:
+
+    crontab -l
+
+Example:
+
+    0 2 * * * /opt/scripts/backup.sh
+
+---
+
+# 14. What is log analysis in Linux?
+
+Log analysis means checking system or application logs to find the exact reason for an issue.
+
+During troubleshooting, I normally check service logs, system logs and application logs.
+
+Commands:
+
+    journalctl -xe
+    journalctl -u <service_name>
+    tail -f /var/log/syslog
+    tail -f /path/to/application.log
+
+---
+
+# 15. How do you perform Linux patching in production?
+
+In my environment, we use NinjaRMM for patching.
+
+The engineering team pushes the patches and our operations team coordinates and monitors the activity.
+
+Before and after patching, we verify the server and application status.
+
+For Ubuntu, I can manually check available updates using:
+
+    apt update
+    apt list --upgradable
+
+After patching, I will verify:
+
+    uptime
+    systemctl --failed
+
+I will also verify the required application/services.
+
+---
+
+# 16. Do you have experience with Bash scripting?
+
+Yes. I have working experience with basic Bash scripting for system health checks and small automation tasks.
+
+I have used commands for CPU, memory, disk and log checks inside scripts.
+
+Some use cases are:
+
 - System health monitoring
-- Alerting
+- CPU/memory checks
+- Disk checks
 - Log cleanup
-- Task automation
+- Scheduled tasks
+- Small operational automation
 
 ---
 
-## Server is slow. How will you troubleshoot?
+# 17. Server is slow. How will you troubleshoot?
 
-### Check CPU
-```bash
-top
-```
+First, I will check CPU, memory and disk utilization.
 
-### Check Memory
-```bash
-free -h
-```
+Then I will check the top CPU and memory-consuming processes.
 
-### Check Disk
-```bash
-df -h
-```
+If CPU and memory look normal, I will check disk I/O, load average, application status and logs.
 
-### Check Top Processes
-```bash
-ps aux --sort=-%cpu | head
-ps aux --sort=-%mem | head
-```
+I will also check network connectivity if required.
 
-### Review Logs
-```bash
-journalctl -xe
-```
+Based on the findings, I will identify whether the issue is related to OS, application, storage or network.
 
-### Application Verification
-```bash
-systemctl status <service_name>
-```
+Commands:
+
+    top
+    free -h
+    df -h
+    uptime
+    ps aux --sort=-%cpu | head
+    ps aux --sort=-%mem | head
+    journalctl -xe
 
 ---
 
-## Application is down but server is up. What will you check?
+# 18. Application is down but server is up. What will you check?
 
-### Verify Service Status
-```bash
-systemctl status <service_name>
-```
+First, I will check the application service status using `systemctl status`.
 
-### Check Listening Ports
-```bash
-ss -tulnp
-```
+Then I will check whether the required application port is listening or not.
 
-### Review Application Logs
-```bash
-tail -100f /path/to/application.log
-```
+After that, I will test the application locally using `curl`.
 
-### Restart Service (After Approval)
-```bash
-sudo systemctl restart <service_name>
-```
+Then I will check the application and system logs to find the exact error.
+
+If restart is required, I will take approval, restart the service and verify the application again.
+
+Commands:
+
+    systemctl status <service_name>
+    ss -tulnp
+    curl localhost:<port>
+    journalctl -u <service_name>
+    tail -100 /path/to/application.log
 
 ---
 
-## Explain the Linux Booting Process
+# 19. Service is running but application is not accessible. How will you troubleshoot?
 
-1. **POST (Power-On Self-Test)** verifies hardware.
-2. **BIOS/UEFI** identifies the boot device.
-3. **Boot Loader (GRUB)** loads the Linux kernel.
-4. **Kernel** initializes hardware and system resources.
-5. **systemd/init (PID 1)** starts system services.
-6. Required filesystems are mounted.
-7. System reaches the login prompt and becomes available for users.
+First, I will check whether the required application port is listening.
 
-# LVM (Logical Volume Manager) Interview Notes
+Then I will test the application locally using:
 
----
+    curl localhost:<port>
 
-# What is LVM in Linux?
+If the application is working locally but not remotely, then I will check firewall and network configuration.
 
-LVM (Logical Volume Manager) is a storage management solution in Linux that provides flexibility in managing disks and filesystems.
+If it is hosted on AWS, I will check Security Group, NACL and route configuration.
 
-It allows us to:
+If the application is behind a Load Balancer, I will check the listener, Target Group health and health-check configuration.
 
-- Extend storage without repartitioning.
-- Combine multiple disks into a single storage pool.
-- Increase filesystem size easily.
-- Manage storage dynamically.
-
-In enterprise environments, LVM is commonly used because storage requirements can grow over time.
+Finally, I will check the application logs.
 
 ---
 
-# LVM Architecture
+# 20. A Linux service failed to start. How will you troubleshoot?
 
-```text
-Disk
- ↓
-Physical Volume (PV)
- ↓
-Volume Group (VG)
- ↓
-Logical Volume (LV)
- ↓
-Filesystem
- ↓
-Mount Point
-```
+First, I will check the service status using `systemctl status`.
 
-Example:
+Normally it gives some information about why the service failed.
 
-```text
-/dev/xvdf
-    ↓
-PV
-    ↓
-vg_data
-    ↓
-lv_data
-    ↓
-ext4 / xfs
-    ↓
-/data
-```
+Then I will check service logs using `journalctl`.
+
+After that, I will check service configuration, file permissions, dependencies and whether another process is already using the required port.
+
+Once I find the issue, I will fix it and start the service again.
+
+Commands:
+
+    systemctl status <service_name>
+    journalctl -u <service_name>
+    journalctl -xe
+    ss -tulnp
 
 ---
 
-# What is a Physical Volume (PV)?
+# 21. Explain the Linux boot process.
 
-A Physical Volume is a disk or partition that is initialized for LVM.
+When the server starts, BIOS or UEFI performs the initial hardware check.
 
-### Create PV
+Then GRUB loads the Linux kernel.
 
-```bash
-pvcreate /dev/xvdf
-```
+The kernel initializes the hardware and system resources.
 
-### Display PV Information
+After that, `systemd`, which runs as PID 1, starts the required services.
 
-```bash
-pvs
-```
+Finally, the system becomes available for users.
 
-or
+Easy flow:
 
-```bash
-pvdisplay
-```
-
----
-
-# What is a Volume Group (VG)?
-
-A Volume Group is a pool of storage created using one or more Physical Volumes.
-
-### Create VG
-
-```bash
-vgcreate vg_data /dev/xvdf
-```
-
-### View VG Details
-
-```bash
-vgs
-```
-
-or
-
-```bash
-vgdisplay
-```
+    BIOS/UEFI
+        ↓
+    GRUB
+        ↓
+    Kernel
+        ↓
+    systemd (PID 1)
+        ↓
+    Services
+        ↓
+    Login
 
 ---
 
-# What is a Logical Volume (LV)?
+# NETWORKING
 
-A Logical Volume is created from a Volume Group and is used like a normal disk partition.
+# 22. How do you troubleshoot a network connectivity issue in Linux?
 
-### Create LV
-
-```bash
-lvcreate -L 10G -n lv_data vg_data
-```
-
-### View LV Details
-
-```bash
-lvs
-```
-
-or
-
-```bash
-lvdisplay
-```
-
----
-
-# How do you create a filesystem on LVM?
-
-## Ext4 Filesystem
-
-```bash
-mkfs.ext4 /dev/vg_data/lv_data
-```
-
-## XFS Filesystem
-
-```bash
-mkfs.xfs /dev/vg_data/lv_data
-```
-
----
-
-# How do you mount an LVM filesystem?
-
-### Create Mount Point
-
-```bash
-mkdir /data
-```
-
-### Mount Filesystem
-
-```bash
-mount /dev/vg_data/lv_data /data
-```
-
-### Verify Mount
-
-```bash
-df -h
-```
-
----
-
-# How do you make LVM mount permanent?
-
-### Get UUID
-
-```bash
-blkid
-```
-
-### Edit fstab
-
-```bash
-vi /etc/fstab
-```
-
-Example:
-
-```text
-/dev/vg_data/lv_data   /data   ext4   defaults   0 0
-```
-
-### Verify
-
-```bash
-mount -a
-```
-
----
-
-# How do you check LVM information?
-
-### Check Physical Volumes
-
-```bash
-pvs
-```
-
-### Check Volume Groups
-
-```bash
-vgs
-```
-
-### Check Logical Volumes
-
-```bash
-lvs
-```
-
-### Complete Details
-
-```bash
-pvdisplay
-vgdisplay
-lvdisplay
-```
-
----
-
-# Difference Between Partition and LVM
-
-## Traditional Partition
-
-- Fixed size
-- Difficult to resize
-- Less flexible
-
-Examples:
-
-```text
-/dev/sda1
-/dev/sda2
-```
-
-## LVM
-
-- Easy to extend
-- Flexible storage management
-- Supports dynamic resizing
-- Enterprise preferred
-
-Examples:
-
-```text
-/dev/vg_data/lv_data
-```
-
----
-
-# How do you extend an existing LVM filesystem?
-
-### Step 1: Verify Current Usage
-
-```bash
-df -h
-```
-
-### Step 2: Check LVM Layout
-
-```bash
-pvs
-vgs
-lvs
-```
-
-### Step 3: Extend Logical Volume
-
-```bash
-lvextend -L +10G /dev/vg_data/lv_data
-```
-
-or
-
-```bash
-lvextend -r -L +10G /dev/vg_data/lv_data
-```
-
-### Step 4: Extend Filesystem
-
-For Ext4:
-
-```bash
-resize2fs /dev/vg_data/lv_data
-```
-
-For XFS:
-
-```bash
-xfs_growfs /data
-```
-
-### Step 5: Verify
-
-```bash
-df -h
-```
-
----
-
-# How do you add a new disk to an existing LVM?
-
-### Verify New Disk
-
-```bash
-lsblk
-```
-
-### Create Physical Volume
-
-```bash
-pvcreate /dev/xvdf
-```
-
-### Extend Volume Group
-
-```bash
-vgextend vg_data /dev/xvdf
-```
-
-### Verify
-
-```bash
-vgs
-```
-
----
-
-# Interview Scenario: Disk Full and Filesystem is on LVM
-
-## Answer
-
-First, I will check the filesystem utilization.
-
-```bash
-df -h
-```
-
-Then I will verify the LVM structure.
-
-```bash
-pvs
-vgs
-lvs
-```
-
-If free space is available inside the Volume Group, I will extend the Logical Volume.
-
-```bash
-lvextend -L +10G /dev/vg_data/lv_data
-```
-
-Then I will resize the filesystem.
-
-For Ext4:
-
-```bash
-resize2fs /dev/vg_data/lv_data
-```
-
-For XFS:
-
-```bash
-xfs_growfs /data
-```
-
-Finally, I will verify the filesystem size.
-
-```bash
-df -h
-```
-
-If there is no free space available inside the Volume Group, I will attach a new disk and extend the Volume Group before extending the Logical Volume.
-
----
-
-# Most Important LVM Commands
-
-```bash
-pvs
-```
-
-```bash
-vgs
-```
-
-```bash
-lvs
-```
-
-```bash
-pvcreate
-```
-
-```bash
-vgcreate
-```
-
-```bash
-vgextend
-```
-
-```bash
-lvcreate
-```
-
-```bash
-lvextend
-```
-
-```bash
-resize2fs
-```
-
-```bash
-xfs_growfs
-```
-
-```bash
-df -h
-```
-
-```bash
-lsblk
-```
-
----
-
-# Quick Interview Answer
-
-### What is LVM?
-
-LVM (Logical Volume Manager) is a storage management layer in Linux that provides flexible disk management. It allows us to create, extend and manage storage volumes dynamically without repartitioning disks. The main components of LVM are Physical Volume (PV), Volume Group (VG) and Logical Volume (LV).
-
-# Linux Additional Interview Questions — Networking, Services, Filesystem, Process & Production Scenarios
-
-## 1. How do you troubleshoot a network connectivity issue in Linux?
-
-First, I will check the IP address of the server.
-
-```bash
-ip a
-```
+First, I will check the server IP address.
 
 Then I will check the routing table.
 
-```bash
-ip route
-```
+After that, I will test connectivity to the destination IP.
 
-After that, I will check connectivity using:
+If basic connectivity is working, I will check whether the required application port is reachable.
 
-```bash
-ping <destination_ip>
-```
+If the issue is related to hostname resolution, I will also check DNS.
 
-If it is an application connectivity issue, I will check the required port.
+Commands:
 
-```bash
-ss -tulnp
-```
-
-I can also test the application using:
-
-```bash
-curl http://<server_ip>:<port>
-```
-
-For DNS-related issues, I will use:
-
-```bash
-nslookup <domain>
-```
-
-or
-
-```bash
-dig <domain>
-```
+    ip a
+    ip route
+    ping <destination_ip>
+    ss -tulnp
+    curl http://<server_ip>:<port>
+    nslookup <domain>
+    dig <domain>
 
 ---
 
-## 2. One Linux server cannot communicate with another server. How will you troubleshoot?
+# 23. One Linux server cannot communicate with another server. How will you troubleshoot?
 
-First, I will check whether both servers have the correct IP address and network configuration.
+First, I will check the IP address and routing configuration.
 
-```bash
-ip a
-ip route
-```
+Then I will test connectivity between both servers.
 
-Then I will test connectivity.
+If basic connectivity is working, I will check whether the required application port is listening and reachable.
 
-```bash
-ping <destination_ip>
-```
+If servers are hosted in AWS, I will also check Security Groups, NACL and route tables.
 
-If ping is working, I will check whether the required application port is reachable.
+Based on where the traffic is failing, I will troubleshoot the OS, network or application side.
 
-I will also verify:
+Commands:
 
-- Firewall rules
-- Security Group if hosted on AWS
-- NACL if required
-- Route Table
-- Application service
-- Listening port
-
-```bash
-ss -tulnp
-```
+    ip a
+    ip route
+    ping <destination_ip>
+    ss -tulnp
+    curl http://<destination_ip>:<port>
 
 ---
 
-## 3. DNS is not resolving on a Linux server. How will you troubleshoot?
+# 24. DNS is not resolving on a Linux server. How will you troubleshoot?
 
-First, I will check whether the server has network connectivity.
+First, I will check whether basic network connectivity is working by testing an IP address.
 
-```bash
-ping <gateway_or_ip>
-```
+Then I will test DNS resolution using `nslookup` or `dig`.
 
-Then I will test DNS resolution.
+If DNS is not resolving, I will check DNS configuration in `/etc/resolv.conf`.
 
-```bash
-nslookup google.com
-```
+I will also check `/etc/hosts` if local hostname mapping is being used.
 
-or
+Commands:
 
-```bash
-dig google.com
-```
-
-I will check the DNS configuration.
-
-```bash
-cat /etc/resolv.conf
-```
-
-I will also verify `/etc/hosts` if local hostname resolution is being used.
-
-```bash
-cat /etc/hosts
-```
+    ping <known_ip>
+    nslookup google.com
+    dig google.com
+    cat /etc/resolv.conf
+    cat /etc/hosts
 
 ---
 
-## 4. What is `/etc/hosts`?
+# 25. What is /etc/hosts?
 
 `/etc/hosts` is used for local hostname-to-IP mapping.
 
-Example:
+For example:
 
-```text
-10.0.1.10 appserver
-10.0.1.20 dbserver
-```
+    10.0.1.10 appserver
+    10.0.1.20 dbserver
 
 The server can resolve these hostnames locally without querying an external DNS server.
 
 ---
 
-## 5. What is `/etc/resolv.conf`?
+# 26. What is /etc/resolv.conf?
 
 `/etc/resolv.conf` contains DNS resolver information used by the Linux system.
 
-Example:
+For example:
 
-```text
-nameserver 10.0.0.2
-```
+    nameserver 10.0.0.2
 
-If DNS resolution is not working, this is one of the configurations I will verify.
+If DNS resolution is not working, this is one of the configurations I will check.
 
 ---
 
-# Linux Service Troubleshooting
+# 27. DNS is resolving but application port is not reachable. How will you troubleshoot?
 
-## 6. A Linux service failed to start. How will you troubleshoot?
+If DNS is resolving correctly, hostname resolution is working.
 
-First, I will check the service status.
+Then I will check whether the application service is running.
 
-```bash
-systemctl status <service_name>
-```
+After that, I will check whether the application is listening on the required port.
 
-Then I will check the service logs.
+Then I will test the application locally.
 
-```bash
-journalctl -u <service_name>
-```
+If it works locally but the port is not accessible remotely, I will check firewall, Security Group, NACL and Load Balancer configuration.
 
-or
+Finally, I will check application logs.
 
-```bash
-journalctl -xe
-```
+Commands:
 
-I will check:
-
-- Service configuration
-- Application logs
-- Required port
-- File permissions
-- Dependencies
-
-I will also verify whether another process is already using the required port.
-
-```bash
-ss -tulnp
-```
-
-After identifying and fixing the issue, I will start or restart the service.
-
-```bash
-systemctl restart <service_name>
-```
+    systemctl status <service_name>
+    ss -tulnp
+    curl localhost:<port>
 
 ---
 
-## 7. Service is running but application is not accessible. What will you check?
+# FILESYSTEM, MOUNT & LVM
 
-First, I will verify the service status.
+# 28. Filesystem is not mounted after server reboot. How will you troubleshoot?
 
-```bash
-systemctl status <service_name>
-```
+First, I will check available disks and mounted filesystems.
 
-Then I will check whether the application is listening on the expected port.
+Then I will check the `/etc/fstab` entry.
 
-```bash
-ss -tulnp
-```
+I will verify the UUID, mount point and filesystem type.
 
-I will test the application locally.
+After that, I will run `mount -a` to validate the configuration.
 
-```bash
-curl localhost:<port>
-```
+If it gives an error, I will correct the entry before rebooting again.
 
-If it works locally but not remotely, I will check:
+Commands:
 
-- Firewall
-- Security Group
-- NACL
-- Route
-- Load Balancer
-
-I will also check application logs.
+    lsblk
+    df -h
+    cat /etc/fstab
+    blkid
+    mount -a
 
 ---
 
-# Filesystem & Mount Troubleshooting
+# 29. Why do we use UUID in /etc/fstab?
 
-## 8. Filesystem is not mounted after server reboot. How will you troubleshoot?
+We use UUID because it uniquely identifies the filesystem.
 
-First, I will check the mounted filesystems.
+Device names can sometimes change, but the filesystem UUID remains associated with that filesystem.
 
-```bash
-df -h
-```
-
-Then I will check the available disks.
-
-```bash
-lsblk
-```
-
-I will verify the `/etc/fstab` configuration.
-
-```bash
-cat /etc/fstab
-```
-
-Then I will validate the entries using:
-
-```bash
-mount -a
-```
-
-If there is an error, I will check:
-
-- Device/UUID
-- Mount point
-- Filesystem type
-- fstab entry
-
-I can verify the UUID using:
-
-```bash
-blkid
-```
+So using UUID makes permanent mounting more reliable.
 
 ---
 
-## 9. Why do we use UUID in `/etc/fstab`?
+# 30. What is LVM?
 
-UUID provides a unique identification for the filesystem.
+LVM stands for Logical Volume Manager.
 
-Device names can sometimes change, but UUID remains associated with the filesystem.
+It provides flexible storage management in Linux.
 
-Example:
+With LVM, we can create and extend logical volumes more easily when storage requirements increase.
 
-```text
-UUID=xxxxxxxx /data ext4 defaults 0 0
-```
+Basic flow:
 
-Using UUID makes permanent mounting more reliable.
+    Disk
+      ↓
+    Physical Volume (PV)
+      ↓
+    Volume Group (VG)
+      ↓
+    Logical Volume (LV)
+      ↓
+    Filesystem
+      ↓
+    Mount Point
 
 ---
 
-# Linux Process Management
+# 31. What are PV, VG and LV?
 
-## 10. How do you check running processes in Linux?
+PV means Physical Volume.
 
-We can use:
+It is a disk or partition initialized for LVM.
 
-```bash
-ps -ef
-```
+VG means Volume Group.
+
+It is a storage pool created using one or more Physical Volumes.
+
+LV means Logical Volume.
+
+It is created from the Volume Group and is used for creating a filesystem and mount point.
+
+Commands:
+
+    pvs
+    vgs
+    lvs
+
+---
+
+# 32. How do you create and mount an LVM filesystem?
+
+First, I will create a Physical Volume from the disk.
+
+Then I will create a Volume Group.
+
+After that, I will create a Logical Volume from the Volume Group.
+
+Then I will create the filesystem and mount point and mount the Logical Volume.
+
+For permanent mounting, I will add it into `/etc/fstab` and validate using `mount -a`.
+
+Commands:
+
+    pvcreate /dev/xvdf
+
+    vgcreate vg_data /dev/xvdf
+
+    lvcreate -L 10G -n lv_data vg_data
+
+For ext4:
+
+    mkfs.ext4 /dev/vg_data/lv_data
+
+Create mount point:
+
+    mkdir /data
+
+Mount:
+
+    mount /dev/vg_data/lv_data /data
+
+Verify:
+
+    df -h
+
+---
+
+# 33. How do you extend an existing LVM filesystem?
+
+First, I will check filesystem usage and the current LVM layout.
+
+Then I will check whether free space is available in the Volume Group.
+
+If free space is available, I will extend the Logical Volume.
+
+After that, I will extend the filesystem and verify the new size.
+
+Commands:
+
+    df -h
+    pvs
+    vgs
+    lvs
+
+Extend LV:
+
+    lvextend -L +10G /dev/vg_data/lv_data
+
+For ext4:
+
+    resize2fs /dev/vg_data/lv_data
+
+For XFS:
+
+    xfs_growfs /data
+
+Verify:
+
+    df -h
+
+---
+
+# 34. What will you do if there is no free space in the Volume Group?
+
+If there is no free space in the Volume Group, I will attach or identify a new disk.
+
+Then I will create a Physical Volume from the new disk.
+
+After that, I will extend the existing Volume Group.
+
+Once free space is available in the VG, I can extend the Logical Volume and filesystem.
+
+Commands:
+
+    lsblk
+    pvcreate /dev/xvdf
+    vgextend vg_data /dev/xvdf
+    vgs
+
+Then:
+
+    lvextend -L +10G /dev/vg_data/lv_data
+
+---
+
+# 35. You increased an AWS EBS volume which is already used by LVM. How will you use the new space?
+
+First, I will verify that Linux can see the increased EBS size using `lsblk`.
+
+Then I will resize the Physical Volume so LVM can see the additional space.
+
+After that, I will verify free space in the Volume Group.
+
+Then I will extend the Logical Volume.
+
+Finally, I will resize the filesystem and verify the new size.
+
+Commands:
+
+    lsblk
+    pvs
+    pvresize /dev/<lvm_device>
+    vgs
+
+Extend LV:
+
+    lvextend -L +10G /dev/<vg>/<lv>
+
+For ext4:
+
+    resize2fs /dev/<vg>/<lv>
+
+For XFS:
+
+    xfs_growfs <mount_point>
+
+Verify:
+
+    df -h
+
+---
+
+# 36. What is the difference between a normal partition and LVM?
+
+A normal partition is comparatively fixed and less flexible to resize.
+
+LVM provides more flexibility.
+
+With LVM, we can combine storage into Volume Groups and extend Logical Volumes more easily when storage requirements increase.
+
+---
+
+# PROCESS MANAGEMENT
+
+# 37. How do you check running processes?
+
+I normally use `ps -ef` to list running processes.
+
+For real-time process and resource utilization, I use `top`.
+
+If I need to find a specific process, I use `grep`.
+
+Commands:
+
+    ps -ef
+    top
+    ps -ef | grep <process_name>
+
+---
+
+# 38. What is the difference between a process and a service?
+
+A process is a running instance of a program.
+
+A service is normally a background application managed by a service manager like `systemd`.
+
+One service can also have multiple processes.
+
+---
+
+# 39. What is PID?
+
+PID stands for Process ID.
+
+Every running process has a process ID which Linux uses to identify and manage that process.
+
+Command:
+
+    ps -ef
+
+---
+
+# 40. What is the difference between kill and kill -9?
+
+Normal `kill` requests the process to terminate gracefully.
+
+I will normally try this first.
+
+    kill <PID>
+
+`kill -9` forcefully terminates the process and does not give it a chance to shut down cleanly.
+
+    kill -9 <PID>
+
+In production, I will use `kill -9` only when required and after following the proper approval process.
+
+---
+
+# 41. A Java process is consuming 98% CPU. Will you kill it?
+
+No, I will not directly kill the process.
+
+First, I will confirm the CPU utilization and identify the process.
+
+Then I will check whether it is a temporary spike or continuously high.
+
+I will also check the related logs and business impact.
+
+After that, I will coordinate with the application team.
+
+If they confirm that the process can be restarted or terminated, I will take the approved action and monitor the server afterward.
+
+---
+
+# 42. What is a Zombie Process?
+
+A zombie process is a process that has completed its execution, but its parent process has not collected its exit status.
+
+Normally it shows `Z` in the process state.
+
+I will identify the parent process before taking any action because directly killing the zombie itself normally does not solve the root cause.
+
+Commands:
+
+    ps aux
+    ps -ef
+
+---
+
+# BOOT & PRODUCTION INCIDENTS
+
+# 43. A Linux server rebooted unexpectedly. How will you investigate?
+
+First, I will check when the server rebooted and check the current uptime.
+
+Then I will review logs from the previous boot.
+
+I will check whether there was any kernel issue, filesystem issue, resource issue, scheduled activity or manual reboot.
+
+If it is hosted on AWS, I will also check EC2 Status Checks and CloudWatch.
+
+I can check CloudTrail to verify whether someone manually stopped or rebooted the EC2 instance through AWS API.
+
+Commands:
+
+    last reboot
+    uptime
+    journalctl -b -1
+
+---
+
+# 44. Linux server is not booting properly. What will you check?
+
+First, I will identify at which stage the server boot is failing.
+
+Then I will check for filesystem or `/etc/fstab` issues.
+
+I will also check disk, GRUB, kernel and failed service issues.
+
+I will review available boot/system logs and identify the exact error before making any changes.
+
+---
+
+# 45. What will you check after a Linux server restore/recovery?
+
+First, I will confirm that the server is reachable.
+
+Then I will check CPU, memory, disk and filesystem mounts.
+
+After that, I will verify network configuration, required services and listening ports.
+
+Then I will verify application connectivity and logs.
+
+If the application has database or other dependencies, I will coordinate with the required teams for end-to-end validation before confirming recovery.
+
+Commands:
+
+    uptime
+    free -h
+    df -h
+    lsblk
+    ip a
+    ip route
+    systemctl --failed
+    ss -tulnp
+
+---
+
+# 46. Application team says not to restart the service, but users are facing issues. What will you do?
+
+I will not restart the service without approval.
+
+I will continue troubleshooting using service status, process information, port checks, logs and resource utilization.
+
+I will collect the required information and share it with the application team.
+
+If the issue requires application-level action, I will coordinate with them and follow the incident/change process.
+
+---
+
+# PACKAGE MANAGEMENT
+
+# 47. How do you manage packages in Ubuntu?
+
+I use `apt` for package management in Ubuntu.
+
+Update package information:
+
+    apt update
+
+Install:
+
+    apt install <package_name>
+
+Check available upgrades:
+
+    apt list --upgradable
+
+Upgrade:
+
+    apt upgrade
+
+Remove:
+
+    apt remove <package_name>
+
+---
+
+# 48. How do you check whether a package is installed and its version?
+
+I can check an installed package using `dpkg` or `apt`.
+
+Commands:
+
+    dpkg -l | grep <package_name>
 
 or:
 
-```bash
-top
-```
+    apt list --installed | grep <package_name>
 
-To find a specific process:
-
-```bash
-ps -ef | grep <process_name>
-```
-
----
-
-## 11. What is the difference between a Process and a Service?
-
-A **process** is a running instance of a program.
-
-A **service** is generally a background application managed by the operating system/service manager such as systemd.
+For some applications, I can directly check the version.
 
 Example:
 
-```text
-nginx → Service
-nginx worker process → Process
-```
-
-We can manage a service using:
-
-```bash
-systemctl status nginx
-systemctl start nginx
-systemctl stop nginx
-systemctl restart nginx
-```
+    nginx -v
 
 ---
 
-## 12. What is PID?
+# ADDITIONAL L2 INTERVIEW QUESTIONS
 
-PID stands for **Process ID**.
+# 49. How do you check which port a process is using?
 
-Every running process has a unique PID.
+I use `ss -tulnp` to check listening ports and related processes.
 
-We can check processes using:
+If I know the port, I can filter the output.
 
-```bash
-ps -ef
-```
+Commands:
 
-Example:
-
-```text
-root   1234   nginx
-```
-
-Here:
-
-```text
-1234 = PID
-```
+    ss -tulnp
+    ss -tulnp | grep :8080
 
 ---
 
-## 13. What is the difference between `kill` and `kill -9`?
+# 50. How do you check which process is using a specific port?
 
-Normal `kill` sends a termination signal and gives the process a chance to shut down properly.
+I can use `ss` to identify the process listening on a specific port.
 
-```bash
-kill <PID>
-```
+I can also use `lsof`.
 
-`kill -9` forcefully terminates the process.
+Commands:
 
-```bash
-kill -9 <PID>
-```
-
-I will normally try a graceful termination first. I will use `kill -9` only when required and after following the proper approval/process in production.
+    ss -ltnp | grep :8080
+    lsof -i :8080
 
 ---
 
-## 14. What is a Zombie Process?
+# 51. How do you check system load and what does load average mean?
 
-A zombie process is a process that has completed execution, but its parent process has not yet collected its exit status.
+I can check load average using `uptime` or `top`.
 
-We can identify process states using:
+Load average shows the average system workload over approximately 1, 5 and 15 minutes.
 
-```bash
-ps -ef
-```
+I will compare the load with the number of CPUs and then investigate the processes or I/O causing the load.
 
-or:
+Commands:
 
-```bash
-ps aux
-```
-
-Zombie processes generally show a `Z` state.
+    uptime
+    top
+    nproc
 
 ---
 
-# Permission Troubleshooting
+# 52. CPU is normal but server is still slow. What else will you check?
 
-## 15. Application is getting "Permission Denied". How will you troubleshoot?
+If CPU utilization is normal, I will check memory and swap utilization.
 
-First, I will identify the affected file or directory.
+Then I will check disk utilization, disk I/O and load average.
 
-Then I will check its permissions and ownership.
+After that, I will check application response and network connectivity.
 
-```bash
-ls -l <file_name>
-```
+Finally, I will check system and application logs.
 
-I will verify:
+This will help me identify whether the issue is related to memory, storage, network or application instead of CPU.
 
-- Owner
-- Group
-- Read permission
-- Write permission
-- Execute permission
+Commands:
 
-If ownership is incorrect, after verification I can correct it using:
-
-```bash
-chown user:group <file_name>
-```
-
-If permissions are incorrect:
-
-```bash
-chmod <permission> <file_name>
-```
-
-I will not directly give `777` permission without understanding the requirement.
+    free -h
+    swapon --show
+    df -h
+    uptime
+    top
+    journalctl -xe
 
 ---
 
-# Unexpected Reboot / Boot Issue
+# 53. What is the difference between df and du?
 
-## 16. A Linux server rebooted unexpectedly. How will you investigate?
+`df` shows filesystem-level disk utilization.
 
-First, I will check when the server rebooted.
+`du` shows how much space a particular directory or file is consuming.
 
-```bash
-last reboot
-```
+Normally, I use `df -h` first to identify which filesystem is full.
 
-Then I will check the uptime.
+Then I use `du` to find which directory is consuming the space.
 
-```bash
-uptime
-```
+Commands:
 
-I will review logs from the previous boot.
-
-```bash
-journalctl -b -1
-```
-
-I will check for:
-
-- Kernel issues
-- System errors
-- Resource issues
-- Scheduled activities
-- Manual reboot
-
-If the server is hosted on AWS, I will also check:
-
-- EC2 Status Checks
-- CloudWatch
-- CloudTrail
-
-CloudTrail can help identify whether someone manually rebooted or stopped the EC2 instance.
+    df -h
+    du -sh /var/*
 
 ---
 
-## 17. Linux server is not booting properly. What will you check?
+# 54. df -h shows filesystem is full, but du does not show the same usage. What will you check?
 
-I will check whether there is any issue with:
+One possible reason is that a process still has a deleted file open.
 
-- Filesystem
-- `/etc/fstab`
-- Disk
-- GRUB
-- Kernel
-- Failed services
+The file may be deleted from the directory, but disk space will not be released until the process closes that file.
 
-A wrong `/etc/fstab` entry can also create boot issues.
+I will check deleted but open files and identify the related process before taking any action.
 
-I will review boot/system logs and identify the exact error before making changes.
+Command:
+
+    lsof +L1
 
 ---
 
-# Package Management
+# 55. How do you check failed services on a Linux server?
 
-## 18. How do you manage packages in Ubuntu?
+I can use `systemctl --failed` to check failed services.
 
-First, I update the package information.
+Then I will check the status and logs of the affected service.
 
-```bash
-sudo apt update
-```
+Commands:
 
-To install a package:
-
-```bash
-sudo apt install <package_name>
-```
-
-To check available upgrades:
-
-```bash
-apt list --upgradable
-```
-
-To upgrade approved packages:
-
-```bash
-sudo apt upgrade
-```
-
-To remove a package:
-
-```bash
-sudo apt remove <package_name>
-```
+    systemctl --failed
+    systemctl status <service_name>
+    journalctl -u <service_name>
 
 ---
 
-## 19. How do you check whether a package is installed and its version?
+# 56. How do you check last reboot and login history?
 
-We can use:
+For reboot history:
 
-```bash
-dpkg -l | grep <package_name>
-```
+    last reboot
 
-or:
+For login history:
 
-```bash
-apt list --installed | grep <package_name>
-```
+    last
 
-For some applications, we can directly check the version.
-
-Example:
-
-```bash
-nginx -v
-```
+I normally use these commands during incident investigation when I need to know when the server restarted or who logged in.
 
 ---
 
-# Production Troubleshooting Scenarios
+# 57. How will you troubleshoot a Bash script that is failing?
 
-## 20. Server is pinging but SSH is not working. What will you check?
+First, I will run the script and check the exact error.
 
-If ping is working, basic network connectivity is available.
+Then I will verify the script permissions and interpreter/shebang.
 
-Then I will check:
+After that, I will check file paths and commands used inside the script.
 
-- SSH port 22
-- SSH service
-- Firewall
-- Security Group
-- NACL
-- SSH configuration
+I can use `bash -x` to trace the script execution line by line.
 
-Check SSH service:
+I will also check the exit status if required.
 
-```bash
-systemctl status ssh
-```
+Commands:
 
-Check listening port:
-
-```bash
-ss -tulnp | grep :22
-```
-
-Check SSH logs:
-
-```bash
-journalctl -u ssh
-```
-
-If it is an AWS EC2 instance, I will also verify Security Group and NACL rules.
+    ls -l script.sh
+    head -1 script.sh
+    bash -x script.sh
+    echo $?
 
 ---
 
-## 21. DNS is resolving but application port is not reachable. How will you troubleshoot?
+# QUICK INTERVIEW REVISION
 
-If DNS is resolving correctly, I will focus on application and network connectivity.
+## High CPU
 
-I will check whether the application service is running.
-
-```bash
-systemctl status <service_name>
-```
-
-Then I will verify whether the application is listening on the required port.
-
-```bash
-ss -tulnp
-```
-
-I will test it locally.
-
-```bash
-curl localhost:<port>
-```
-
-Then I will check:
-
-- Linux firewall
-- Security Group
-- NACL
-- Load Balancer
-- Application logs
+    Monitoring
+       ↓
+    top
+       ↓
+    High CPU Process
+       ↓
+    Process / Logs / Cron
+       ↓
+    Application Team
+       ↓
+    Approved Action
 
 ---
 
-## 22. Application is accessible locally but users cannot access it remotely. What will you check?
+## High Memory
 
-If this works:
-
-```bash
-curl localhost:<port>
-```
-
-then the application is running locally.
-
-I will check:
-
-- Application listening address
-- Linux firewall
-- Security Group
-- NACL
-- Route Table
-- Load Balancer Listener
-- Target Group Health
-
-I will identify where the traffic is getting blocked and take action accordingly.
+    Monitoring
+       ↓
+    free -h
+       ↓
+    Swap
+       ↓
+    High Memory Process
+       ↓
+    Logs
+       ↓
+    Application Team
 
 ---
 
-# Quick Revision
+## Disk Full
 
-```text
-Linux Network Issue
-→ ip a → ip route → ping → ss → curl
+    df -h
+      ↓
+    du
+      ↓
+    Large Directory/File
+      ↓
+    Logs / Temporary Files
+      ↓
+    Cleanup / Logrotate
+      ↓
+    Extend Disk if Required
 
-DNS Issue
-→ nslookup/dig → /etc/resolv.conf → /etc/hosts
+---
 
-Service Failed
-→ systemctl status → journalctl → config → port → logs
+## SSH Issue
 
-Mount Issue After Reboot
-→ lsblk → fstab → blkid → mount -a
+    Server Reachability
+       ↓
+    AWS Status / Network
+       ↓
+    Port 22
+       ↓
+    SSH Service
+       ↓
+    SSH Logs
 
-Process
-→ ps → top → PID → kill
+---
 
-Permission Denied
-→ ls -l → owner/group → chmod/chown
+## Application Down
 
-Unexpected Reboot
-→ last reboot → uptime → journalctl -b -1
+    Service
+       ↓
+    Port
+       ↓
+    curl localhost
+       ↓
+    Logs
+       ↓
+    Fix / Approved Restart
+       ↓
+    Verify
 
-Ubuntu Package
-→ apt update → apt install/upgrade
+---
 
-Ping Working but SSH Failed
-→ Port 22 → SSH service → firewall/SG/NACL → logs
+## Application Works Locally But Not Remotely
 
-Application Local Working but Remote Failed
-→ Port → Firewall → SG/NACL → Route → ALB
-```
+    curl localhost
+         ↓
+    Application OK
+         ↓
+    Firewall
+         ↓
+    SG / NACL
+         ↓
+    Route
+         ↓
+    ALB / Target Group
+
+---
+
+## Network Issue
+
+    ip a
+      ↓
+    ip route
+      ↓
+    ping
+      ↓
+    Port
+      ↓
+    curl
+
+---
+
+## DNS Issue
+
+    IP Connectivity
+        ↓
+    nslookup / dig
+        ↓
+    /etc/resolv.conf
+        ↓
+    /etc/hosts
+
+---
+
+## Service Failed
+
+    systemctl status
+          ↓
+    journalctl
+          ↓
+    Config / Dependency / Port
+          ↓
+    Fix
+          ↓
+    Restart & Verify
+
+---
+
+## Mount Issue After Reboot
+
+    lsblk
+      ↓
+    /etc/fstab
+      ↓
+    UUID
+      ↓
+    mount -a
+
+---
+
+## LVM
+
+    Disk
+      ↓
+    PV
+      ↓
+    VG
+      ↓
+    LV
+      ↓
+    Filesystem
+      ↓
+    Mount Point
+
+---
+
+## LVM Extend
+
+    lsblk / pvs / vgs / lvs
+              ↓
+    pvresize (if EBS/disk increased)
+              ↓
+    lvextend
+              ↓
+    resize2fs / xfs_growfs
+              ↓
+    df -h
+
+---
+
+## Permission Denied
+
+    ls -l
+      ↓
+    Application User
+      ↓
+    Owner / Group
+      ↓
+    Required chmod / chown
+
+---
+
+## Unexpected Reboot
+
+    last reboot
+        ↓
+    uptime
+        ↓
+    journalctl -b -1
+        ↓
+    AWS Status / CloudWatch
+        ↓
+    CloudTrail if Required
+
+---
+
+## Bash Script Failed
+
+    Exact Error
+       ↓
+    Permission / Shebang
+       ↓
+    File Path / Commands
+       ↓
+    bash -x
+       ↓
+    Exit Code
+
+---
+
+# MOST IMPORTANT COMMANDS
+
+## CPU / Memory / Load
+
+    top
+    htop
+    free -h
+    uptime
+    nproc
+
+## Disk / Filesystem
+
+    df -h
+    du -sh /*
+    lsblk
+    blkid
+
+## Process / Port
+
+    ps -ef
+    ss -tulnp
+    lsof -i :8080
+
+## Services / Logs
+
+    systemctl status <service>
+    systemctl --failed
+    journalctl -u <service>
+    journalctl -xe
+    journalctl -b -1
+    tail -f <logfile>
+
+## Network / DNS
+
+    ip a
+    ip route
+    ping <ip>
+    curl localhost:<port>
+    nslookup <domain>
+    dig <domain>
+
+## Users / Permissions
+
+    useradd <user>
+    usermod -aG <group> <user>
+    chmod
+    chown
+
+## LVM
+
+    pvs
+    vgs
+    lvs
+    pvcreate
+    pvresize
+    vgcreate
+    vgextend
+    lvcreate
+    lvextend
+    resize2fs
+    xfs_growfs
+
+## Package Management
+
+    apt update
+    apt list --upgradable
+    dpkg -l
+
+---
+
+# GOLDEN RULE FOR PRODUCTION INTERVIEWS
+
+Never say:
+
+    "I will directly restart the service."
+    "I will kill -9 the process."
+    "I will delete the logs."
+    "I will give chmod 777."
+
+Better approach:
+
+    Check
+      ↓
+    Identify
+      ↓
+    Logs
+      ↓
+    Business Impact
+      ↓
+    Coordinate / Approval
+      ↓
+    Action
+      ↓
+    Verify
+
+For production troubleshooting, first identify the issue and collect the required information.
+
+If application-level action is required, coordinate with the application team.
+
+Take approval where required, perform the action and verify the server/application after the change.
