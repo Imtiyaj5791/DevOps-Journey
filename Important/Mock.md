@@ -163,3 +163,5 @@
 6. Does the passive server always remain ON? If yes, cost will be high. If no, how will it have the latest data?
 
 7. * You have an EC2 instance in a private subnet with no Internet Gateway and no NAT Gateway. The application needs to upload data to an S3 bucket. How would you configure this securely?
+
+8. Application works in a private network, but S3 images aren't loading. How would you troubleshoot?  
