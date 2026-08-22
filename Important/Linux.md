@@ -108,26 +108,28 @@ I will clean only unnecessary files as per SOP.
 
 If we cannot release enough space and additional capacity is required, I will extend the disk/filesystem after approval.
 
-Commands:
+If it is an AWS EC2 instance, I will check the EBS volume and extend the filesystem according to the storage setup.
 
+Commands:
+```
     df -h
     du -sh /*
     du -sh /var/*
     du -sh /var/log/*
     find / -type f -size +500M 2>/dev/null
-
+```
 For an extended EBS volume:
-
+```
     lsblk
-
+```
 For ext4:
-
+```
     resize2fs /dev/<device>
-
+```
 For XFS:
-
+```
     xfs_growfs <mount_point>
-
+```
 ---
 
 # 6. Server is running out of disk space because of logs. How will you troubleshoot and prevent it again?
@@ -168,26 +170,6 @@ Commands:
 
     ss -tulnp | grep :22
     systemctl status ssh
-    journalctl -u ssh
-
----
-
-# 8. Server is pinging but SSH is not working. What will you check?
-
-If ping is working, basic network connectivity is available.
-
-Then I will focus on SSH.
-
-I will check whether port 22 is allowed and listening.
-
-After that, I will check SSH service status, firewall, Security Group and NACL.
-
-Finally, I will check SSH logs to find the exact issue.
-
-Commands:
-
-    systemctl status ssh
-    ss -tulnp | grep :22
     journalctl -u ssh
 
 ---
@@ -396,23 +378,6 @@ Commands:
 
 ---
 
-# 19. Service is running but application is not accessible. How will you troubleshoot?
-
-First, I will check whether the required application port is listening.
-
-Then I will test the application locally using:
-
-    curl localhost:<port>
-
-If the application is working locally but not remotely, then I will check firewall and network configuration.
-
-If it is hosted on AWS, I will check Security Group, NACL and route configuration.
-
-If the application is behind a Load Balancer, I will check the listener, Target Group health and health-check configuration.
-
-Finally, I will check the application logs.
-
----
 
 # 20. A Linux service failed to start. How will you troubleshoot?
 
@@ -894,20 +859,22 @@ Commands:
 
 First, I will check when the server rebooted and check the current uptime.
 
-Then I will review logs from the previous boot.
+Then I will check the logs from the previous boot using journalctl -b -1.
 
-I will check whether there was any kernel issue, filesystem issue, resource issue, scheduled activity or manual reboot.
+I will check whether there was any kernel issue, filesystem issue, resource issue, scheduled activity, or manual reboot.
 
-If it is hosted on AWS, I will also check EC2 Status Checks and CloudWatch.
+If it is an AWS EC2 instance, I will also check EC2 Status Checks and CloudWatch for any related events or metrics.
 
-I can check CloudTrail to verify whether someone manually stopped or rebooted the EC2 instance through AWS API.
+I will also check CloudTrail to verify whether someone performed a stop, reboot, or other EC2 API action.
+
+Based on the findings, I will identify the root cause and take the required action.
 
 Commands:
-
+```
     last reboot
     uptime
     journalctl -b -1
-
+```
 ---
 
 # 44. Linux server is not booting properly. What will you check?
@@ -1004,21 +971,6 @@ For some applications, I can directly check the version.
 Example:
 
     nginx -v
-
----
-
-# ADDITIONAL L2 INTERVIEW QUESTIONS
-
-# 49. How do you check which port a process is using?
-
-I use `ss -tulnp` to check listening ports and related processes.
-
-If I know the port, I can filter the output.
-
-Commands:
-
-    ss -tulnp
-    ss -tulnp | grep :8080
 
 ---
 
