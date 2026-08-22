@@ -173,7 +173,7 @@ Commands:
     journalctl -u ssh
 
 ---
-# Hard Link vs Soft Link: 
+# 8. Hard Link vs Soft Link: 
 
 Hard link: has the same inode as the original file, while a soft link has a different inode and points to the original file path.
 
@@ -209,6 +209,70 @@ Ownership:
     chown user:group file_name
 
 ---
+
+# 09. Explain your patching activity.
+
+Answer:
+
+We use NinjaOne for patch management.
+
+First, we schedule the maintenance activity and inform the stakeholders.
+
+For production servers, we take an EBS snapshot before patching.
+
+We enable maintenance mode and start the patch installation through NinjaOne.
+
+After patching and reboot, I verify server accessibility.
+
+I check all required application services and verify CPU, Memory and Disk utilization.
+
+I also verify application accessibility.
+
+Once everything is working fine, I disable maintenance mode, update the maintenance ticket and continue monitoring the server.
+
+# If patching fails:
+
+First, I identify at which stage the patch failed — whether during download, installation or reboot.
+
+Then I review NinjaOne logs and Linux system logs to identify the issue.
+
+If the server is accessible, I verify the application services and system health.
+
+If required, I restore the server using the latest EBS snapshot or follow the approved rollback procedure as per company SOP.
+
+I coordinate with the Patch Management Team and Application Team.
+
+Finally, I verify the application, update the Jira ticket, and prepare the RCA if required.
+
+# Manual Patching:
+
+For manual patching, I directly log in to the Linux server through SSH and perform the patching using the native package manager.
+
+First, I check the OS version, kernel version and available disk space and review the available updates.
+
+```
+apt update
+apt list --upgradable
+apt upgrade
+```
+
+I review the packages before installation and apply the approved patches.
+
+If a reboot is required, I reboot the server during the approved maintenance window.
+
+After reboot, I verify the server accessibility, kernel version, application services, CPU, Memory, Disk and application accessibility.
+
+Finally, I update the maintenance ticket and monitor the server.
+
+# If patching fails:
+
+First, I identify whether the failure happened during download, installation or reboot.
+
+Then I check the Linux package manager logs and system logs.
+
+If required, I follow the approved rollback procedure or restore the pre-patching EBS snapshot.
+
+After rollback, I verify the server and application health, coordinate with the relevant teams, update the Jira ticket, and prepare the RCA if required.
 
 # 10. Explain Linux file permissions and chmod 755.
 
