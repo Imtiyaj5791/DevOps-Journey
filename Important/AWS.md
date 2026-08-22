@@ -594,13 +594,6 @@ Then, I install and configure the CloudWatch Agent to collect memory metrics and
 
 After that, I can view the Memory Utilization metric in CloudWatch and create alarms or dashboards based on it.
 
----
-
-# 41 What is CloudWatch Dashboard?
-
-CloudWatch Dashboard is a centralized dashboard where we can monitor all AWS resources and quickly check whether they are running properly or not.
-
----
 
 # 42 What is CloudWatch Alarm?
 
@@ -634,15 +627,7 @@ Amazon CloudTrail is used to track and record AWS API activities in an AWS accou
 
 For example, if someone creates or deletes an S3 bucket, we can use CloudTrail to check who performed the action and when it happened.
 
----
 
-# 45 How have you used CloudTrail in your environment?
-
-In my environment, we mainly use CloudTrail during troubleshooting.
-
-For example, if an EC2 instance is unexpectedly rebooted or an AWS resource is modified, we check CloudTrail to identify who performed the action and when it was performed.
-
----
 
 # 46 What is the difference between CloudWatch and CloudTrail?
 
@@ -749,15 +734,6 @@ If the primary resource becomes unhealthy, traffic automatically moves to the se
 
 Routes traffic based on the user's geographic location or country.
 
-
-
----
-
-# 51 What is Elastic Load Balancer (ELB)?
-
-Elastic Load Balancer is an AWS service which automatically distributes incoming traffic across multiple EC2 instances. It helps improve high availability and fault tolerance of the application.
-
----
 
 # 52 Why do we need ELB? Why can't we directly access the EC2 instance?
 
@@ -1081,20 +1057,6 @@ Finally, I will verify the Security Group between ALB and EC2, health-check port
 
 I use **AWS Cost Explorer** to analyze AWS cost and usage. I can check which AWS service is generating more cost and then identify the reason.
 
----
-
-# 73 What is AWS Budget?
-
-AWS Budget is used to set a **budget limit**.
-
-We can configure alerts, for example, when our cost reaches **80% of the defined budget**.
-
-```text
-Cost Explorer → Analyze Cost
-AWS Budget    → Set Limit + Alert
-```
-
----
 
 # 74 EC2 cost is very high. How will you reduce it?
 
@@ -1227,20 +1189,6 @@ SNS
        ↓
 Email Alert
 ```
-
----
-
-# 83 What is AWS Security Hub?
-
-AWS Security Hub provides a **centralized place to monitor security findings** from different AWS security services like GuardDuty and Inspector.
-
-```text
-Security Hub = Centralized Security Findings
-```
-
----
-
-
 
 # 84 What is Amazon Inspector?
 
