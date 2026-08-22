@@ -10,7 +10,7 @@
 
 Linux is an open-source operating system.
 
-I have around 5 years of experience in Linux and AWS support. In my environment, I support Linux production servers.
+I have around 5 years of core experience in Linux Administration and Production Support. In my current environment, I am responsible for maintaining the health, performance, and 99.9% uptime of our production servers
 
 My day-to-day Linux activities include:
 
@@ -38,7 +38,7 @@ For disk utilization, I use:
 
     df -h
 
-If disk utilization is high, I use `du` to find which directory is consuming more space.
+If disk utilization is high on a specific mount oint , I use `du` to find which directory is consuming more space.
 
 Commands:
 
@@ -46,16 +46,17 @@ Commands:
     htop
     free -h
     df -h
-    du -sh /*
-    du -sh /var/*
+    du -sh /var/log/*
 
 ---
 
 # 3. CPU utilization is 95%. How will you troubleshoot?
 
-First, I will check the monitoring tool to confirm whether CPU utilization is a temporary spike or continuously high.
+First, I will check the monitoring tool (CloudWatch/Grafana) to confirm whether CPU utilization is a temporary spike or continuously high.
 
-Then I will log in to the server and use `top` to identify which process is consuming high CPU.
+Then I will log in to the server and use `top` to identify which process is consuming high CPU I will press `Shift + P` to automatically sort all running processes by their CPU consumption.
+
+I will also check the "Load Average" using the `uptime` or `top` command to see the system load over the last 1, 5, and 15 minutes.
 
 After that, I will check the process details and verify whether any scheduled job is running.
 
