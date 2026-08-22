@@ -368,27 +368,6 @@ Commands:
 
 ---
 
-# 15. How do you perform Linux patching in production?
-
-In my environment, we use NinjaRMM for patching.
-
-The engineering team pushes the patches and our operations team coordinates and monitors the activity.
-
-Before and after patching, we verify the server and application status.
-
-For Ubuntu, I can manually check available updates using:
-
-    apt update
-    apt list --upgradable
-
-After patching, I will verify:
-
-    uptime
-    systemctl --failed
-
-I will also verify the required application/services.
-
----
 
 # 16. Do you have experience with Bash scripting?
 
