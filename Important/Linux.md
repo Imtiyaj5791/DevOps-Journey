@@ -173,8 +173,19 @@ Commands:
     journalctl -u ssh
 
 ---
+# Hard Link vs Soft Link: 
 
-# 9. How do you create a Linux user and manage permissions?
+Hard link: has the same inode as the original file, while a soft link has a different inode and points to the original file path.
+
+Inode: An inode stores a file's metadata such as permissions, ownership, size, timestamps, and disk block information.
+
+Swap: Swap is disk space used by Linux to store less-used memory pages when available RAM is low.
+
+systemd: systemd is the Linux system and service manager used to start, stop, restart, and manage services and system processes.
+
+Zombie vs Orphan: A zombie is a completed process whose parent has not collected its exit status, while an orphan is a running process whose parent has terminated.
+
+# 10. How do you create a Linux user and manage permissions?
 
 I can create a user using `useradd`, set the password and add the user to the required group.
 
