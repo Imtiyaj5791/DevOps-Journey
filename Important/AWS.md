@@ -162,227 +162,82 @@ If I want the disk to be automatically mounted after reboot, I get the UUID usin
 
 ### Verify Disk
 
-```bash
+First, I increase the EBS volume size from the AWS Console.
+
+Then I log in to the server and check the disk and partition size using:
+```
 lsblk
 ```
-
-### Grow Partition
-
-```bash
+If there is a partition, I extend the partition using:
+```
 growpart /dev/nvme0n1 1
 ```
+Then I extend the filesystem.
 
-### Ext4 Filesystem
-
-```bash
-resize2fs /dev/nvme0n1p1
+For ext4 / For XFS::
 ```
-
-### XFS Filesystem
-
-```bash
+resize2fs /dev/nvme0n1p1
 xfs_growfs /
 ```
-
-### Verify
-
-```bash
+Finally, I verify the new filesystem size using:
+```
 df -h
 ```
 
 # 11 What is the difference between EBS Snapshot and AMI?
 
-## Snapshot
+An EBS Snapshot is a backup of an EBS volume. We mainly use it for backup and recovery of the volume.
 
-- Backup of EBS volume.
-- Used for volume restoration.
-- Contains only disk data.
+An AMI is a template used to launch a new EC2 instance. It contains the OS, applications and configurations, along with references to the required EBS snapshots.
 
-## AMI
+So, simply:
 
-- Complete machine template.
-- Contains:
-  - Operating System
-  - Configuration
-  - Applications
-  - EBS snapshot references
+Snapshot → EBS volume backup
 
-AMI is used to launch new EC2 instances, while snapshots are used for backup and recovery.
+AMI → EC2 launch template
+
+For example, if I want to recover an EBS volume, I can use a snapshot. If I want to launch a new EC2 with the same OS and configuration, I can use an AMI.
 
 
 # 12 EC2 instance is running but application is not accessible. How will you troubleshoot?
 
-### Check Listening Port
+First, I will check whether the application service is running, then I will check whether the required port is listening, review the application logs, verify the Security Group and NACL rules, and if the application is behind a Load Balancer, I will also check the Target Group health and health check configuration.
 
-```bash
-ss -tulnp
 ```
-
-### Check Service Status
-
-```bash
 systemctl status <service_name>
-```
-
-### Check Application Logs
-
-```bash
+ss -tulnp
 journalctl -u <service_name>
 ```
 
-### Verify Security Groups
-
-Confirm required ports are allowed.
-
-### Verify NACL Rules
-
-Check subnet-level filtering.
-
-### Check Load Balancer
-
-- Target Group Health
-- Health Check Path
-- Health Check Port
-
-### Check ASG
-
-Verify whether new instances are launching successfully.
-
-
 # 13 What happens when an EC2 instance goes down unexpectedly?
 
-### Check Reboot History
+First, I will check the reboot history and uptime, then I will check the previous boot logs to identify the reason, review CloudWatch metrics and status checks, and finally check CloudTrail to confirm whether the instance was rebooted, stopped, or terminated by any user or automation.
 
-```bash
+```
 last reboot
-```
-
-### Check Uptime
-
-```bash
 uptime
-```
-
-### Check System Logs
-
-Previous boot logs:
-
-```bash
 journalctl -b -1
 ```
 
-### Check CloudTrail
-
-Verify who performed:
-
-- Reboot
-- Stop
-- Terminate actions
-
-### Review CloudWatch
-
-Check:
-
-- CPU
-- Memory
-- Disk
-- Status Checks
-
 # 14 Users are unable to open the website. How will you troubleshoot?
 
-### Check DNS Resolution
+First, I will check DNS resolution using nslookup website.com. If DNS resolution is working, then I will check the Load Balancer listener and Target Group health. If the Target Group is unhealthy, I will check the health check path and port, then verify the application service and listening port on the EC2 instance using systemctl status <service_name> and ss -tulnp.
 
-```bash
-nslookup website.com
-```
+After that, I will check the application logs using tail -100f /var/log/application.log to identify the actual issue.
 
-or
-
-```bash
-dig website.com
-```
-
-### Verify Load Balancer
-
-Check:
-
-- Listener configuration
-- Target Group health
-
-### Verify Application Port
-
-```bash
-ss -tulnp
-```
-
-### Check Service
-
-```bash
-systemctl status <service_name>
-```
-
-### Review Logs
-
-```bash
-tail -100f /var/log/application.log
-```
-
-### Restart Service (After Approval)
-
-```bash
-systemctl restart <service_name>
-```
+If the application service is stopped or not responding, then after approval, I will restart the service using systemctl restart <service_name> and perform post-checks.
 
 # 15 Website is slow. How will you troubleshoot?
 
-### Check CPU
+First, I will check the server CPU utilization using top. If CPU is high, I will check which process is consuming more CPU using ps aux --sort=-%cpu | head.
 
-```bash
-top
-```
+Then, I will check memory utilization using free -h. If memory is high, I will check which process is consuming more memory using ps aux --sort=-%mem | head.
 
-### Check Memory
+After that, I will check disk utilization using df -h and verify whether the application service is running properly using systemctl status <service_name>.
 
-```bash
-free -h
-```
+Then, I will check whether the application is listening on the required port using ss -tulnp.
 
-### Check Disk
-
-```bash
-df -h
-```
-
-### Check Processes
-
-```bash
-ps aux --sort=-%cpu | head
-```
-
-```bash
-ps aux --sort=-%mem | head
-```
-
-### Check Service
-
-```bash
-systemctl status <service_name>
-```
-
-### Check Port
-
-```bash
-ss -tulnp
-```
-
-### Review CloudWatch
-
-Validate:
-
-- CPU
-- Memory
-- Response time
-- Load Balancer latency
+If the server-side checks are normal, I will check CloudWatch metrics such as CPU, memory, response time and Load Balancer latency to identify whether the issue is related to infrastructure or application performance.
 
 
 # 16 What is VPC and how have you used it?
@@ -893,7 +748,7 @@ If the application requires very high performance and low latency, we use Networ
 
 ---
 
-#55 What is the difference between ALB and NLB?
+# 55 What is the difference between ALB and NLB?
 
 ALB works on Layer 7 (Application Layer). It supports HTTP/HTTPS traffic, path-based routing and host-based routing.
 
@@ -1858,6 +1713,3 @@ In production, this complete process is normally automated through a CI/CD pipel
 First, I will create a Docker image of the application and push it to ECR. Then I will create an ECS cluster, task definition and service using the existing ALB with a new ECS target group.
 
 I will test ECS using a temporary Route 53 record and host-based ALB rule. After successful testing, I will change the production ALB rule from the EC2 target group to the ECS target group and remove the temporary test configuration.
-
-
-
