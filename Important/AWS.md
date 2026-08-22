@@ -201,17 +201,38 @@ For example, if I want to recover an EBS volume, I can use a snapshot. If I want
 
 # 12 EC2 instance is running but application is not accessible. How will you troubleshoot?
 
-First, I will check whether the application service is running, then I will check whether the required port is listening, review the application logs, verify the Security Group and NACL rules, and if the application is behind a Load Balancer, I will also check the Target Group health and health check configuration.
+First, I will check whether the application service is running using systemctl status <service_name>.
+
+If the service is stopped or failed, I will check the service logs using journalctl -u <service_name> and restart the service after approval.
+
+If the service is running, I will check whether the required application port is listening using ss -tulnp.
+
+If the port is not listening, I will check the application configuration and logs to identify why the application is not listening on that port.
+
+If the port is listening, I will check the Security Group and NACL rules to verify that the required traffic is allowed.
+
+If the application is behind a Load Balancer, I will also check the Target Group health, health check path and health check port.
+
+Finally, I will test the application locally using curl and review the application logs to identify the root cause.
 
 ```
 systemctl status <service_name>
-ss -tulnp
 journalctl -u <service_name>
+ss -tulnp
+curl localhost:<port>
 ```
 
 # 13 What happens when an EC2 instance goes down unexpectedly?
 
-First, I will check the reboot history and uptime, then I will check the previous boot logs to identify the reason, review CloudWatch metrics and status checks, and finally check CloudTrail to confirm whether the instance was rebooted, stopped, or terminated by any user or automation.
+First, I will check the EC2 instance status in the AWS Console and verify whether the instance is running and whether the 2/2 status checks are passing.
+
+Then, I will check the reboot history and uptime using last reboot and uptime.
+
+If the instance was rebooted, I will check the previous boot logs using journalctl -b -1 to identify any OS-level issue.
+
+After that, I will check CloudWatch metrics such as CPU, memory, disk and status checks to identify any resource or infrastructure issue.
+
+Finally, I will check CloudTrail to verify whether someone or any automation performed a Stop, Reboot or Terminate action.
 
 ```
 last reboot
@@ -229,15 +250,28 @@ If the application service is stopped or not responding, then after approval, I 
 
 # 15 Website is slow. How will you troubleshoot?
 
-First, I will check the server CPU utilization using top. If CPU is high, I will check which process is consuming more CPU using ps aux --sort=-%cpu | head.
+First, I will check the server CPU utilization using top.
 
-Then, I will check memory utilization using free -h. If memory is high, I will check which process is consuming more memory using ps aux --sort=-%mem | head.
+If CPU is high, I will identify which process is consuming more CPU using ps aux --sort=-%cpu | head.
 
-After that, I will check disk utilization using df -h and verify whether the application service is running properly using systemctl status <service_name>.
+Then, I will check memory utilization using free -h. If memory is high, I will identify the process consuming more memory using ps aux --sort=-%mem | head.
 
-Then, I will check whether the application is listening on the required port using ss -tulnp.
+After that, I will check disk space using df -h and disk performance if required using iostat.
 
-If the server-side checks are normal, I will check CloudWatch metrics such as CPU, memory, response time and Load Balancer latency to identify whether the issue is related to infrastructure or application performance.
+Then, I will check whether the application service is running properly using systemctl status <service_name> and whether the required port is listening using ss -tulnp.
+
+If the server-side checks are normal and the application is behind a Load Balancer, I will check CloudWatch metrics such as response time and Load Balancer latency to identify whether the issue is related to application or infrastructure performance.
+
+```
+top
+free -h
+df -h
+iostat
+ps aux --sort=-%cpu | head
+ps aux --sort=-%mem | head
+systemctl status <service_name>
+ss -tulnp
+```
 
 
 # 16 What is VPC and how have you used it?
@@ -267,7 +301,7 @@ In my environment we use VPCs to:
 
 ## Public Subnet
 
-Has route to Internet Gateway.
+A public subnet is a subnet whose route table has a route to an Internet Gateway, and resources can be internet-accessible if they also have a public or Elastic IP and the required security rules.
 
 Example Route:
 
@@ -277,9 +311,7 @@ Example Route:
 
 ## Private Subnet
 
-No direct route to Internet Gateway.
-
-Uses NAT Gateway for outbound internet access.
+A private subnet does not have a direct route to an Internet Gateway. Resources in a private subnet are not directly accessible from the internet. If they need outbound internet access, they can use a NAT Gateway.
 
 Example Route:
 
@@ -311,13 +343,9 @@ Private Subnet Route:
 
 # 19 What is Internet Gateway (IGW)?
 
-Internet Gateway enables communication between a VPC and the internet.
+An Internet Gateway is a VPC component that provides communication between resources in a VPC and the internet.
 
-Requirements:
-
-- Public IP
-- Route to IGW
-- Security Group access
+For an EC2 instance to access the internet through an Internet Gateway, the subnet route table must have a route to the IGW, and the EC2 instance must have a Public IP or Elastic IP with the required Security Group and NACL rules.
 
 ---
 
@@ -339,35 +367,23 @@ Without exposing the server publicly.
 
 # 21 How does a private EC2 instance access the internet?
 
-Private EC2 instances access the internet using:
+A private EC2 instance can access the internet for outbound traffic through a NAT Gateway.
 
-1. NAT Gateway
-2. Route Table pointing to NAT Gateway
-3. Elastic IP attached to NAT Gateway
+First, the private subnet route table should have a default route 0.0.0.0/0 pointing to the NAT Gateway.
+
+The NAT Gateway is placed in a public subnet and has an Elastic IP. The public subnet route table has a route to the Internet Gateway.
 
 ---
 
 # 22 How will you connect to a private EC2 instance?
 
-## Using Bastion Host
+A private EC2 instance does not have direct internet access, so I can connect to it using a Bastion Host or AWS Systems Manager Session Manager.
 
-Connect to Bastion Server:
+Using a Bastion Host, I first connect to the Bastion Host through its public IP, and then connect to the private EC2 using its private IP.
 
-```bash
-ssh ec2-user@public-ip
-```
+For a more secure approach, I can use AWS Systems Manager Session Manager, which allows me to access the private EC2 without opening SSH port 22 or using a Bastion Host.
 
-Then connect to private server:
-
-```bash
-ssh ec2-user@private-ip
-```
-
-## Other Methods
-
-- AWS Systems Manager (SSM)
-- VPN
-- AWS Direct Connect
+Other options include VPN or Direct Connect when connectivity from an on-premises network is required.
 
 ---
 
@@ -397,53 +413,34 @@ Without creating multiple VPC peering connections.
 
 # 25 What is VPC Endpoint?
 
-VPC Endpoint allows private access to AWS services without using the internet.
+VPC Endpoint allows resources in a VPC to access AWS services privately without sending traffic through the public internet.
 
-Example:
+There are mainly two types of VPC Endpoints:
 
-Private EC2 → S3
+1. Gateway Endpoint — mainly used for S3 and DynamoDB.
 
-Traffic remains within AWS network.
+2. Interface Endpoint — uses private IP addresses through ENIs and is used to privately access many AWS services.
 
-No requirement for:
+For example, a private EC2 instance can access S3 using a Gateway Endpoint:
 
-- Internet Gateway
-- NAT Gateway
+With a VPC Endpoint, we can avoid using an Internet Gateway or NAT Gateway for that AWS service traffic.
 
 ---
 
 # 26 What are VPC Flow Logs?
 
-VPC Flow Logs capture network traffic information.
+VPC Flow Logs capture information about network traffic going to and from network interfaces in a VPC.
 
-Useful for troubleshooting:
+It records details such as source IP, destination IP, source port, destination port, protocol and whether the traffic was accepted or rejected.
 
-- Connectivity issues
-- Security issues
-- Traffic analysis
+I mainly use VPC Flow Logs to troubleshoot connectivity and security-related issues. For example, if an application server cannot connect to a database, I can check the Flow Logs to see whether the traffic is being accepted or rejected.
 
-Information includes:
+Flow Logs can be delivered to:
 
-- Source IP
-- Destination IP
-- Source Port
-- Destination Port
-- Protocol
-- ACCEPT / REJECT status
-
-### Example Investigation
-
-Check whether traffic is blocked by Security Group or NACL by reviewing VPC Flow Logs in:
-
-```text
 CloudWatch Logs
-```
-
-or
-
-```text
 Amazon S3
-```
+
+One important point is that VPC Flow Logs do not capture the actual application data or packet contents; they provide metadata about the network traffic.
 
 
 # 27 What is IAM?
@@ -458,22 +455,17 @@ IAM (Identity and Access Management) is a global AWS service used for authentica
 
 # 28 What is the difference between IAM User, Group, Role and Policy?
 
-### User
-User is an identity created in IAM to access AWS resources. There are two types of users:
+IAM User, Group, Role and Policy are different IAM components used to manage access in AWS.
 
-- Root User – Full access to the AWS account.
-- IAM User – Permissions are assigned based on business requirements following the least privilege principle.
+User is an identity created in IAM for a person or application that needs AWS access. The Root User is separate from IAM Users and has full account-level access.
 
-### Group
-Group is a collection of IAM users. Instead of assigning permissions to each user individually, we assign permissions to the group and add users to that group.
+Group is a collection of IAM Users. We can attach permissions to the group, and users in that group inherit those permissions.
 
-### Role
-IAM Role provides temporary permissions. It is mainly used by AWS services like EC2, Lambda, ECS, or users from another AWS account to access AWS resources securely without storing access keys.
+Role provides temporary credentials and is mainly used by AWS services like EC2 and Lambda, or for cross-account access, instead of using long-term access keys.
 
-### Policy
-Policy is a JSON document that defines what actions are allowed or denied on AWS resources. Policies are attached to users, groups or roles.
+Policy is a JSON document that defines what actions are allowed or denied on specific AWS resources.
 
----
+For example, an EC2 instance can assume an IAM Role and use the permissions defined in the attached policy to access S3 without storing access keys on the server.
 
 # 29 Why do we use IAM Role instead of Access Keys on EC2?
 
@@ -501,36 +493,56 @@ MFA (Multi-Factor Authentication) provides an extra layer of security. Along wit
 
 # 33 What is IAM Policy? What are the types?
 
-IAM Policy is a JSON document that defines permissions.
+IAM Policy is a JSON document that defines what actions are allowed or denied on AWS resources.
 
-Types:
+There are mainly three types of IAM policies:
 
-- AWS Managed Policy
-- Customer Managed Policy
+1. AWS Managed Policy — Created and managed by AWS.
 
----
+2. Customer Managed Policy — Created and managed by us according to our requirements.
+
+3. Inline Policy — Directly embedded into a specific User, Group or Role and has a one-to-one relationship with that identity.
+
+Example:
+
+AWS Managed Policy    → AWS manages it
+Customer Managed      → We manage it
+Inline Policy         → Directly attached to one identity
+
+In general, Customer Managed Policies are preferred when we need our own reusable permission policy.
 
 # 34 Amazon S3
 
 ## What is Amazon S3? How have you used it in your environment?
 
-Amazon S3 (Simple Storage Service) is an object storage service used to store and retrieve large amounts of data. It provides high availability, scalability and 99.999999999% (11 9's) durability.
+Amazon S3 is a highly scalable object storage service used to store and retrieve data such as application logs, backups, files and other objects.
 
-In my environment, we use S3 to store application logs, backups and other required files.
+In my environment, S3 is used for storing application logs, backups and required files.
 
----
+S3 provides high durability and scalability, and data is stored as objects inside buckets.
+
+We can also use features like Versioning, Lifecycle Policies and encryption to protect and manage the data.
+
 
 # 35 What are the different S3 Storage Classes?
 
-- S3 Standard – Frequently accessed data.
-- S3 Standard-IA – Infrequent access data.
-- S3 One Zone-IA – Stored in a single Availability Zone.
-- S3 Intelligent-Tiering – Automatically moves data between storage tiers.
-- S3 Glacier Instant Retrieval – Archive data with fast retrieval.
-- S3 Glacier Flexible Retrieval – Long-term archive.
-- S3 Glacier Deep Archive – Lowest-cost long-term archival storage.
+Amazon S3 provides different storage classes based on how frequently we access the data and how long we need to retain it.
 
----
+S3 Standard is used for frequently accessed data.
+
+**S3 Standard-IA** is used for data that is accessed less frequently but still needs quick access.
+
+**S3 One Zone-IA** is similar to Standard-IA but stores data in a single Availability Zone, so it is suitable for data that can be recreated if required.
+
+**S3 Intelligent-Tiering** automatically moves objects between access tiers based on changing access patterns.
+
+**S3 Glacier Instant Retrieval** is used for archive data that still needs fast retrieval.
+
+**S3 Glacier Flexible Retrieval** is used for long-term archive data where retrieval can take more time.
+
+**S3 Glacier Deep Archive** is used for very long-term archival and lowest-cost storage.
+
+In my environment, I would select the storage class based on the data access pattern, retention requirement and cost.
 
 # 36 What is Versioning in S3 and why do we use it?
 
@@ -548,13 +560,17 @@ S3 Lifecycle Policy is used to automatically move data between different storage
 
 # 38 What is the difference between IAM Policy and Bucket Policy?
 
-Both IAM Policy and Bucket Policy are used to provide access to S3.
+IAM Policy and Bucket Policy both can be used to control access to an S3 bucket, but they are attached to different places.
 
-IAM Policy is attached to IAM Users, Groups or Roles, whereas Bucket Policy is attached directly to the S3 Bucket.
+IAM Policy is attached to an IAM User, Group or Role and defines what AWS resources and actions that identity can access.
 
-IAM Policy controls user permissions, while Bucket Policy controls access to a specific S3 bucket.
+Bucket Policy is a resource-based policy attached directly to an S3 bucket. It defines which users, roles or AWS accounts can access that bucket and what actions they can perform.
 
----
+For example, if an EC2 application needs to upload files to S3, I can give the EC2 IAM Role permission through an IAM Policy.
+
+If I need to allow or restrict access at the bucket level, I can use a Bucket Policy.
+
+Final access is allowed only when there is no applicable explicit Deny.
 
 # 39 Amazon CloudWatch
 
@@ -568,9 +584,15 @@ We use it to create dashboards, monitor CPU, memory and disk utilization, and co
 
 # 40 How do you monitor Memory Utilization in CloudWatch?
 
-By default, CloudWatch provides CPU, Network and Disk metrics.
+By default, CloudWatch provides metrics like CPU, Network and some disk-related metrics, but Memory Utilization is not available by default.
 
-For Memory Utilization, we install and configure the CloudWatch Agent on the EC2 instance.
+To monitor memory, I install and configure the CloudWatch Agent on the EC2 instance.
+
+First, I attach the required IAM Role with CloudWatchAgentServerPolicy to the EC2 instance.
+
+Then, I install and configure the CloudWatch Agent to collect memory metrics and send them to CloudWatch.
+
+After that, I can view the Memory Utilization metric in CloudWatch and create alarms or dashboards based on it.
 
 ---
 
@@ -634,15 +656,23 @@ CloudTrail monitors AWS account activities like who performed an action, what ac
 
 ## What is Amazon Route53? How have you used it?
 
-Amazon Route53 is a highly available and scalable DNS service.
+Amazon Route 53 is a highly available and scalable DNS service used to route users to applications and AWS resources.
 
-It is used to map a domain name to an EC2 instance or Load Balancer IP so users can access the application using a domain name instead of an IP address.
+It converts a domain name into the appropriate destination so users can access the application using a domain name instead of remembering an IP address.
 
-**Example:**
+For example, users can access:
 
-Instead of accessing **1.1.1.1**, users can access **abc.com**.
+www.example.com
+       ↓
+    Route 53
+       ↓
+      ALB
+       ↓
+   EC2 / ECS
 
----
+For an ALB, we normally use a Route 53 Alias record to point the domain to the Load Balancer.
+
+Route 53 also supports features such as routing policies and health checks for controlling how traffic is routed.
 
 # 48 What is a Hosted Zone?
 
@@ -658,7 +688,7 @@ Used for internal applications and accessible only within the VPC.
 
 ---
 
-# 49 What is the difference between A Record and CNAME Record?
+# 49 What is the difference between A Record and CNAME Record and Alias?
 
 ### A Record
 
@@ -679,8 +709,16 @@ CNAME (Canonical Name) is an alias record used to map one domain name to another
 ```
 www.abc.com → abc.com
 ```
+### Alias
 
----
+In Route 53, when pointing a domain to an AWS resource such as an ALB, we normally use an Alias record.
+```
+example.com
+     ↓
+Route 53 Alias
+     ↓
+ALB
+```
 
 # 50 What are Routing Policies in Route53?
 
@@ -740,91 +778,96 @@ Using ELB, user traffic is automatically distributed across multiple EC2 instanc
 
 # 54 Which Load Balancer are you using in your environment and why?
 
-Basically, it depends on the requirement.
+The choice of Load Balancer depends on the application requirement.
 
-We use Application Load Balancer (ALB) for HTTP/HTTPS traffic, path-based routing and host-based routing. It works on Layer 7.
+For HTTP/HTTPS applications, I would use an Application Load Balancer because it works at Layer 7 and supports features like host-based and path-based routing.
 
-If the application requires very high performance and low latency, we use Network Load Balancer (NLB), which works on Layer 4 (TCP/UDP).
+For TCP/UDP applications where high performance and low latency are required, I would use a Network Load Balancer, which works at Layer 4.
 
----
+In my environment, my work is mainly around monitoring and troubleshooting the AWS infrastructure, so I have working knowledge of ALB and NLB based on the application requirement.
+```
+HTTP/HTTPS
+   ↓
+ALB
+   ↓
+Web Application
+
+TCP/UDP
+   ↓
+NLB
+   ↓
+Application
+```
 
 # 55 What is the difference between ALB and NLB?
 
-ALB works on Layer 7 (Application Layer). It supports HTTP/HTTPS traffic, path-based routing and host-based routing.
+ALB and NLB are both AWS Load Balancers, but they operate at different OSI layers and are used for different requirements.
 
-NLB works on Layer 4 (TCP/UDP). It is used for high performance applications and handles millions of requests with low latency.
+ALB works at Layer 7 (Application Layer). It is mainly used for HTTP/HTTPS traffic and supports features like host-based routing, path-based routing and HTTP-level routing.
 
----
+NLB works at Layer 4 (Transport Layer). It is mainly used for TCP/UDP/TLS traffic where high performance, low latency and large-scale connection handling are required.
 
 # 56 What is Listener in ALB?
 
-Listener listens on a specific port and protocol. When a user send a request , the Listener receives the request and forwards it to the Target Group.
+A Listener is a process on the ALB that listens for incoming traffic on a specific port and protocol, such as HTTP port 80 or HTTPS port 443.
 
----
+When a request arrives, the Listener checks the configured Listener Rules and then forwards the request to the appropriate Target Group.
 
 # 57 What is Target Group?
 
-Target Group is a collection of EC2 instances where the application is running. The Load Balancer sends traffic to the instances in the Target Group.
+A Target Group is a logical group of registered targets, such as EC2 instances, where the ALB forwards incoming traffic.
 
----
+The Target Group also contains configuration such as the target port and Health Check settings. The ALB forwards traffic only to healthy targets.
 
 # 58 What is Health Check?
 
-Health Check checks whether the application running on the EC2 instance is healthy or not. It checks the configured path, port and application response. If the instance is unhealthy, the Load Balancer does not send traffic to it.
-
----
+Health Check is used by the Load Balancer to determine whether a registered target is healthy and able to receive traffic.
+It checks the configured protocol, port and health check path and expects a successful response.
+If a target fails the health checks, the Load Balancer stops sending new traffic to that target until it becomes healthy again.-
 
 # 59 Website is down behind ALB. How will you troubleshoot?
 
-First, I will verify whether the issue is affecting one user or multiple users. Then I will check the EC2 system and instance status checks.
+First, I will verify whether the issue is affecting one user or multiple users.
 
-After that, I will check the ALB Listener and Target Group health status. If the target is unhealthy, I will verify the health check path, port and ALB-to-EC2 Security Group.
+Then, I will check the ALB Listener and Target Group health.
 
-Then I will log in to the EC2 instance and check the application service, listening port and application response using curl.
+If the Target Group is unhealthy, I will check the health check path, port and protocol, and verify the Security Group between the ALB and EC2.
 
-For an internet-facing ALB, I will also verify that it is configured in public subnets with the proper route to the Internet Gateway.
+After that, I will log in to the EC2 instance and check the application service, listening port and application response using systemctl status, ss -tulnp and curl.
 
-If the infrastructure side is fine, I will check application logs and coordinate with the application team for recent changes.
+If the application is not responding, I will check the application logs.
 
----
+Finally, I will check the ALB and EC2 CloudWatch metrics and coordinate with the application team if the issue is application-related.
 
 # 60 Target Group is showing Unhealthy. How will you troubleshoot?
 
 ## Health Check is failing continuously. How will you troubleshoot?
 
-First, I will check the EC2 2/2 status checks. Then I will verify the Target Group Health Check configuration like port, path and protocol (HTTP/HTTPS).
+First, I will verify the Target Group health check configuration, including the protocol, port and health check path.
 
-After that, I will check the Security Group between ALB and EC2. Then I will log in to the EC2 instance and verify the application service status, listening port and test the application.
+Then I will check the Security Group rules between the ALB and EC2.
 
-### Check Service Status
+After that, I will log in to the EC2 instance and verify whether the application is running and listening on the expected port.
 
-```bash
+I will test the health check endpoint locally using curl.
+
+Finally, I will check the application logs to identify why the health check is failing.
+
+```
 systemctl status <service_name>
-```
-
-### Check Listening Port
-
-```bash
 ss -tulnp
+curl localhost:<port>/<health-check-path>
 ```
-
-### Test Application
-
-```bash
-curl localhost:<port>
-```
-
-Finally, I will check the application logs to identify the root cause.
-
----
 
 # 61 How does ALB work / How do you manage traffic in ALB?
 
-When a user sends a request, the ALB Listener receives the request on HTTP or HTTPS port.
+When a user sends a request, the ALB Listener receives the request on a configured port and protocol, such as HTTP 80 or HTTPS 443.
 
-Then ALB checks the configured listener rules, like path-based or host-based routing, and forwards the traffic to the appropriate Target Group.
+The Listener then evaluates the configured Listener Rules, such as host-based or path-based routing.
 
-The Target Group contains healthy EC2 instances, and ALB distributes traffic only to healthy targets.
+Based on the rule, ALB forwards the request to the appropriate Target Group.
+
+The Target Group contains registered targets such as EC2 instances, and ALB sends traffic only to healthy targets based on the configured health checks.
 
 ### Example
 
@@ -856,25 +899,27 @@ Auto Scaling Group (ASG) is an AWS service that automatically increases or decre
 
 # 63 How does ASG know when to launch or terminate EC2 instances?
 
-Initially, ASG launches the Desired Capacity that we configure. After that, it monitors CloudWatch metrics through the configured Scaling Policy.
+How does ASG know when to launch or terminate EC2 instances?
 
-For example, if we configure a policy that says:
+First, ASG maintains the configured Desired Capacity.
 
-```text
-CPU >= 80%
-```
+Then the configured Scaling Policy, usually based on CloudWatch metrics, determines when to scale out or scale in.
 
-ASG automatically launches a new EC2 instance (Scale Out).
+For example, with Target Tracking:
 
-Similarly, if CPU utilization goes below:
+Target CPU = 60%
 
-```text
-CPU <= 30%
-```
+CPU increases above target
+        ↓
+ASG launches EC2 instances
 
-ASG terminates an extra EC2 instance (Scale In).
+CPU decreases
+        ↓
+ASG terminates instances
 
----
+ASG also respects the configured Minimum and Maximum Capacity.
+
+It can also scale based on scheduled actions or other scaling policies.
 
 # 64 What is Launch Template?
 
@@ -952,13 +997,15 @@ After that, ASG waits for the cooldown period before performing another scaling 
 
 # 67 My Auto Scaling Group is launching too many instances. How will you investigate?
 
-First, I will check whether ASG is launching new instances because of scaling or because unhealthy instances are being replaced.
+First, I will check the ASG Activity History to understand why new instances are being launched.
 
-Then I will check the CloudWatch Alarm, Scaling Policy and current CPU utilization. I will also verify whether there is genuine traffic or not.
+Then I will check the Scaling Policies and CloudWatch Alarms to verify which policy is triggering the scale-out.
 
-If everything looks fine, then I will check the application because sometimes high CPU is caused by an application issue, not by actual traffic.
+I will check the relevant metrics such as CPU utilization, request count, or other configured scaling metrics to confirm whether there is genuine load.
 
----
+I will also verify the Desired, Minimum and Maximum Capacity and check whether there is any abnormal application behavior causing the metric to remain high.
+
+Finally, I will check whether unhealthy instances are continuously being replaced by ASG.
 
 # 68 EC2 Instance was terminated by ASG. How will you investigate?
 
@@ -976,79 +1023,59 @@ Finally, I will check CloudTrail logs to confirm whether the instance was termin
 
 # 69 How will you perform maintenance on an Auto Scaling Group without downtime?
 
-In this case, I will use Instance Refresh.
 
-I can set the minimum healthy percentage to 50%.
+I will use Instance Refresh to gradually replace the existing EC2 instances with new instances.
 
-First, ASG launches one new EC2 instance with the new application.
+I can configure the minimum healthy percentage so that ASG keeps enough healthy instances running during the refresh.
 
-After it becomes healthy, the old EC2 instance is terminated.
+Old Instances
+      ↓
+Instance Refresh
+      ↓
+Launch New Instance
+      ↓
+Health Check
+      ↓
+Terminate Old Instance
+      ↓
+Repeat
 
-Then ASG launches the second new EC2 instance, and after it becomes healthy, the second old EC2 instance is terminated.
-
-This way, there is no downtime.
-
----
+This allows me to update the AMI, Launch Template or application configuration while maintaining application availability.
 
 # 70 CPU utilization is high, but ASG is not launching new EC2 instances. How will you troubleshoot?
 
-First, I will check the ASG Activity History to find the exact error.
+First, I will check the ASG Activity History to identify whether there is any scaling error.
 
-Then I will verify the Scaling Policy and CloudWatch Alarm to confirm whether the alarm is triggering properly or not.
+Then I will verify the CloudWatch Alarm and Scaling Policy to confirm that the scaling condition is being triggered correctly.
 
-After that, I will check the Max Capacity because ASG may already be running at the maximum limit.
+After that, I will check the Desired, Min and Max Capacity. If the ASG has already reached the Max Capacity, it cannot launch additional instances.
 
-Then I will verify:
+I will also verify:
 
-- Launch Template
-- Subnet IP Availability
-- EC2 Quota
+Launch Template
+Subnet IP availability
+EC2 service quotas
+Instance warm-up or cooldown
 
-I will also check whether ASG is waiting because of cooldown or instance warm-up period.
-
----
+Finally, I will check whether the high CPU is genuine application traffic or caused by an application/process issue.
 
 # 71 A new EC2 instance is launched by ASG, but the website is not working. How will you troubleshoot?
 
-First, I will check the Launch Template because there may be an issue with:
+First, I will check the Target Group health and verify whether the new instance is registered and passing the health check.
 
-- User Data
-- Security Group
-- AMI
-- Other Configuration
+Then I will check the Launch Template configuration, especially the AMI, Security Group, IAM Role and User Data.
 
-Then I will check the Target Group Health Status and verify the Health Check path and port configuration.
+After that, I will log in to the EC2 instance and verify:
 
-After that, I will log in to the EC2 instance and check whether the application service is running properly.
-
-### Service Status
-
-```bash
 systemctl status <service_name>
-```
-
-### Verify Port
-
-```bash
 ss -tulnp
-```
-
-### Test Application
-
-```bash
 curl localhost:<port>
-```
 
-I will also verify whether the User Data script executed successfully.
+If the application is not running, I will check the application logs and User Data execution:
 
-```bash
 cat /var/log/cloud-init-output.log
-```
 
-Finally, I will check application logs to identify the root cause.
-
----
-
+Finally, I will verify the Security Group between ALB and EC2, health-check port/path, and application response.
 
 # 72 How do you monitor AWS cost?
 
@@ -1071,26 +1098,15 @@ AWS Budget    → Set Limit + Alert
 
 # 74 EC2 cost is very high. How will you reduce it?
 
-First, I will use **AWS Cost Explorer** to analyze the EC2 cost.
+First, I will use AWS Cost Explorer to identify what is causing the high EC2 cost.
 
-Then I will check:
+Then I will check for unused or underutilized EC2 instances, unattached EBS volumes, old snapshots and unused public IPv4 addresses.
 
-- Unused EC2 instances
-- Unused EBS volumes
-- Old unnecessary snapshots
-- Unused public IPv4 addresses
+For running instances, I will review utilization and consider rightsizing the instance type if it is over-provisioned.
 
-After verification and approval, I will remove unused resources.
+For long-term workloads, I can consider Savings Plans or Reserved Instances. For suitable non-production workloads, I can use Spot Instances.
 
-I will also check whether we are using the **right-sized instances** according to business requirements.
-
-For long-term workloads, I can use **Reserved Instances or Savings Plans**.
-
-For non-critical or testing workloads, I can use **Spot Instances**.
-
-I can also stop Dev/Test instances during **off hours**.
-
----
+For Dev/Test environments, I can also schedule instances to stop during non-business hours after approval.
 
 # 75 S3 cost suddenly increased 5x. What will you do?
 
@@ -1114,38 +1130,33 @@ I will also check old object versions and, after verification and approval, remo
 
 ---
 
-
-
 # 76 How do you secure IAM users?
 
-I follow the **least privilege principle** and provide only required permissions.
+I follow the least privilege principle and provide only the permissions required for the user's job.
 
 I will:
 
-- Enable MFA
-- Provide only required permissions
-- Prefer IAM Roles instead of long-term access keys for AWS workloads
-- Avoid using the root user for daily activities
-
----
+Enable MFA
+Avoid unnecessary permissions
+Regularly review and remove unused permissions
+Avoid using the root user for daily activities
+Prefer IAM Roles and temporary credentials for AWS workloads instead of long-term access keys
+Rotate or remove access keys if they are required and no longer needed
 
 # 77 How do you secure an AWS environment?
 
-For **user/access security**, I use IAM with least privilege and MFA.
+I secure the AWS environment at multiple layers.
 
-For **data security**, I use KMS encryption.
+Identity and Access: IAM, least privilege and MFA
+Network: Security Groups, NACLs and private subnets
+Data: Encryption using KMS
+S3: Block Public Access, IAM policies and Bucket Policies
+Monitoring/Auditing: CloudWatch and CloudTrail
+Threat Detection: GuardDuty
+Vulnerability Management: Amazon Inspector
+Configuration Compliance: AWS Config
 
-For **network security**, I use Security Groups and NACLs.
-
-For **S3 security**, I keep buckets private and control access using IAM and bucket policies.
-
-For **auditing**, I use CloudTrail.
-
-For **threat detection**, I can use GuardDuty.
-
-For **vulnerability detection**, I can use Amazon Inspector.
-
----
+The main objective is to follow least privilege, defense in depth and continuous monitoring.
 
 # 78. Someone terminated a production EC2 instance. How will you find who did it?
 
@@ -1177,16 +1188,14 @@ AWS Config = Resource Configuration History
 
 # 80 Someone changed SSH access in a Security Group. How will you investigate it?
 
-First, I will use **AWS Config** to check what configuration was changed.
+First, I will check CloudTrail to identify who modified the Security Group and when the change was made.
 
-If I want to know **who performed the change and when**, I will check **CloudTrail**.
+Then, I will check AWS Config to compare the previous and current Security Group configuration.
 
-```text
-AWS Config  → What configuration changed?
-CloudTrail  → Who changed it and when?
-```
+I will verify what SSH rule was added or modified, assess the impact, and after approval, remove any unauthorized rule.
 
----
+CloudTrail → Who changed it + When
+AWS Config → What configuration changed
 
 # 81 What is Amazon GuardDuty?
 
@@ -1266,35 +1275,13 @@ Inspector → Vulnerability Detection
  
 # 86 Inspector detected a critical vulnerability on a production EC2 instance. What will you do?
 
-First, I will check the **Inspector finding** and identify:
+First, I will review the Inspector finding and identify the affected EC2 instance, vulnerable package, CVE and severity.
 
-- Affected EC2 instance
-- Vulnerable package
-- Severity
+Then I will assess the impact and coordinate with the application/team owner.
 
-Then I will verify the impact and coordinate with the required team.
+After approval, I will patch or upgrade the vulnerable package using the appropriate maintenance process.
 
-After approval, I will patch or update the vulnerable package.
-
-After patching, I will verify the **server and application health** and confirm that the vulnerability is resolved.
-
-```text
-Identify
-   ↓
-Check Severity
-   ↓
-Verify Impact
-   ↓
-Take Approval
-   ↓
-Patch / Update
-   ↓
-Validate Server & Application
-   ↓
-Verify Vulnerability is Resolved
-```
-
-
+After patching, I will verify the server and application health and confirm through Amazon Inspector that the vulnerability has been resolved.
 
 # 87 What is Amazon RDS?
 
@@ -1326,32 +1313,25 @@ Standby RDS - AZ2
 
 # 89 Application is unable to connect to RDS. What will you check?
 
-First, I will check whether the **RDS instance is available**.
+First, I will verify that the RDS instance is available and check the RDS endpoint and database port.
 
-Then I will verify:
+Then I will verify the network connectivity:
 
-- RDS endpoint
-- Database port
-- Security Group
-- Network connectivity
-
-I will check whether the application server is allowed to connect to the database port.
+Application and RDS are in reachable subnets
+RDS Security Group allows the database port from the Application Security Group
+Route tables and NACLs are not blocking the traffic
 
 For example:
 
-```text
 Application SG
       ↓
-DB Port 3306
+   TCP 3306
       ↓
-RDS SG
-```
+RDS Security Group
 
-If the AWS and network side is fine, I will coordinate with the **DBA or application team**.
+Then I will test connectivity from the application server using the appropriate database client or network test.
 
----
-
-
+If the AWS/network side is healthy, I will coordinate with the DBA/application team to check database credentials, connection limits or database-side issues.
 
 # 90 What is RTO and RPO?
 
@@ -1385,19 +1365,21 @@ RPO → How much data loss can we accept?
 
 # 91 How will you recover an EC2 server if it becomes corrupted?
 
-First, I will check the issue and verify the available **backup or snapshot**.
+First, I will identify the type and extent of corruption and check the available backup, EBS snapshot or AMI.
 
-If recovery is required, we can restore the EBS volume from the latest valid snapshot or launch a new EC2 instance from the available AMI.
+If the EBS volume is corrupted, I can restore it from the latest valid snapshot and attach the restored volume to an EC2 instance.
+
+If the complete server needs to be rebuilt, I can launch a new EC2 instance from a known-good AMI and restore the required data from backups/snapshots.
 
 After recovery, I will verify:
 
-- Filesystem
-- Mounted volumes
-- Required services
-- Network connectivity
-- Application health
+EC2 status checks
+Filesystem and mounted volumes
+Network connectivity
+Required services
+Application health
 
----
+Finally, I will perform post-recovery validation with the application team.
 
 # 92 After restoring a server from Snapshot or AMI, what will you validate?
 
@@ -1432,18 +1414,18 @@ Application Validation
 
 # 93 What is AWS Systems Manager and how have you used it?
 
-AWS Systems Manager is used to **manage AWS instances centrally**.
+AWS Systems Manager is an AWS service used to manage and operate EC2 instances centrally.
 
-I have working knowledge of SSM and have used it in lab for instance management and automation.
+I have working knowledge of SSM and have used it in the lab for instance management and automation.
 
-It can be used for:
+It provides features such as:
 
-- Session Manager
-- Patching
-- Run Command
-- Instance management
+Session Manager — secure shell access without SSH/Bastion
+Run Command — execute commands remotely
+Patch Manager — manage OS patching
+Automation — automate operational tasks
 
----
+In my lab, I mainly used Session Manager and basic instance management.
 
 # 94 How can you access a private EC2 instance without SSH or Bastion Host?
 
@@ -1470,11 +1452,11 @@ Private EC2
 
 # 95 What is AWS Lambda?
 
-AWS Lambda is a **serverless compute service** that runs code without managing servers.
+AWS Lambda is a serverless compute service that runs code without requiring us to manage servers.
 
-I have working knowledge of Lambda and have used it in lab for basic EC2 automation such as starting and stopping EC2 instances.
+I have working knowledge of Lambda and have used it in the lab for basic EC2 automation, such as starting and stopping EC2 instances.
 
----
+Lambda can be triggered by services such as EventBridge, API Gateway, S3 events, or other AWS services.
 
 # 96 How can you automatically stop Dev EC2 instances during off hours?
 
@@ -1497,44 +1479,36 @@ This can help reduce the cost of Dev/Test environments during off hours.
 
 # 97 Users report that the application URL is not working. How will you troubleshoot from AWS side?
 
-First, I will check **DNS resolution and Route 53**.
+First, I will check DNS resolution and verify the Route 53 record.
 
-Then I will check the **Load Balancer Listener and Target Group health**.
+Then I will check the Load Balancer listener and Target Group health.
 
-If the target is unhealthy, I will check:
+If the targets are unhealthy, I will check:
 
-- EC2 status checks
-- Security Groups
-- Application service
-- Listening port
-- Application logs
+EC2 status checks
+ALB and EC2 Security Groups
+Health check path and port
+Application service
+Listening port
+Application logs
 
-If the application server is healthy but there is a database connectivity issue, I will verify:
+If the application is healthy, I will check the RDS status, endpoint, database port and Security Group connectivity if the application depends on RDS.
 
-- RDS status
-- RDS endpoint
-- Database port
-- Security Group connectivity
+Finally, if the AWS infrastructure is healthy, I will coordinate with the application, network or DBA team.
 
-If the AWS infrastructure side is fine, I will coordinate with the required **application, network or DBA team**.
-
-```text
 User
  ↓
 Route 53
  ↓
-Load Balancer
+ALB
  ↓
 Target Group
  ↓
-EC2
+EC2 / ECS
  ↓
 Application
  ↓
 RDS
-```
-
-
 
 # 98 BAsic ECS/ECR
 
@@ -1575,43 +1549,69 @@ Users never directly access the ECS Task IP.
 
 # 100 ECS Task is running but the application is not accessible through ALB. How will you troubleshoot?
 
-I will check:
+First, I will check the ECS Service events and Task status.
 
-1. ECS Task status and Service events.
-2. Target Group health status.
-3. ALB listener and listener rules.
-4. Target Group port and health check path.
-5. ALB Security Group.
-6. ECS Task Security Group.
-7. Container port mapping.
-8. CloudWatch container logs.
+Then I will check the Target Group health and verify the health check path, port and protocol.
 
-For example, if the application runs on port 5000, the ECS Task Security Group should allow port 5000 from the ALB Security Group.
+After that, I will verify:
 
+ALB Listener and Listener Rules
+ALB Security Group
+ECS Task Security Group
+ECS container port mapping
+ECS Task Definition
+Container/application logs in CloudWatch
+
+For example, if the application listens on port 5000, the ECS Task Security Group should allow port 5000 from the ALB Security Group.
+
+Finally, I will verify the application from inside the container if required and check the root cause from the logs.
 
 # 101 How will you deploy a new application version to ECS without downtime?
 
-First, I will build the new Docker image and push it to ECR.
+First, I will build the new Docker image and push it to Amazon ECR.
 
-Then:
+Then I will create a new Task Definition revision with the new image and update the ECS Service.
 
-New Image → ECR → New Task Definition Revision → Update ECS Service → New Tasks Launch → Health Check → Old Tasks Stop
+With a rolling deployment, ECS launches new Tasks and waits for them to become healthy through the Target Group health checks before stopping the old Tasks, according to the configured deployment settings.
 
-Using Rolling deployment, ECS gradually launches new Tasks and removes old Tasks after the new Tasks become healthy.
+New Image
+   ↓
+ECR
+   ↓
+New Task Definition Revision
+   ↓
+Update ECS Service
+   ↓
+New Tasks Launch
+   ↓
+Health Check
+   ↓
+Old Tasks Stop
+   ↓
+New Version Live
 
-For safer deployments, Blue/Green deployment can also be used.
+For deployments requiring safer traffic switching, Blue/Green deployment can also be used.
 
 
 # 102. A new ECS deployment has an issue. How will you roll back?
 
-I can update the ECS Service to use the previous working Task Definition revision.
+I will first identify the issue from ECS Service events, Target Group health and application logs.
 
-Flow:
+If the new deployment is causing the issue, I will roll back the ECS Service to the previous stable Task Definition revision.
 
-Current bad revision → Select previous Task Definition revision → Update Service → Previous version Tasks launch
+Bad Revision
+     ↓
+Previous Stable Revision
+     ↓
+Update ECS Service
+     ↓
+Previous Tasks Launch
+     ↓
+Health Check
+     ↓
+Traffic to Healthy Tasks
 
-If Blue/Green deployment is being used, traffic can be shifted back to the previous Blue environment during the rollback period.
-
+If Blue/Green deployment is being used, I can shift traffic back to the previous stable environment.
 
 # 103 Desired count is 3 and one ECS Task suddenly stops. What happens?
 
@@ -1682,34 +1682,44 @@ The application will connect to the database using the RDS endpoint on port 3306
 
 The developer provides the application source code.
 
-Then the deployment flow is:
+The deployment flow is:
 
 Source Code
-   ↓
+    ↓
 Docker Image Build
-   ↓
+    ↓
 Tag Image
-   ↓
-Login to ECR
-   ↓
+    ↓
+Authenticate to ECR
+    ↓
 Push Image to ECR
-   ↓
+    ↓
 Create New Task Definition Revision
-   ↓
+    ↓
 Update ECS Service
-   ↓
+    ↓
 New Tasks Launch
-   ↓
+    ↓
 ALB Health Check
-   ↓
+    ↓
+Traffic to Healthy Tasks
+    ↓
 Old Tasks Stop
-   ↓
-New Version Live
 
-In production, this complete process is normally automated through a CI/CD pipeline such as Jenkins.
+In production, this process can be automated using a CI/CD pipeline such as Jenkins.
+
+The pipeline can build the image, push it to ECR, create/update the Task Definition and deploy the new revision to ECS.
 
 # 107 How will you migrate an application from EC2 to ECS?
 
-First, I will create a Docker image of the application and push it to ECR. Then I will create an ECS cluster, task definition and service using the existing ALB with a new ECS target group.
+First, I will understand the existing application architecture, dependencies, ports, environment variables and storage requirements.
 
-I will test ECS using a temporary Route 53 record and host-based ALB rule. After successful testing, I will change the production ALB rule from the EC2 target group to the ECS target group and remove the temporary test configuration.
+Then I will containerize the application and build a Docker image, test it and push it to ECR.
+
+After that, I will create the ECS cluster, Task Definition and Service, and configure the required ALB Target Group, Security Groups and networking.
+
+I will deploy the ECS application alongside the existing EC2 application and perform testing using a temporary DNS record or ALB routing rule.
+
+After successful validation, I will gradually shift production traffic from the EC2 Target Group to the ECS Target Group.
+
+Finally, after confirming application stability, I will decommission the old EC2-based deployment according to the change/rollback plan.
