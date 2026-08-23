@@ -778,7 +778,30 @@ After that I will run:
 ```
 terraform plan
 ```
-terraform plan
+# Terraform count vs for_each
+
+I use count when I need multiple similar resources using numeric indexes. I use for_each when I need to create resources based on unique keys or values, because it gives better control over individual resources.
+```
+count
+
+resource "aws_instance" "web" {
+  count         = 3
+  ami           = "ami-xxxx"
+  instance_type = "t3.micro"
+}
+
+for_each
+
+resource "aws_instance" "web" {
+  for_each = {
+    dev  = "t3.micro"
+    prod = "t3.medium"
+  }
+
+  ami           = "ami-xxxx"
+  instance_type = each.value
+}
+```
 # Quick Commands Revision
 
 ## Initialize
