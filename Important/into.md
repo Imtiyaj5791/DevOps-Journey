@@ -9,3 +9,15 @@
 • On a daily basis, I drive P1/P2 production incident handling using **CloudWatch, Grafana, Opsgenie, and JIRA** to ensure 99.9% environment uptime. 
 
 I am now looking for an opportunity to leverage my AWS, Linux, and intermediate DevOps skills within your team. Thank you."
+
+
+"In my daily role, I monitor infrastructure health and receive alerts via **CloudWatch, Grafana, and Opsgenie**. The most common alerts I handle include: 
+
+1. **Infrastructure Alerts:** High CPU utilization (above 85%), high Memory consumption, and Disk Space fullness alerts on EC2 instances 
+2. **Connectivity Alerts:** Instance Status Check failures (1/2 check failure) and SSH connectivity issues 
+3. **Container Alerts:** Kubernetes Pods going into a CrashLoopBackOff or Pending state, and Docker container restart loops 
+
+**My Exact Role & Workflow:**
+Once an alert triggers in Opsgenie, I acknowledge the ticket in JIRA. For Linux/AWS issues, I SSH into the server, check system load using top, analyze application log files, and fix disk or service issues  
+For container issues,
+I execute kubectl logs and kubectl describe to find the root cause. If it is a minor operational issue, I resolve it independently; if it is a major code or configuration issue, I gather all my findings, document the RCA, and escalate it to the Senior DevOps or Application team for timely resolution 
