@@ -742,8 +742,18 @@ Monitor New Version
         ↓
 Stop Old Version
 ```
+# A Docker container was running fine yesterday, but today it is continuously restarting. When you check docker ps, status shows Restarting (1) 5 seconds ago. What will you check and how will you troubleshoot this issue?
 
----
+First, I will check the container logs using docker logs to identify why the application is failing.
+
+If the issue is related to application failure, I will check the error message and coordinate with the application team.
+
+If it is a configuration issue, I will verify environment variables, volume mounts, ports, and container configuration using docker inspect.
+
+If it is a resource issue, I will check CPU and memory usage using docker stats and verify whether the container is hitting any resource limits.
+
+After identifying the root cause, I will fix the issue and restart the container or redeploy it if required.
+
 
 # Quick Revision
 
