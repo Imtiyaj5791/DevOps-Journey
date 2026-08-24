@@ -1,6 +1,6 @@
 # Day 5 — Architecture Revision Questions 
 
-### Q1. Explain Kubernetes architecture and its major components.
+## Q1. Explain Kubernetes architecture and its major components.
 
 Kubernetes architecture consists of two main parts:
 
@@ -28,36 +28,50 @@ Container Runtime is responsible for creating and running containers inside the 
 kube-proxy manages network traffic and sends Service traffic to the correct Pod.
 
 
-# Q2. Explain the complete flow when you run: kubectl create deployment nginx --image=nginx from kubectl → API Server → etcd → Scheduler → kubelet → container. 
+## Q2. Explain the complete flow when you run: kubectl create deployment nginx --image=nginx from kubectl → API Server → etcd → Scheduler → kubelet → container. 
 
 When we run a kubectl command, the request first goes to the API Server. API Server validates the request and stores the desired state in etcd. Scheduler identifies a suitable Worker Node for the Pod. After that kubelet on the selected node communicates with the container runtime to pull the image and run the container.
 
-# Q3. A Pod is created but remains Pending. Which Kubernetes architecture component is responsible for selecting the node, and how would you troubleshoot it? 
+## Q3. A Pod is created but remains Pending. Which Kubernetes architecture component is responsible for selecting the node, and how would you troubleshoot it? 
 
 kube-scheduler is responsible for assigning Pods to Worker Nodes. If a Pod is stuck in Pending state, I will first check ****kubectl describe pod**** events to identify the reason. Then I will check node resources,  and scheduling constraints to find why the scheduler is unable to assign the Pod
 
-# Q4. What happens when a worker node becomes NotReady?
+## Q4. What happens when a worker node becomes NotReady?
 
-# Q05. Explain the difference between the Control Plane and Worker Node.
+First I will check node status using ****kubectl get nodes****, then ****kubectl describe node**** to check events. After that I will verify kubelet status, kubelet logs, container runtime and node resource/network issues
 
 
 # 1. Pod Pending
 
 ### Q1. A Pod is stuck in Pending state. How will you troubleshoot it?
 
+For a Pending Pod, I will first run ****kubectl describe pod <pod-name>**** and check the Events section. Then I will verify node status using ****kubectl get nodes****, check resource availability using ****kubectl top nodes****, review scheduling constraints like node selectors and taints, and check PVC status if storage is involved. Based on the error message, I will fix the root cause.
+
 ### Q2. A Pod is Pending because the cluster does not have enough CPU/memory. How will you identify and resolve it?
 
+First, I will run ****kubectl describe pod <pod-name>**** and check Events for insufficient CPU or memory errors. Then I will check node capacity using ****kubectl describe node**** and utilization using ****kubectl top nodes****. If resource requests are too high, I will optimize them. Otherwise, I will increase cluster capacity by adding more Worker Nodes or scaling resources.
+
 ### Q3. A Pod is Pending even though the nodes have enough resources. What Kubernetes scheduling-related things will you check?
+
+If a Pod is Pending despite available resources, I will first check ****kubectl describe pod <pod-name>**** events. Then I will verify scheduling rules like nodeSelector, node affinity, taints and tolerations, and resource requests. The Scheduler places a Pod only when all scheduling conditions are satisfied.
 
 # 2. CrashLoopBackOff
 
 ### Q4. A Pod is showing CrashLoopBackOff. What will you check first and how will you troubleshoot it?
 
+For CrashLoopBackOff means the container is starting and repeatedly crashing, I first check ****kubectl describe pod**** and container logs using ****kubectl logs --previous**** to identify why the container is crashing. Then I check exit codes, application configuration, environment variables, probes and dependencies. After identifying the root cause, I fix the configuration or application issue and redeploy.
+
 ### Q5. A container starts and immediately exits. How will you identify the root cause?
+
+If a container starts and immediately exits, I will first check ****kubectl logs**** and ****kubectl describe pod**** to identify the exit reason. Then I will verify the container command, arguments, application configuration, environment variables and external dependencies. Based on the error, I will fix the issue and redeploy the Pod.
 
 ### Q6. A Pod was running earlier but now shows CrashLoopBackOff. How will you check logs from the previous container instance?
 
+For a Pod in CrashLoopBackOff, I will use ****kubectl logs <pod-name> --previous**** to check logs from the previous crashed container instance. I will also check ****kubectl describe pod**** for exit codes and termination reasons to identify the root cause
+
 ### Q7. A Pod is getting OOMKilled and then entering CrashLoopBackOff. How will you troubleshoot it?
+
+For an OOMKilled Pod, I will first confirm the issue using ****kubectl describe pod**** and check the termination reason. Then I will check memory usage using kubectl top pod, review memory requests and limits, and check node resources. Based on the root cause, I will increase memory limits or optimize the application.
 
 # 3. ImagePullBackOff / ErrImagePull
 
