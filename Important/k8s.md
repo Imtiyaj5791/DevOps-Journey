@@ -77,9 +77,15 @@ For an OOMKilled Pod, I will first confirm the issue using ****kubectl describe 
 
 ### Q8. A Pod is showing ImagePullBackOff. How will you troubleshoot it?
 
+ImagePullBackOff means Kubernetes is unable to pull the container image. First, I will check Pod events to identify the image pull error, then verify image name, registry access and authentication.
+
 ### Q9. The Deployment was created successfully, but Pods are showing ErrImagePull. What will you check?
 
+If Deployment is created successfully but Pods show ErrImagePull, it means the Deployment configuration is accepted but the Pod is unable to pull the container image. I will check Pod events, image name/tag, registry access and authentication.
+
 ### Q10. The application image is stored in a private registry and the Pod cannot pull it. How will you troubleshoot it?
+
+If a Pod cannot pull an image from a private registry, I will first check Pod events, verify registry credentials, check imagePullSecrets configuration and confirm that the node has access to the registry
 
 # 4. Pod Not Ready
 
