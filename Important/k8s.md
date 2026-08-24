@@ -1,15 +1,44 @@
 # Day 5 — Architecture Revision Questions 
 
 ### Q1. Explain Kubernetes architecture and its major components.
-### Q2. What is the role of the Kubernetes API Server? 
-### Q3. What is stored in etcd? Q4. What is the role of the Scheduler? 
-### Q5. What does the Controller Manager do? 
-### Q6. What is the role of kubelet? 
-### Q7. What is kube-proxy responsible for? 
-### Q8. What is the role of the Container Runtime? 
-### Q9. Explain the complete flow when you run: kubectl create deployment nginx --image=nginx from kubectl → API Server → etcd → Scheduler → kubelet → container. 
-### Q10. A Pod is created but remains Pending. Which Kubernetes architecture component is responsible for selecting the node, and how would you troubleshoot it? 
-### Q11. What happens when a worker node becomes NotReady? Q12. Explain the difference between the Control Plane and Worker Node.
+
+Kubernetes architecture consists of two main parts:
+
+## Control Plane:- 
+The Control Plane manages the cluster state and includes components like 
+
+### API Server:- 
+API Server is the main gatekeeper of Kubernetes. To communicate between two Kubernetes resources/components, the communication goes through API Server.
+### etcd:- 
+etcd is like a database in Kubernetes. It stores all the cluster information in key-value format, such as: Nodes, Pods, Deployments.
+### Scheduler:- 
+Scheduler decides on which Worker Node the new Pod will run, based on available resources.
+### Controller Manager:- 
+Controller Manager continuously checks the current and desired state of the cluster. If there is any mismatch, it takes action to match the current state with the desired state.
+
+
+## Worker Nodes:- 
+Worker Nodes are where our application runs and include 
+
+### kubelet:- 
+Kubelet is an agent running on every Worker Node. Its main job is to make sure all assigned Pods and containers are running properly on that Worker Node.
+### Container runtime :- 
+Container Runtime is responsible for creating and running containers inside the Pod.
+### kube-proxy:- 
+kube-proxy manages network traffic and sends Service traffic to the correct Pod.
+
+
+# Q2. Explain the complete flow when you run: kubectl create deployment nginx --image=nginx from kubectl → API Server → etcd → Scheduler → kubelet → container. 
+
+When we run a kubectl command, the request first goes to the API Server. API Server validates the request and stores the desired state in etcd. Scheduler identifies a suitable Worker Node for the Pod. After that kubelet on the selected node communicates with the container runtime to pull the image and run the container.
+
+# Q3. A Pod is created but remains Pending. Which Kubernetes architecture component is responsible for selecting the node, and how would you troubleshoot it? 
+
+kube-scheduler is responsible for assigning Pods to Worker Nodes. If a Pod is stuck in Pending state, I will first check ****kubectl describe pod**** events to identify the reason. Then I will check node resources,  and scheduling constraints to find why the scheduler is unable to assign the Pod
+
+# Q4. What happens when a worker node becomes NotReady?
+
+# Q05. Explain the difference between the Control Plane and Worker Node.
 
 
 # 1. Pod Pending
