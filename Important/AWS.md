@@ -37,23 +37,7 @@ Both Security Groups and NACLs are used to control network traffic.
 
 ---
 
-# 6 What is the difference between Public IP, Private IP and Elastic IP?
-
-## Public IP
-
-is used when the EC2 instance needs internet communication. It can change when we stop and start the instance.
-
-## Private IP
-
-is used for communication within the VPC. It is not directly accessible from the internet
-
-## Elastic IP
-
-is a static public IP. It remains the same even after stop and start, and we can use it when we need a fixed public IP.
-
----
-
-# 7 What are the different types of EBS volumes? Which one have you used?
+# 3 What are the different types of EBS volumes? Which one have you used?
 
 EBS volumes are mainly of two types: SSD and HDD.
 
@@ -65,7 +49,7 @@ In my environment, I have mostly worked with gp3 volumes.
 
 ---
 
-# 8 What is the difference between gp2 and gp3?
+# 4 What is the difference between gp2 and gp3?
 
 gp2 and gp3 both are General Purpose SSD volumes.
 
@@ -77,7 +61,7 @@ So, gp3 gives better flexibility and is generally more cost-effective than gp2.
 
 ---
 
-# 9 How do you attach and mount a new EBS volume?
+# 5 How do you attach and mount a new EBS volume?
 
 First, I create an EBS volume and attach it to the EC2 instance from the AWS Console. The EBS volume should be in the same Availability Zone as the EC2 instance.
 
@@ -96,7 +80,7 @@ Then I verify the mount using df -h.
 
 If I want the disk to be automatically mounted after reboot, I get the UUID using blkid, add it to /etc/fstab, and test it using mount -a.
 
-# 10 How do you increase the size of an EBS volume?
+# 6 How do you increase the size of an EBS volume?
 
 ### Verify Disk if i increase disk through console so for the next 6 hours i cant modify
 
@@ -122,7 +106,7 @@ Finally, I verify the new filesystem size using:
 df -h
 ```
 
-# 11 What is the difference between EBS Snapshot and AMI?
+# 7 What is the difference between EBS Snapshot and AMI?
 
 An EBS Snapshot is a backup of an EBS volume. We mainly use it for backup and recovery of the volume.
 
@@ -160,7 +144,7 @@ ss -tulnp
 curl localhost:<port>
 ```
 
-# 13 What happens when an EC2 instance goes down unexpectedly?
+# 8 What happens when an EC2 instance goes down unexpectedly?
 
 First, I will check the EC2 instance status in the AWS Console and verify whether the instance is running and whether the 2/2 status checks are passing.
 
@@ -178,7 +162,7 @@ uptime
 journalctl -b -1
 ```
 
-# 14 Users are unable to open the website. How will you troubleshoot?
+# 9 Users are unable to open the website. How will you troubleshoot?
 
 First, I will check DNS resolution using nslookup website.com. If DNS resolution is working, then I will check the Load Balancer listener and Target Group health. If the Target Group is unhealthy, I will check the health check path and port, then verify the application service and listening port on the EC2 instance using systemctl status <service_name> and ss -tulnp.
 
@@ -186,7 +170,7 @@ After that, I will check the application logs using tail -100f /var/log/applicat
 
 If the application service is stopped or not responding, then after approval, I will restart the service using systemctl restart <service_name> and perform post-checks.
 
-# 15 Website is slow. How will you troubleshoot?
+# 10 Website is slow. How will you troubleshoot?
 
 First, I will check the server CPU utilization using top.
 
@@ -212,7 +196,7 @@ ss -tulnp
 ```
 
 
-# 16 What is VPC and how have you used it?
+# 11 What is VPC and how have you used it?
 
 VPC (Virtual Private Cloud) is an isolated network in AWS where we can define our own networking architecture.
 
@@ -235,85 +219,7 @@ In my environment we use VPCs to:
 - Isolate workloads
 
 
-# 17 Difference Between Public and Private Subnet
-
-## Public Subnet
-
-A public subnet is a subnet whose route table has a route to an Internet Gateway, and resources can be internet-accessible if they also have a public or Elastic IP and the required security rules.
-
-Example Route:
-
-```text
-0.0.0.0/0 → IGW
-```
-
-## Private Subnet
-
-A private subnet does not have a direct route to an Internet Gateway. Resources in a private subnet are not directly accessible from the internet. If they need outbound internet access, they can use a NAT Gateway.
-
-Example Route:
-
-```text
-0.0.0.0/0 → NAT Gateway
-```
-
-# 18 What is a Route Table?
-
-Route Table determines where network traffic should be routed.
-
-### Example
-
-Public Subnet Route:
-
-```text
-10.0.0.0/16 → Local
-0.0.0.0/0 → IGW
-```
-
-Private Subnet Route:
-
-```text
-10.0.0.0/16 → Local
-0.0.0.0/0 → NAT Gateway
-```
-
----
-
-# 19 What is Internet Gateway (IGW)?
-
-An Internet Gateway is a VPC component that provides communication between resources in a VPC and the internet.
-
-For an EC2 instance to access the internet through an Internet Gateway, the subnet route table must have a route to the IGW, and the EC2 instance must have a Public IP or Elastic IP with the required Security Group and NACL rules.
-
----
-
-# 20 What is NAT Gateway?
-
-NAT Gateway provides outbound internet access for resources in private subnets.
-
-### Example
-
-Private EC2 server:
-
-- Download patches
-- Install packages
-- Access internet
-
-Without exposing the server publicly.
-
----
-
-# 21 How does a private EC2 instance access the internet?
-
-A private EC2 instance can access the internet for outbound traffic through a NAT Gateway.
-
-First, the private subnet route table should have a default route 0.0.0.0/0 pointing to the NAT Gateway.
-
-The NAT Gateway is placed in a public subnet and has an Elastic IP. The public subnet route table has a route to the Internet Gateway.
-
----
-
-# 22 How will you connect to a private EC2 instance?
+# 12 How will you connect to a private EC2 instance?
 
 A private EC2 instance does not have direct internet access, so I can connect to it using a Bastion Host or AWS Systems Manager Session Manager.
 
@@ -325,7 +231,7 @@ Other options include VPN or Direct Connect when connectivity from an on-premise
 
 ---
 
-# 23 What is VPC Peering?
+# 13 What is VPC Peering?
 
 VPC Peering provides private communication between two VPCs.
 
@@ -337,7 +243,7 @@ Benefits:
 
 ---
 
-# 24 What is Transit Gateway?
+# 14 What is Transit Gateway?
 
 Transit Gateway acts as a central hub to connect:
 
@@ -349,7 +255,7 @@ Without creating multiple VPC peering connections.
 
 ---
 
-# 25 What is VPC Endpoint?
+# 15 What is VPC Endpoint?
 
 VPC Endpoint allows resources in a VPC to access AWS services privately without sending traffic through the public internet.
 
@@ -365,7 +271,7 @@ With a VPC Endpoint, we can avoid using an Internet Gateway or NAT Gateway for t
 
 ---
 
-# 26 What are VPC Flow Logs?
+# 16 What are VPC Flow Logs?
 
 VPC Flow Logs capture information about network traffic going to and from network interfaces in a VPC.
 
@@ -381,7 +287,7 @@ Amazon S3
 One important point is that VPC Flow Logs do not capture the actual application data or packet contents; they provide metadata about the network traffic.
 
 
-# 27 What is IAM?
+# 17 What is IAM?
 
 IAM (Identity and Access Management) is a global AWS service used for authentication and authorization. It controls who can access AWS resources and what actions they can perform. Using IAM, we can create users, groups, roles and policies to provide secure access to AWS resources.
 
@@ -391,7 +297,7 @@ IAM (Identity and Access Management) is a global AWS service used for authentica
 
 ---
 
-# 28 What is the difference between IAM User, Group, Role and Policy?
+# 18 What is the difference between IAM User, Group, Role and Policy?
 
 IAM User, Group, Role and Policy are different IAM components used to manage access in AWS.
 
@@ -405,31 +311,14 @@ Policy is a JSON document that defines what actions are allowed or denied on spe
 
 For example, an EC2 instance can assume an IAM Role and use the permissions defined in the attached policy to access S3 without storing access keys on the server.
 
-# 29 Why do we use IAM Role instead of Access Keys on EC2?
-
-IAM Role is more secure because it provides temporary credentials and avoids hardcoded Access Keys.
-
----
  
-# 30 How do you manage user permissions in your current environment?
+# 19 How do you manage user permissions in your current environment?
 
 In my environment, user permissions are managed using IAM Groups and Policies. When a new user needs access, the Engineering team adds the user to the appropriate IAM Group, and the required permissions are inherited through the attached IAM Policy following the least privilege principle.
 
 ---
 
-# 31 What is the principle of Least Privilege?
-
-Least Privilege means providing only the minimum permissions required for a user or application to perform its task. We should not give unnecessary permissions. We also enable MFA for additional security wherever required.
-
----
-
-# 32 What is MFA?
-
-MFA (Multi-Factor Authentication) provides an extra layer of security. Along with username and password, the user must verify identity using an OTP or authentication app.
-
----
-
-# 33 What is IAM Policy? What are the types?
+# 20 What is IAM Policy? What are the types?
 
 IAM Policy is a JSON document that defines what actions are allowed or denied on AWS resources.
 
@@ -449,7 +338,7 @@ Inline Policy         → Directly attached to one identity
 
 In general, Customer Managed Policies are preferred when we need our own reusable permission policy.
 
-# 34 Amazon S3
+# 21 Amazon S3
 
 ## What is Amazon S3? How have you used it in your environment?
 
@@ -462,7 +351,7 @@ S3 provides high durability and scalability, and data is stored as objects insid
 We can also use features like Versioning, Lifecycle Policies and encryption to protect and manage the data.
 
 
-# 35 What are the different S3 Storage Classes?
+# 22 What are the different S3 Storage Classes?
 
 Amazon S3 provides different storage classes based on how frequently we access the data and how long we need to retain it.
 
@@ -490,13 +379,13 @@ If someone accidentally deletes or overwrites a file, we can restore the previou
 
 ---
 
-# 37 What is S3 Lifecycle Policy?
+# 23 What is S3 Lifecycle Policy?
 
 S3 Lifecycle Policy is used to automatically move data between different storage classes based on access requirements. It can also automatically delete objects after a specified number of days, helping reduce storage cost.
 
 ---
 
-# 38 What is the difference between IAM Policy and Bucket Policy?
+# 24 What is the difference between IAM Policy and Bucket Policy?
 
 IAM Policy and Bucket Policy both can be used to control access to an S3 bucket, but they are attached to different places.
 
@@ -510,7 +399,7 @@ If I need to allow or restrict access at the bucket level, I can use a Bucket Po
 
 Final access is allowed only when there is no applicable explicit Deny.
 
-# 39 Amazon CloudWatch
+# 25 Amazon CloudWatch
 
 ## What is Amazon CloudWatch? How have you used it in your environment?
 
@@ -520,7 +409,7 @@ We use it to create dashboards, monitor CPU, memory and disk utilization, and co
 
 ---
 
-# 40 How do you monitor Memory Utilization in CloudWatch?
+# 26 How do you monitor Memory Utilization in CloudWatch?
 
 By default, CloudWatch provides metrics like CPU, Network and some disk-related metrics, but Memory Utilization is not available by default.
 
@@ -533,7 +422,7 @@ Then, I install and configure the CloudWatch Agent to collect memory metrics and
 After that, I can view the Memory Utilization metric in CloudWatch and create alarms or dashboards based on it.
 
 
-# 42 What is CloudWatch Alarm?
+# 27 What is CloudWatch Alarm?
 
 CloudWatch Alarm is used to monitor AWS resource metrics.
 
@@ -545,7 +434,7 @@ If CPU utilization goes above 80%, CloudWatch Alarm triggers and sends a notific
 
 ---
 
-# 43 What are CloudWatch Metrics and Logs?
+# 27 What are CloudWatch Metrics and Logs?
 
 ### Metrics
 
@@ -557,7 +446,7 @@ CloudWatch Logs are used to collect and store application logs and system logs f
 
 ---
 
-# 44 Amazon CloudTrail
+# 28 Amazon CloudTrail
 
 ## What is CloudTrail? How have you used it in your environment?
 
@@ -567,7 +456,7 @@ For example, if someone creates or deletes an S3 bucket, we can use CloudTrail t
 
 
 
-# 46 What is the difference between CloudWatch and CloudTrail?
+# 29 What is the difference between CloudWatch and CloudTrail?
 
 CloudWatch monitors AWS resources.
 
@@ -575,7 +464,7 @@ CloudTrail monitors AWS account activities like who performed an action, what ac
 
 ---
 
-# 47 Amazon Route53
+# 30 Amazon Route53
 
 ## What is Amazon Route53? How have you used it?
 
@@ -597,7 +486,7 @@ For an ALB, we normally use a Route 53 Alias record to point the domain to the L
 
 Route 53 also supports features such as routing policies and health checks for controlling how traffic is routed.
 
-# 48 What is a Hosted Zone?
+# 31 What is a Hosted Zone?
 
 Hosted Zone is a container that stores DNS records for a domain.
 
@@ -611,7 +500,7 @@ Used for internal applications and accessible only within the VPC.
 
 ---
 
-# 49 What is the difference between A Record and CNAME Record and Alias?
+# 32 What is the difference between A Record and CNAME Record and Alias?
 
 ### A Record
 
@@ -643,7 +532,7 @@ Route 53 Alias
 ALB
 ```
 
-# 50 What are Routing Policies in Route53?
+# 33 What are Routing Policies in Route53?
 
 ### Simple Routing
 
@@ -673,7 +562,7 @@ If the primary resource becomes unhealthy, traffic automatically moves to the se
 Routes traffic based on the user's geographic location or country.
 
 
-# 52 Why do we need ELB? Why can't we directly access the EC2 instance?
+# 34 Why do we need ELB? Why can't we directly access the EC2 instance?
 
 If we access the EC2 instance directly, all user traffic goes to a single server. If that EC2 goes down, the application also becomes unavailable.
 
@@ -681,7 +570,7 @@ Using ELB, user traffic is automatically distributed across multiple EC2 instanc
 
 ---
 
-# 53 What are the types of Elastic Load Balancer?
+# 35 What are the types of Elastic Load Balancer?
 
 - Application Load Balancer (ALB)
 - Network Load Balancer (NLB)
@@ -690,7 +579,7 @@ Using ELB, user traffic is automatically distributed across multiple EC2 instanc
 
 ---
 
-# 54 Which Load Balancer are you using in your environment and why?
+# 36 Which Load Balancer are you using in your environment and why?
 
 The choice of Load Balancer depends on the application requirement.
 
@@ -713,33 +602,24 @@ NLB
 Application
 ```
 
-# 55 What is the difference between ALB and NLB?
-
-ALB and NLB are both AWS Load Balancers, but they operate at different OSI layers and are used for different requirements.
-
-ALB works at Layer 7 (Application Layer). It is mainly used for HTTP/HTTPS traffic and supports features like host-based routing, path-based routing and HTTP-level routing.
-
-NLB works at Layer 4 (Transport Layer). It is mainly used for TCP/UDP/TLS traffic where high performance, low latency and large-scale connection handling are required.
-
-# 56 What is Listener in ALB?
+# 37 What is Listener and TG in ALB?
 
 A Listener is a process on the ALB that listens for incoming traffic on a specific port and protocol, such as HTTP port 80 or HTTPS port 443.
 
 When a request arrives, the Listener checks the configured Listener Rules and then forwards the request to the appropriate Target Group.
 
-# 57 What is Target Group?
 
 A Target Group is a logical group of registered targets, such as EC2 instances, where the ALB forwards incoming traffic.
 
 The Target Group also contains configuration such as the target port and Health Check settings. The ALB forwards traffic only to healthy targets.
 
-# 58 What is Health Check?
+# 38 What is Health Check?
 
 Health Check is used by the Load Balancer to determine whether a registered target is healthy and able to receive traffic.
 It checks the configured protocol, port and health check path and expects a successful response.
 If a target fails the health checks, the Load Balancer stops sending new traffic to that target until it becomes healthy again.-
 
-# 59 Website is down behind ALB. How will you troubleshoot?
+# 39 Website is down behind ALB. How will you troubleshoot?
 
 First, I will verify whether the issue is affecting one user or multiple users.
 
@@ -753,7 +633,7 @@ If the application is not responding, I will check the application logs.
 
 Finally, I will check the ALB and EC2 CloudWatch metrics and coordinate with the application team if the issue is application-related.
 
-# 60 Target Group is showing Unhealthy. How will you troubleshoot?
+# 40 Target Group is showing Unhealthy. How will you troubleshoot?
 
 ## Health Check is failing continuously. How will you troubleshoot?
 
@@ -773,7 +653,7 @@ ss -tulnp
 curl localhost:<port>/<health-check-path>
 ```
 
-# 61 How does ALB work / How do you manage traffic in ALB?
+# 41 How does ALB work / How do you manage traffic in ALB?
 
 When a user sends a request, the ALB Listener receives the request on a configured port and protocol, such as HTTP 80 or HTTPS 443.
 
@@ -805,13 +685,13 @@ to another.
 
 ---
 
-# 62 What is Auto Scaling Group (ASG)?
+# 42 What is Auto Scaling Group (ASG)?
 
 Auto Scaling Group (ASG) is an AWS service that automatically increases or decreases the number of EC2 instances based on application traffic or demand. It provides scale-out and scale-in functionality and also replaces unhealthy EC2 instances automatically to maintain high availability.
 
 ---
 
-# 63 How does ASG know when to launch or terminate EC2 instances?
+# 43 How does ASG know when to launch or terminate EC2 instances?
 
 How does ASG know when to launch or terminate EC2 instances?
 
@@ -835,7 +715,7 @@ ASG also respects the configured Minimum and Maximum Capacity.
 
 It can also scale based on scheduled actions or other scaling policies.
 
-# 64 What is Launch Template?
+# 44 What is Launch Template?
 
 Launch Template is a preconfigured template that contains the EC2 configuration, such as:
 
@@ -851,7 +731,7 @@ Whenever ASG launches a new EC2 instance, it uses this Launch Template.
 
 ---
 
-# 65 What is the difference between Min, Desired and Max Capacity?
+# 45 What is the difference between Min, Desired and Max Capacity?
 
 ## Min Capacity
 
@@ -867,7 +747,7 @@ Max Capacity is the maximum number of EC2 instances that ASG can launch during s
 
 ---
 
-# 66 What are the different Scaling Policies in ASG?
+# 46 What are the different Scaling Policies in ASG?
 
 ## 1. Target Tracking Scaling
 
@@ -909,7 +789,7 @@ After that, ASG waits for the cooldown period before performing another scaling 
 
 ---
 
-# 67 My Auto Scaling Group is launching too many instances. How will you investigate?
+# 47 My Auto Scaling Group is launching too many instances. How will you investigate?
 
 First, I will check the ASG Activity History to understand why new instances are being launched.
 
@@ -921,7 +801,7 @@ I will also verify the Desired, Minimum and Maximum Capacity and check whether t
 
 Finally, I will check whether unhealthy instances are continuously being replaced by ASG.
 
-# 68 EC2 Instance was terminated by ASG. How will you investigate?
+# 48 EC2 Instance was terminated by ASG. How will you investigate?
 
 First, I will check the ASG Activity History to verify why ASG terminated the EC2 instance.
 
@@ -935,7 +815,7 @@ Finally, I will check CloudTrail logs to confirm whether the instance was termin
 
 ---
 
-# 69 How will you perform maintenance on an Auto Scaling Group without downtime?
+# 49 How will you perform maintenance on an Auto Scaling Group without downtime?
 
 
 I will use Instance Refresh to gradually replace the existing EC2 instances with new instances.
@@ -956,7 +836,7 @@ Repeat
 
 This allows me to update the AMI, Launch Template or application configuration while maintaining application availability.
 
-# 70 CPU utilization is high, but ASG is not launching new EC2 instances. How will you troubleshoot?
+# 50 CPU utilization is high, but ASG is not launching new EC2 instances. How will you troubleshoot?
 
 First, I will check the ASG Activity History to identify whether there is any scaling error.
 
@@ -973,7 +853,7 @@ Instance warm-up or cooldown
 
 Finally, I will check whether the high CPU is genuine application traffic or caused by an application/process issue.
 
-# 71 A new EC2 instance is launched by ASG, but the website is not working. How will you troubleshoot?
+# 51 A new EC2 instance is launched by ASG, but the website is not working. How will you troubleshoot?
 
 First, I will check the Target Group health and verify whether the new instance is registered and passing the health check.
 
@@ -991,12 +871,12 @@ cat /var/log/cloud-init-output.log
 
 Finally, I will verify the Security Group between ALB and EC2, health-check port/path, and application response.
 
-# 72 How do you monitor AWS cost?
+# 52 How do you monitor AWS cost?
 
 I use **AWS Cost Explorer** to analyze AWS cost and usage. I can check which AWS service is generating more cost and then identify the reason.
 
 
-# 74 EC2 cost is very high. How will you reduce it?
+# 53 EC2 cost is very high. How will you reduce it?
 
 First, I will use AWS Cost Explorer to identify what is causing the high EC2 cost.
 
@@ -1008,7 +888,7 @@ For long-term workloads, I can consider Savings Plans or Reserved Instances. For
 
 For Dev/Test environments, I can also schedule instances to stop during non-business hours after approval.
 
-# 75 S3 cost suddenly increased 5x. What will you do?
+# 54 S3 cost suddenly increased 5x. What will you do?
 
 First, I will use **AWS Cost Explorer** to analyze the S3 cost.
 
@@ -1030,7 +910,7 @@ I will also check old object versions and, after verification and approval, remo
 
 ---
 
-# 76 How do you secure IAM users?
+# 55 How do you secure IAM users?
 
 I follow the least privilege principle and provide only the permissions required for the user's job.
 
@@ -1043,7 +923,7 @@ Avoid using the root user for daily activities
 Prefer IAM Roles and temporary credentials for AWS workloads instead of long-term access keys
 Rotate or remove access keys if they are required and no longer needed
 
-# 77 How do you secure an AWS environment?
+# 56 How do you secure an AWS environment?
 
 I secure the AWS environment at multiple layers.
 
@@ -1058,7 +938,7 @@ Configuration Compliance: AWS Config
 
 The main objective is to follow least privilege, defense in depth and continuous monitoring.
 
-# 78. Someone terminated a production EC2 instance. How will you find who did it?
+# 57 Someone terminated a production EC2 instance. How will you find who did it?
 
 I will check **CloudTrail Event History** and search for the `TerminateInstances` event.
 
@@ -1074,7 +954,7 @@ CloudTrail = Who + When + What API Action
 
 ---
 
-# 79 What is AWS Config?
+# 58 What is AWS Config?
 
 AWS Config is used to track **AWS resource configurations and configuration changes over time**.
 
@@ -1086,7 +966,7 @@ AWS Config = Resource Configuration History
 
 ---
 
-# 80 Someone changed SSH access in a Security Group. How will you investigate it?
+# 59 Someone changed SSH access in a Security Group. How will you investigate it?
 
 First, I will check CloudTrail to identify who modified the Security Group and when the change was made.
 
@@ -1097,7 +977,7 @@ I will verify what SSH rule was added or modified, assess the impact, and after 
 CloudTrail → Who changed it + When
 AWS Config → What configuration changed
 
-# 81 What is Amazon GuardDuty?
+# 60 What is Amazon GuardDuty?
 
 Amazon GuardDuty is used to detect **suspicious or malicious activities** in our AWS environment.
 
@@ -1114,7 +994,7 @@ GuardDuty = Threat Detection
 
 ---
 
-# 82 How can you receive an email alert for a GuardDuty finding?
+# 61 How can you receive an email alert for a GuardDuty finding?
 
 We can integrate GuardDuty with **EventBridge and SNS**.
 
@@ -1128,7 +1008,7 @@ SNS
 Email Alert
 ```
 
-# 84 What is Amazon Inspector?
+# 62 What is Amazon Inspector?
 
 Amazon Inspector is a **vulnerability management service**.
 
@@ -1145,7 +1025,7 @@ Inspector = Vulnerability Detection
 
 ---
 
-# 85 What is the difference between GuardDuty and Inspector?
+# 63 What is the difference between GuardDuty and Inspector?
 
 **GuardDuty** is mainly used for threat detection and suspicious activities.
 
@@ -1159,7 +1039,7 @@ Inspector → Vulnerability Detection
 
 ---
  
-# 86 Inspector detected a critical vulnerability on a production EC2 instance. What will you do?
+# 64 Inspector detected a critical vulnerability on a production EC2 instance. What will you do?
 
 First, I will review the Inspector finding and identify the affected EC2 instance, vulnerable package, CVE and severity.
 
@@ -1169,7 +1049,7 @@ After approval, I will patch or upgrade the vulnerable package using the appropr
 
 After patching, I will verify the server and application health and confirm through Amazon Inspector that the vulnerability has been resolved.
 
-# 87 What is Amazon RDS?
+# 65 What is Amazon RDS?
 
 Amazon RDS is a **managed relational database service** in AWS.
 
@@ -1177,7 +1057,7 @@ AWS manages activities like infrastructure, backups and maintenance, while we us
 
 ---
 
-# 88 What is Multi-AZ in RDS?
+# 66 What is Multi-AZ in RDS?
 
 Multi-AZ is mainly used for **High Availability**.
 
@@ -1197,7 +1077,7 @@ Standby RDS - AZ2
 
 ---
 
-# 89 Application is unable to connect to RDS. What will you check?
+# 67 Application is unable to connect to RDS. What will you check?
 
 First, I will verify that the RDS instance is available and check the RDS endpoint and database port.
 
@@ -1219,7 +1099,7 @@ Then I will test connectivity from the application server using the appropriate 
 
 If the AWS/network side is healthy, I will coordinate with the DBA/application team to check database credentials, connection limits or database-side issues.
 
-# 90 What is RTO and RPO?
+# 68 What is RTO and RPO?
 
 **RTO (Recovery Time Objective)** is the maximum acceptable time to restore the application after a failure.
 
@@ -1249,7 +1129,7 @@ RPO → How much data loss can we accept?
 
 ---
 
-# 91 How will you recover an EC2 server if it becomes corrupted?
+# 69 How will you recover an EC2 server if it becomes corrupted?
 
 First, I will identify the type and extent of corruption and check the available backup, EBS snapshot or AMI.
 
@@ -1267,7 +1147,7 @@ Application health
 
 Finally, I will perform post-recovery validation with the application team.
 
-# 92 After restoring a server from Snapshot or AMI, what will you validate?
+# 70 After restoring a server from Snapshot or AMI, what will you validate?
 
 After restoring the server, I will verify:
 
@@ -1298,7 +1178,7 @@ Application Validation
 
 
 
-# 93 What is AWS Systems Manager and how have you used it?
+# 71 What is AWS Systems Manager and how have you used it?
 
 AWS Systems Manager is an AWS service used to manage and operate EC2 instances centrally.
 
@@ -1313,7 +1193,7 @@ Automation — automate operational tasks
 
 In my lab, I mainly used Session Manager and basic instance management.
 
-# 94 How can you access a private EC2 instance without SSH or Bastion Host?
+# 72 How can you access a private EC2 instance without SSH or Bastion Host?
 
 We can use **AWS Systems Manager Session Manager**.
 
@@ -1336,7 +1216,7 @@ Private EC2
 ---
 
 
-# 95 What is AWS Lambda?
+# 73 What is AWS Lambda?
 
 AWS Lambda is a serverless compute service that runs code without requiring us to manage servers.
 
@@ -1344,7 +1224,7 @@ I have working knowledge of Lambda and have used it in the lab for basic EC2 aut
 
 Lambda can be triggered by services such as EventBridge, API Gateway, S3 events, or other AWS services.
 
-# 96 How can you automatically stop Dev EC2 instances during off hours?
+# 74 How can you automatically stop Dev EC2 instances during off hours?
 
 We can create a **Lambda function** to stop the required EC2 instances.
 
@@ -1363,7 +1243,7 @@ This can help reduce the cost of Dev/Test environments during off hours.
 ---
 
 
-# 97 Users report that the application URL is not working. How will you troubleshoot from AWS side?
+# 75 Users report that the application URL is not working. How will you troubleshoot from AWS side?
 
 First, I will check DNS resolution and verify the Route 53 record.
 
@@ -1396,7 +1276,7 @@ Application
  ↓
 RDS
 
-# 98 BAsic ECS/ECR
+# 76 BAsic ECS/ECR
 
 ### ECR
 Amazon ECR (Elastic Container Registry) is an AWS service used to store, manage, and pull Docker/container images.
@@ -1415,7 +1295,7 @@ An ECS Service maintains the required number of Tasks and provides features like
 
 
 
-# 99. Your application is running on ECS Fargate. How does an end user access the application?
+# 77. Your application is running on ECS Fargate. How does an end user access the application?
 
 In production, ECS Tasks are normally placed in private subnets without public IPs.
 
@@ -1433,7 +1313,7 @@ Security Groups:
 Users never directly access the ECS Task IP.
 
 
-# 100 ECS Task is running but the application is not accessible through ALB. How will you troubleshoot?
+# 78 ECS Task is running but the application is not accessible through ALB. How will you troubleshoot?
 
 First, I will check the ECS Service events and Task status.
 
@@ -1452,7 +1332,7 @@ For example, if the application listens on port 5000, the ECS Task Security Grou
 
 Finally, I will verify the application from inside the container if required and check the root cause from the logs.
 
-# 101 How will you deploy a new application version to ECS without downtime?
+# 79 How will you deploy a new application version to ECS without downtime?
 
 First, I will build the new Docker image and push it to Amazon ECR.
 
@@ -1479,7 +1359,7 @@ New Version Live
 For deployments requiring safer traffic switching, Blue/Green deployment can also be used.
 
 
-# 102. A new ECS deployment has an issue. How will you roll back?
+# 80. A new ECS deployment has an issue. How will you roll back?
 
 I will first identify the issue from ECS Service events, Target Group health and application logs.
 
@@ -1499,7 +1379,7 @@ Traffic to Healthy Tasks
 
 If Blue/Green deployment is being used, I can shift traffic back to the previous stable environment.
 
-# 103 Desired count is 3 and one ECS Task suddenly stops. What happens?
+# 81 Desired count is 3 and one ECS Task suddenly stops. What happens?
 
 The ECS Service continuously maintains the desired Task count.
 
@@ -1518,7 +1398,7 @@ Running = 3
 This provides self-healing for ECS Services.
 
 
-# 104 Traffic increases and ECS Tasks have high CPU utilization. How will you handle it?
+# 82 Traffic increases and ECS Tasks have high CPU utilization. How will you handle it?
 
 I will configure ECS Service Auto Scaling.
 
@@ -1535,7 +1415,7 @@ When CPU utilization decreases, it reduces the desired Task count within the con
 The ALB distributes traffic across the available healthy Tasks.
 
 
-# 105 ECS Fargate application is in private subnets and needs to connect to RDS MySQL. How will you configure it?
+# 83 ECS Fargate application is in private subnets and needs to connect to RDS MySQL. How will you configure it?
 
 I will keep both the application and database private.
 
@@ -1564,7 +1444,7 @@ Security Groups:
 The application will connect to the database using the RDS endpoint on port 3306.
 
 
-# 106 Developers provided a new application version. Explain the complete flow from Docker image to production deployment on ECS.
+# 84 Developers provided a new application version. Explain the complete flow from Docker image to production deployment on ECS.
 
 The developer provides the application source code.
 
@@ -1596,7 +1476,7 @@ In production, this process can be automated using a CI/CD pipeline such as Jenk
 
 The pipeline can build the image, push it to ECR, create/update the Task Definition and deploy the new revision to ECS.
 
-# 107 How will you migrate an application from EC2 to ECS?
+# 85 How will you migrate an application from EC2 to ECS?
 
 First, I will understand the existing application architecture, dependencies, ports, environment variables and storage requirements.
 
@@ -1610,18 +1490,18 @@ After successful validation, I will gradually shift production traffic from the 
 
 Finally, after confirming application stability, I will decommission the old EC2-based deployment according to the change/rollback plan.
 
-# Q108. What is AWS Systems Manager (SSM) Parameter Store or Secrets Manager, and how do you handle database credentials securely?
+# Q86. What is AWS Systems Manager (SSM) Parameter Store or Secrets Manager, and how do you handle database credentials securely?
 
 Sir, in our environment, we never store database passwords or API keys in plain text inside deployment scripts or EC2 instances. We use AWS Secrets Manager or SSM Parameter Store to securely encrypt and store credentials. The application fetches these values dynamically at runtime using IAM Roles, and it also supports automatic password rotation."
 
-# Q109. If an EC2 instance is completely frozen and you cannot login via SSH, how will you capture the OS logs to identify the panic or kernel error from the AWS Console?
+# Q87. If an EC2 instance is completely frozen and you cannot login via SSH, how will you capture the OS logs to identify the panic or kernel error from the AWS Console?
 
 "If a Linux server is completely frozen and SSH is not working, I will go to the AWS Console, select the instance, navigate to Actions → Monitor and Troubleshoot, and check the EC2 Serial Console or Get System Log. This allows me to view the live boot logs or kernel panic/OOM errors directly from the hardware layer without needing network SSH access."
 
-# Q110. What is S3 Object Lock, and how do you protect production backup buckets from accidental ransomware attacks or permanent deletion?
+# Q88. What is S3 Object Lock, and how do you protect production backup buckets from accidental ransomware attacks or permanent deletion?
 
 "To protect our critical production backups and application logs in S3, we enable S3 Object Lock with a WORM (Write Once, Read Many) model. This ensures that once a backup object is written, it can never be deleted or overwritten by anyone—even the root account—until the configured retention period expires, protecting us fully against ransomware."
 
-# Q111. How do you handle AWS Service Quotas or Limits in a production environment? What happens if you try to launch an EC2 instance but hit the regional vCPU limit?
+# Q89. How do you handle AWS Service Quotas or Limits in a production environment? What happens if you try to launch an EC2 instance but hit the regional vCPU limit?
 
 "AWS imposes default soft limits on resources, like the total number of vCPUs or Elastic IPs in a region. If an ASG scaling action fails due to an InstanceLimitExceeded error, I immediately check AWS Service Quotas in the console. To resolve it, I submit an automated limit-increase request to AWS Support, and we monitor these limits proactively using AWS Trusted Advisor."
