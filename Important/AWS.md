@@ -85,14 +85,14 @@ We use AMIs to create identical servers quickly without performing manual instal
 Both Security Groups and NACLs are used to control network traffic.
 
 ## Security Group
-
+- Max 50 rule
 - Work on Instance-level firewall
 - Stateful
 - Supports only Allow rules
 
 
 ## NACL
-
+- 20 to 40 rule
 - Work on Subnet-level firewall
 - Stateless
 - Supports Allow and Deny rules
@@ -160,7 +160,7 @@ If I want the disk to be automatically mounted after reboot, I get the UUID usin
 
 # 10 How do you increase the size of an EBS volume?
 
-### Verify Disk
+### Verify Disk if i increase disk through console so for the next 6 hours i cant modify
 
 First, I increase the EBS volume size from the AWS Console.
 
@@ -1671,3 +1671,19 @@ I will deploy the ECS application alongside the existing EC2 application and per
 After successful validation, I will gradually shift production traffic from the EC2 Target Group to the ECS Target Group.
 
 Finally, after confirming application stability, I will decommission the old EC2-based deployment according to the change/rollback plan.
+
+# Q108. What is AWS Systems Manager (SSM) Parameter Store or Secrets Manager, and how do you handle database credentials securely?
+
+Sir, in our environment, we never store database passwords or API keys in plain text inside deployment scripts or EC2 instances. We use AWS Secrets Manager or SSM Parameter Store to securely encrypt and store credentials. The application fetches these values dynamically at runtime using IAM Roles, and it also supports automatic password rotation."
+
+# Q109. If an EC2 instance is completely frozen and you cannot login via SSH, how will you capture the OS logs to identify the panic or kernel error from the AWS Console?
+
+"If a Linux server is completely frozen and SSH is not working, I will go to the AWS Console, select the instance, navigate to Actions → Monitor and Troubleshoot, and check the EC2 Serial Console or Get System Log. This allows me to view the live boot logs or kernel panic/OOM errors directly from the hardware layer without needing network SSH access."
+
+# Q110. What is S3 Object Lock, and how do you protect production backup buckets from accidental ransomware attacks or permanent deletion?
+
+"To protect our critical production backups and application logs in S3, we enable S3 Object Lock with a WORM (Write Once, Read Many) model. This ensures that once a backup object is written, it can never be deleted or overwritten by anyone—even the root account—until the configured retention period expires, protecting us fully against ransomware."
+
+# Q111. How do you handle AWS Service Quotas or Limits in a production environment? What happens if you try to launch an EC2 instance but hit the regional vCPU limit?
+
+"AWS imposes default soft limits on resources, like the total number of vCPUs or Elastic IPs in a region. If an ASG scaling action fails due to an InstanceLimitExceeded error, I immediately check AWS Service Quotas in the console. To resolve it, I submit an automated limit-increase request to AWS Support, and we monitor these limits proactively using AWS Trusted Advisor."
