@@ -23,14 +23,14 @@ df -h
 Both Security Groups and NACLs are used to control network traffic.
 
 ## Security Group
-- Max 50 rule
+- Max 60 rule
 - Work on Instance-level firewall
 - Stateful
 - Supports only Allow rules
 
 
 ## NACL
-- 20 to 40 rule
+- 20 inbound and 20 outbound
 - Work on Subnet-level firewall
 - Stateless
 - Supports Allow and Deny rules
