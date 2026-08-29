@@ -36,26 +36,9 @@ Difference:
 - Continuous Delivery → Deployment may require manual approval.
 - Continuous Deployment → Deployment happens automatically after successful pipeline execution.
 
-### Jenkins Architectur:
 
-Jenkins Architecture consists of a Controller and Agents. The Jenkins Controller manages jobs, pipelines, and scheduling, while Jenkins Agents execute build, test, and deployment tasks.
-
-
-### Jenkins Pipeline:
-
-A Jenkins Pipeline is a series of automated stages and steps that define the complete CI/CD workflow as code, usually in a Jenkinsfile
-
-### Jenkins WorkSpace: 
-
-Jenkins workspace is a working directory on the agent where Jenkins downloads source code and executes build, test, and other pipeline steps.
-
-### Jenkins Job
-
-A Jenkins Job is a task configured in Jenkins to perform a specific action, such as building, testing, or deploying an application.
-
-
-Jenkins Lab:-
-
+# Install Jenkins
+```
 install java
 
 Install Jenkins Library from jenkis website
@@ -65,24 +48,56 @@ sudo apt update
 Install Jenkins :- sudo apt install jenkins -y
 
 Configure the Jenkis through GUI
+```
 
-### Create First Freestyle Job:
+# Create First Freestyle Job:
 
 Freestyle Project is a basic Jenkins job where you configure the build steps through the Jenkins UI instead of writing a Jenkinsfile.
 
 Create a first freestyle job--- select free style--- build step--- execue shell
 
-## Triggers Type:
+# Triggers
 
-Trigger builds remotely (e.g., from scripts)
-Build after other projects are built
-Build periodically
-GitHub hook trigger for GITScm polling
-Poll SCM
+Build after other projects are built: Triggers a build after another specified Jenkins project completes successfully.
+Build periodically: Automatically runs a build at a scheduled time or regular interval using a cron expression.
+GitHub hook trigger for GITScm polling: Automatically triggers a build when GitHub sends a webhook after a repository change.
+Poll SCM: Periodically checks the SCM repository for changes and triggers a build when changes are detected.
+Trigger builds remotely: Allows an external script or tool to trigger a Jenkins build using a URL and authentication.
 
-### Jenkins Plugins
+# Demo Pipeline
 
-Plugin is an extension that adds additional functionality to Jenkins.
+Jenkins Pipeline: A Jenkins Pipeline is a set of automated steps defined as code to build, test, and deploy an application
+Jenkinsfile: A Jenkinsfile is a text file that contains the definition of a Jenkins Pipeline.
+Declarative Pipeline: Declarative Pipeline is a structured and easier-to-read way of defining Jenkins pipelines using predefined syntax.
+Scripted Pipeline: Scripted Pipeline Groovy-based flexible pipeline approach hai jisme zyada programming flexibility milti hai.
+
+```
+pipeline {
+
+    agent any
+
+    stages {
+
+        stage('Build') {
+            steps {
+                echo 'Building application'
+            }
+        }
+
+        stage('Test') {
+            steps {
+                echo 'Testing application'
+            }
+        }
+
+        stage('Deploy') {
+            steps {
+                echo 'Deploying application'
+            }
+        }
+    }
+}
+```
 
 ### Credentials Management
 
@@ -96,52 +111,132 @@ GitHub tokens
 
 Dashboard--- security--- Credential--- usename with pass--- ad your git details.
 
-### Jenkins Executors
+# Flask + Docker Compose — Simple Lab Note
 
-Executor is a slot on a Jenkins node that allows Jenkins to run one build at a time.
-If you have 2 executor then
-
-Executor 1 → Job A
-Executor 2 → Job B
-Job C       → Queue
-
-### Jenkins Labels
-
-Jenkins labels are used to identify and select specific nodes or agents for running jobs based on their capabilities or requirements.
-
-### Jenkins Build History & Console Output:
-
-Build History maintains records of previous builds, while Console Output provides detailed logs of the commands and steps executed during a specific build.
-
-### Jenkins Pipeline
-
-Jenkins Pipeline is a set of automated steps written as code that defines how an application moves from source code to deployment.
-
+Project Directory:- 
 ```
-Developer Push Code
-        |
-        ↓
-Git Checkout
-        |
-        ↓
-Build
-        |
-        ↓
-Test
-        |
-        ↓
-Docker Image Build
-        |
-        ↓
-Push Image
-        |
-        ↓
-Deploy Application
+jenkins-flask-demo/
+├── app.py
+├── requirements.txt
+├── Dockerfile
+├── docker-compose.yml
+└── Jenkinsfile
 ```
 
-### Declarative Pipeline provides a structured and easier way to define CI/CD workflows and is commonly used in production. Scripted Pipeline provides more flexibility because it is based on Groovy programming and is used for complex workflows
+Then push it to GitHub and create a pipeline with Pipeline script from DCM and Branch is */main
 
-### Jenkins Controller manages scheduling and pipeline orchestration, while Jenkins Agents execute the actual build, test, and deployment tasks. This helps distribute workload and improves scalability.
+```
+pipeline {
+
+    agent any
+
+    stages {
+
+        stage('Git Checkout') {
+            steps {
+                git branch: 'main',
+                url: 'https://github.com/Imtiyaj5791/jenkins-flask-demo.git'
+            }
+        }
+
+        stage('Build') {
+            steps {
+                
+		sh 'docker compose build'
+            }
+        }
+
+        stage('Test') {
+            steps {
+                sh 'docker compose up -d'
+                sh 'curl -f http://localhost:5000'
+            }
+        }
+
+        stage('Deploy') {
+            steps {
+                sh 'docker compose up -d'
+            }
+        }
+    }
+}
+```
+# Jenkins Architecture
+
+Jenkins architecture consists of a Controller and Agents. The Jenkins Controller manages jobs, pipelines, and scheduling, while Jenkins Agents execute build, test, and deployment tasks.
+
+```
+Controller
+    |
+    | Assigns work
+    ↓
+Agent
+    |
+    ├── Build
+    ├── Test
+    └── Deploy
+```
+Jenkins Controller communicates with Agents using methods such as SSH, inbound agents, or WebSocket, depending on the agent configuration.
+
+```
+Jenkins Controller
+       |
+       | SSH
+       ↓
+Linux Agent
+       |
+       ↓
+Build / Test / Deploy
+```
+
+## Lab MAster to Slave:
+
+-- Create a slave machine
+-- Generate a ssh-keygen on master and copy public key to slave in authorized file
+-- Install java on slave
+-- Jenkins---nodes--add nodes--permanent---create--- remote root dir (/home/ubuntu/jenkins-agent) --- Labels (linux-agent)---login agent via ssh 
+    host---slave ip, Credential( Add credential user name ubuntu and Private key)
+
+```
+pipeline {
+    agent {
+        label 'linux-agent'
+    }
+
+    stages {
+        ...
+    }
+}
+```
+
+# Roll-Based
+RBAC in Jenkins is used to control user access based on roles. Instead of giving all users administrative privileges, we assign specific permissions according to their responsibilities. This follows the principle of least privilege and improves Jenkins security.
+
+Lab:
+
+Insatll Plugin--  Role-based Authorization Strategy
+Enable Role-Based Authorization from Console-- Security---Authorization---Role-Based Strategy
+Create a user 
+Role Management---Manage Role---Add role (Dev and give required permission)
+Assign this role to created user
+
+# Multibranch Pipeline
+
+
+Multibranch Pipeline
+Jenkins Backup + Restore
+Jenkins Troubleshooting
+project java based only pipeline
+
+
+
+
+
+
+
+
+
+
 
 ## Jenkins Production Pipeline — 2.1 to 2.8 One-Line Revision
 
