@@ -58,18 +58,18 @@ Create a first freestyle job--- select free style--- build step--- execue shell
 
 # Triggers
 
-Build after other projects are built: Triggers a build after another specified Jenkins project completes successfully.
-Build periodically: Automatically runs a build at a scheduled time or regular interval using a cron expression.
-GitHub hook trigger for GITScm polling: Automatically triggers a build when GitHub sends a webhook after a repository change.
-Poll SCM: Periodically checks the SCM repository for changes and triggers a build when changes are detected.
-Trigger builds remotely: Allows an external script or tool to trigger a Jenkins build using a URL and authentication.
+****Build after other projects are built****: Triggers a build after another specified Jenkins project completes successfully.
+****Build periodically****: Automatically runs a build at a scheduled time or regular interval using a cron expression.
+****GitHub hook trigger for GITScm polling****: Automatically triggers a build when GitHub sends a webhook after a repository change.
+****Poll SCM****: Periodically checks the SCM repository for changes and triggers a build when changes are detected.
+****Trigger builds remotely****: Allows an external script or tool to trigger a Jenkins build using a URL and authentication.
 
 # Demo Pipeline
 
-Jenkins Pipeline: A Jenkins Pipeline is a set of automated steps defined as code to build, test, and deploy an application
-Jenkinsfile: A Jenkinsfile is a text file that contains the definition of a Jenkins Pipeline.
-Declarative Pipeline: Declarative Pipeline is a structured and easier-to-read way of defining Jenkins pipelines using predefined syntax.
-Scripted Pipeline: Scripted Pipeline Groovy-based flexible pipeline approach hai jisme zyada programming flexibility milti hai.
+****Jenkins Pipeline****: A Jenkins Pipeline is a set of automated steps defined as code to build, test, and deploy an application
+****Jenkinsfile****: A Jenkinsfile is a text file that contains the definition of a Jenkins Pipeline.
+****Declarative Pipeline****: Declarative Pipeline is a structured and easier-to-read way of defining Jenkins pipelines using predefined syntax.
+****Scripted Pipeline****: Scripted Pipeline Groovy-based flexible pipeline approach hai jisme zyada programming flexibility milti hai.
 
 ```
 pipeline {
@@ -222,20 +222,11 @@ Assign this role to created user
 
 # Multibranch Pipeline
 
-
+Pending
 Multibranch Pipeline
 Jenkins Backup + Restore
 Jenkins Troubleshooting
 project java based only pipeline
-
-
-
-
-
-
-
-
-
 
 
 ## Jenkins Production Pipeline — 2.1 to 2.8 One-Line Revision
