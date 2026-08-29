@@ -76,9 +76,11 @@ A Kubernetes Service provides a stable network endpoint. We need it because Pod 
 
 ## Q10. Explain the difference between ClusterIP, NodePort and LoadBalancer.
 
-ClusterIP provides a stable endpoint for internal communication inside the Kubernetes cluster.
-NodePort provides a stable endpoint for  external access to the application through a port on the Kubernetes node.
-LoadBalancer provides a stable endpoint for  external access to the application through a load balancer.
+****ClusterIP**** provides a stable endpoint for internal communication inside the Kubernetes cluster.
+
+****NodePort**** provides a stable endpoint for  external access to the application through a port on the Kubernetes node.
+
+****LoadBalancer**** provides a stable endpoint for  external access to the application through a load balancer.
 
 ## Q11. A Service exists but the application is not accessible. How will you troubleshoot it?
 
