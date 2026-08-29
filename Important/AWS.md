@@ -355,13 +355,13 @@ We can also use features like Versioning, Lifecycle Policies and encryption to p
 
 Amazon S3 provides different storage classes based on how frequently we access the data and how long we need to retain it.
 
-S3 Standard is used for frequently accessed data.
+****S3 Standard**** is used for frequently accessed data.
 
 **S3 Standard-IA** is used for data that is accessed less frequently but still needs quick access.
 
 **S3 One Zone-IA** is similar to Standard-IA but stores data in a single Availability Zone, so it is suitable for data that can be recreated if required.
 
-**S3 Intelligent-Tiering** automatically moves objects between access tiers based on changing access patterns.
+**S3 Intelligent-Tiering** S3 Intelligent-Tiering automatically moves objects between access tiers based on their access patterns to help reduce storage costs.
 
 **S3 Glacier Instant Retrieval** is used for archive data that still needs fast retrieval.
 
