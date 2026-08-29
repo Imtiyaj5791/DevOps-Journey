@@ -5,22 +5,29 @@ Kubernetes — Final 30 Interview Questions
 ## Q1. Explain Kubernetes architecture and its major components.
 
 Kubernetes architecture consists of two main parts:
-Control Plane:-
+
+#### Control Plane:-
 
 The Control Plane manages the cluster state and includes components like:- API Server, etcd, Scheduler, Controller Manager
 
-API Server is the main gatekeeper of Kubernetes. To communicate between two Kubernetes resources/components, the communication goes through API Server.
-etcd is like a database in Kubernetes. It stores all the cluster information in key-value format, such as: Nodes, Pods, Deployments.
-Scheduler decides on which Worker Node the new Pod will run, based on available resources.
-Controller Manager continuously checks the current and desired state of the cluster. If there is any mismatch, it takes action to match the current state with the desired state.
+****API Server**** is the main gatekeeper of Kubernetes. To communicate between two Kubernetes resources/components, the communication goes through API Server.
 
-Worker Nodes:-
+****etcd**** is like a database in Kubernetes. It stores all the cluster information in key-value format, such as: Nodes, Pods, Deployments.
+
+****Scheduler**** decides on which Worker Node the new Pod will run, based on available resources.
+
+****Controller Manager**** continuously checks the current and desired state of the cluster. If there is any mismatch, it takes action to match the current state with the desired state.
+
+#### Worker Nodes:-
 
 Worker Nodes are where our application runs and include:- Kubectl, Kubeproxy, Container run time
 
-Kubelet is an agent running on every Worker Node. Its main job is to make sure all assigned Pods and containers are running properly on that Worker Node.
-Container Runtime is responsible for creating and running containers inside the Pod.
-kube-proxy manages network traffic and sends Service traffic to the correct Pod.
+****Kubelet**** is an agent running on every Worker Node. Its main job is to make sure all assigned Pods and containers are running properly on that Worker Node.
+
+****Container Runtime**** is responsible for creating and running containers inside the Pod.
+
+****kube-proxy**** manages network traffic and sends Service traffic to the correct Pod.
+
 
 
 ## Q2. Explain the complete flow when you run:kubectl apply -f deployment.yaml
