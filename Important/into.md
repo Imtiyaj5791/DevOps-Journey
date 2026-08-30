@@ -38,6 +38,14 @@ In the CI/CD pipeline, Jenkins checks out the code, builds the application, runs
 
 My main focus in this project was understanding and implementing the AWS and DevOps workflow, including infrastructure, CI/CD, containers, and Kubernetes deployment.
 
+### Your Daily Task in project
+
+My main role in the project was to work on the AWS and DevOps side.
+
+I worked on AWS infrastructure using Terraform, created Docker images, configured Jenkins CI/CD pipelines, pushed images to ECR, and deployed applications on Kubernetes.
+
+I also worked on Linux troubleshooting and checked build, deployment, and application issues during the pipeline.
+
 # Why not your project in k8s
 
 "Sir, our project is highly stable and does not have hundreds of complex microservices. Our current setup with AWS EC2 and Auto Scaling handles our traffic perfectly and gives us 99.9% uptime. Moving to Kubernetes would only increase unnecessary infrastructure costs and cluster management complexity for our team."
