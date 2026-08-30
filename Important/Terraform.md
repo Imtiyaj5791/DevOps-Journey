@@ -201,11 +201,7 @@ terraform show
 
 ## What will happen if you delete the terraform.tfstate file?
 
-If the terraform.tfstate file is deleted, first I will check if there is any backup and restore it.
-
-If there is no backup, Terraform loses the information about the existing infrastructure.
-
-The next time we run terraform apply, Terraform may try to create the resources again because it cannot track the existing resources.
+If the terraform.tfstate file is deleted, Terraform loses the information about the infrastructure it was managing. First, I will check if we have a backup or remote state and restore it. If there is no backup, I will recover the state by importing the existing resources into Terraform state. Until the state is recovered, Terraform may consider the resources as new and may try to create them, so I will not directly run terraform apply.
 
 ---
 
