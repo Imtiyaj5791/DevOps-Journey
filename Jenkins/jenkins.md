@@ -222,11 +222,112 @@ Assign this role to created user
 
 # Multibranch Pipeline
 
-Pending
-Multibranch Pipeline
-Jenkins Backup + Restore
-Jenkins Troubleshooting
-project java based only pipeline
+A Jenkins job that automatically discovers branches from a Git repository and creates a separate pipeline for each branch.
+
+Create a pipeline with multibranch then scan multibranch and it will show all your branch in pipeline.
+
+# Jenkins backup and Restore:
+
+Jenkins backup means taking a backup of the Jenkins Home directory, which contains Jenkins jobs, configurations, credentials and other Jenkins data required for recovery.
+
+I would back up the Jenkins Home directory, usually /var/lib/jenkins, because it contains Jenkins jobs, configurations, credentials-related data, plugins and other important Jenkins data.
+
+I would not rely on a single manual backup. I would schedule automated backups of Jenkins Home to remote storage with a defined RPO and retain multiple backup versions.
+
+# Jenkins Troubleshhot:
+
+Build Failure
+     ↓
+Console Output
+     ↓
+Find Exact Error
+     ↓
+Identify the Problem Area
+     ↓
+Check Logs / Status / Configuration
+     ↓
+Fix the Issue
+     ↓
+Run the Build Again
+
+
+# Scenario 1
+
+A Jenkins pipeline is stuck at “Waiting for next available executor.” What will you check?
+
+First, I will check the Jenkins queue and see if any executor is available. Then I will check the node status and how many executors are configured. If all executors are busy, I will check the running jobs. If required, I will increase the executor or use another available agent.
+
+# Scenario 2
+
+A Jenkins pipeline starts, but the Git checkout stage fails with “Authentication failed.” What will you check?
+
+First, I will check the console output for the exact error. Then I will verify the Credential ID, username and password/token. I will also check whether the correct credential is configured in the Jenkinsfile. After that, I will verify that the credential has access to the Git repository.
+
+# Scenario 3
+
+A Jenkins pipeline fails at the Docker build stage with “permission denied.” What will you check?
+
+In this case, I will check the console output for the exact error. Then I will check whether Docker is installed and the Docker service is running. I will also check whether the Jenkins user is added to the Docker group. After fixing the issue, I will run the build again.
+
+# Scenario 4
+
+A Jenkins pipeline is failing because of “No space left on device.” What will you check?
+
+The issue is related to disk space, so first I will check the disk space. Then I will identify and clean unnecessary files. If we still need more space, I will increase the disk size after approval. Then I will run the pipeline again.
+
+# Scenario 5
+
+A Jenkins agent suddenly goes offline. How will you troubleshoot it?
+
+First, I will check the agent status and try to ping the agent from the Jenkins server. Then I will check whether there is any connectivity issue or resource issue. I will also check SSH connectivity and the agent log. After fixing the issue, I will reconnect the agent and verify the pipeline.
+
+# Scenario 6
+
+A Jenkins pipeline is running very slowly. What will you check?
+
+First, I will check the resource availability of the agent, like CPU, memory and disk space. Then I will check the executor and see if multiple jobs are running on the same agent. I will also check the build logs to identify which stage is taking more time.
+
+# Scenario 7
+
+If your Jenkins pipeline takes 1 hour, how would you reduce it to around 10 minutes?”
+
+First, I will check the pipeline logs and find which stage is taking more time. Then I will optimize that stage. If possible, I will run independent tasks in parallel. If the agent is slow, I will use a better agent.
+
+# Scenario 8
+
+A Jenkins pipeline is successful, but the application is not running after deployment. What will you check?
+
+First, I will check whether the application is running by using curl on localhost. If the application is deployed on Kubernetes, I will check the Pod status and logs. If it is deployed using Docker, I will check the container status and logs. After that, I will check whether the required port is listening and verify the Security Group if required.
+
+# Scenario 9
+
+A Jenkins pipeline fails during the deployment stage. What will you check first?
+
+First, I will check the console output to find the exact error. Then I will check whether it is a dependency issue, configuration issue, or an issue in the Jenkinsfile. Based on the error, I will fix the issue and run the pipeline again.
+
+# Scenario 10
+
+A Jenkins build is failing with command not found. How will you troubleshoot it?
+
+If I get a command not found error, first I will check the Jenkinsfile and verify the command. Then I will check whether the required tool is installed on the Jenkins agent and whether it is available in the PATH. I will fix the issue and run the pipeline again.
+
+# Scenario 11
+
+What happen during the pipeline Master and Slave goes down?
+
+If the Jenkins Controller goes down, the running pipeline is affected. After the Controller comes back, Jenkins can resume the pipeline from its saved state, depending on the pipeline state and durability. It does not necessarily start from the beginning.
+
+If the agent goes down, the Controller remains available, but the pipeline cannot continue the work that requires that agent. Once the agent comes back, Jenkins can recover or resume the pipeline from its saved state, depending on the step and pipeline state.
+
+# Scenario 12
+
+Which Jenkins plugins have you used?
+
+I have mainly worked with Git, Pipeline, Credentials and Docker-related plugins. Git plugin is used for source code checkout, Pipeline plugin is used for Jenkinsfile-based pipelines, Credentials plugin is used to manage credentials securely, and Docker Pipeline plugin is used for Docker-related operations.
+
+
+
+
 
 
 ## Jenkins Production Pipeline — 2.1 to 2.8 One-Line Revision
