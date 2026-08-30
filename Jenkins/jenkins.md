@@ -234,6 +234,10 @@ I would back up the Jenkins Home directory, usually /var/lib/jenkins, because it
 
 I would not rely on a single manual backup. I would schedule automated backups of Jenkins Home to remote storage with a defined RPO and retain multiple backup versions.
 
+# Shared Library
+
+Jenkins Shared Library is used to store common pipeline code in one place so that multiple Jenkins pipelines can reuse it. It helps reduce duplicate code and makes pipeline maintenance easier.
+
 # Jenkins Troubleshhot:
 
 Build Failure
