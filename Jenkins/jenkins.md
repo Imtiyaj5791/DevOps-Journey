@@ -415,3 +415,85 @@ ecommerce=<ECR_IMAGE>:v1
 
 kubectl rollout status deployment/ecommerce
 ```
+
+```
+pipeline {
+
+    agent any
+
+    stages {
+
+        stage ('Checkout') {
+            steps {
+                git branch: 'main',
+                    url: 'https://github.com/your-user/java-project.git'
+            }
+        }
+
+        stage ('Build') {
+            steps {
+                echo 'Building Java application'
+                sh 'mvn clean package -DskipTests'
+            }
+        }
+
+        stage ('Test') {
+            steps {
+                echo 'Running application tests'
+                sh 'mvn test'
+            }
+        }
+
+        stage ('SonarQube Scan') {
+            steps {
+                echo 'Running SonarQube scan'
+                sh 'mvn sonar:sonar'
+            }
+        }
+
+        stage ('Trivy FS Scan') {
+            steps {
+                echo 'Running Trivy filesystem scan'
+                sh 'trivy fs .'
+            }
+        }
+
+        stage ('Docker Build') {
+            steps {
+                echo 'Building Docker image'
+                sh 'docker build -t java-app:v1 .'
+            }
+        }
+
+        stage ('Trivy Image Scan') {
+            steps {
+                echo 'Scanning Docker image'
+                sh 'trivy image java-app:v1'
+            }
+        }
+
+        stage ('Docker Tag') {
+            steps {
+                sh 'docker tag java-app:v1 <ACCOUNT-ID>.dkr.ecr.ap-south-1.amazonaws.com/java-app:v1'
+            }
+        }
+
+        stage ('ECR Push') {
+            steps {
+                echo 'Pushing image to ECR'
+
+                sh 'aws ecr get-login-password --region ap-south-1 | docker login --username AWS --password-stdin <ACCOUNT-ID>.dkr.ecr.ap-south-1.amazonaws.com'
+
+                sh 'docker push <ACCOUNT-ID>.dkr.ecr.ap-south-1.amazonaws.com/java-app:v1'
+            }
+        }
+
+        stage ('Kubernetes Deploy') {
+            steps {
+                echo 'Deploying application to Kubernetes'
+                sh 'kubectl apply -f kubernetes/'
+            }
+        }
+    }
+}
+```
