@@ -167,13 +167,27 @@ First, I will check the Node status using kubectl get nodes. Then I will run kub
 
 ## Q23. What is a ConfigMap and how is it used?
 
+ConfigMap is used to store non-sensitive configuration data, such as application settings, environment variables, or application paths. We can then integrate the ConfigMap with the Deployment YAML and inject the values into the Pod as environment variables or mount them as configuration files.
+One important point: Kubernetes Secrets are not automatically strongly encrypted just because they are Secrets; by default, their values are base64-encoded
+
 ## Q24. What is a Secret and how is it used?
+
+Secret is used to store sensitive data such as database passwords, API keys, or tokens. We can integrate the Secret with the Deployment YAML and inject the values into the Pod as environment variables or mount them as files.”
 
 ## Q25. Explain PV, PVC and StorageClass.
 
+PersistentVolume (PV) is a storage resource in Kubernetes, and PersistentVolumeClaim (PVC) is a request to claim storage from a PV. StorageClass defines how storage is dynamically provisioned, for example using AWS EBS, NFS, or local storage depending on the environment. If a PVC is stuck in Pending, I would check whether a suitable PV is available, storage capacity, access permissions, and StorageClass or provisioner issues. For a Multi-Attach error, I would check whether the volume is already attached to another node and verify the Pod and PV status using kubectl describe.
+
+
 ## Q26. What is HPA and how does it work?
 
+HPA stands for Horizontal Pod Autoscaler. It automatically scales the number of Pods based on resource utilization such as CPU or memory. For example, if we set the target CPU utilization to 70% and the utilization goes above the target, HPA increases the number of Pods up to the configured maxReplicas. When the load decreases, it scales the Pods down, but not below the configured minReplicas.
+
+
 ## Q27. A Deployment is created successfully, but Pods are not becoming Ready. How will you troubleshoot it?
+
+“First, I will check the Pod status using kubectl get pods. Then I will use kubectl describe pod and check the Events section. I will also check the Pod logs and previous logs if required. Depending on the error, I will check readiness probe, container/application health, service or configuration issues, resource limits, node selector or affinity, and taints and tolerations. Based on the root cause, I will fix the issue or coordinate with the respective team.”
+
 
 ## Q28सेट ई में एक स्टोरेज ट्रबलशूटिंग का सवाल ऐड करना होगा।
 
