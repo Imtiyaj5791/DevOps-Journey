@@ -35,9 +35,9 @@ We have around five to six projects deployed in AWS, and the application I suppo
 “My daily responsibilities include monitoring the infrastructure using CloudWatch and Grafana, handling production alerts and P1/P2 incidents, troubleshooting Linux and AWS-related issues. I also coordinate with the application, network and database teams to resolve production issues.”
 
 
-If interviewer asked about k8s project then:
+### 2nd Version Microservice
 
-“We also have some applications running on Kubernetes, where my responsibilities include monitoring pods and nodes, checking pod logs and previous logs, and using kubectl describe to troubleshoot issues. If the issue is related to basic operational troubleshooting, I resolve it; otherwise, I escalate it to the DevOps team.”
+I worked on a Java-based microservices application deployed on AWS. I was responsible for setting up the CI/CD workflow using GitHub, Jenkins, Maven, SonarQube, Trivy, Docker, and ECR. The application was containerized and deployed on AWS, with monitoring and troubleshooting implemented using AWS services. This project gave me practical experience in automating the application build, security checks, containerization, and deployment process.
 
 # Q3:- Why are you looking for a change?
 
