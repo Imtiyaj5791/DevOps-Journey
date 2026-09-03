@@ -11,6 +11,23 @@ For AWS, I have worked on services like EC2, EBS, S3, VPC, IAM, CloudWatch, and 
 
 Apart from this, I have hands-on experience with DevOps tools like Git, Jenkins, Terraform, Docker, and Kubernetes through my self-learning and lab projects. Now I am looking for an opportunity to grow my career in a DevOps role.
 
+### 2nd Version
+
+Hi, thank you for giving me this opportunity.
+
+I am Imtiyaj Ansari, and I have around 11 years of experience in IT Infrastructure. For the last 5 years, I have been working as a Linux and AWS Cloud Engineer at Flexis India.
+
+In my current role, my main responsibility is Production Support and maintaining server availability. I work with AWS services such as EC2, VPC, S3, IAM, and CloudWatch. I regularly troubleshoot production issues like high CPU and memory utilization, disk space issues, SSH connectivity problems, and application failures.
+
+I also use monitoring tools such as Grafana, Opsgenie, and NinjaRMM for daily operations and infrastructure monitoring.
+
+Along with my production experience, I have strong practical knowledge of DevOps tools such as Git, Jenkins, Terraform, Docker, and Kubernetes. I have worked on projects involving AWS infrastructure automation using Terraform and CI/CD pipeline implementation using Jenkins.
+
+As an Immediate Joiner, I am looking for an opportunity in an AWS Cloud and DevOps role where I can leverage my production support experience along with my DevOps skills.
+
+Thank you.
+
+
 # Q2:-Explain your current project and your roles
 
 We have around five to six projects deployed in AWS, and the application I support follows a three-tier architecture. End users access the application through a Load Balancer, which forwards traffic to healthy EC2 instances in the private subnet. These EC2 instances are managed by an Auto Scaling Group deployed across multiple Availability Zones for high availability. For the backend, we use Amazon RDS, which is also in the private subnet.
