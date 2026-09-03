@@ -56,7 +56,7 @@ I know the perfect answer
 
 There are multiple ways to reduce Docker image size. I can use a smaller base image like Alpine. I can use a multi-stage build, where I build the application in the first stage and copy only the required artifact, like a JAR file, to the second stage. I can also combine multiple RUN commands to reduce the number of layers.
 
-How does Docker networking work, and how can containers communicate with each other?
+### How does Docker networking work, and how can containers communicate with each other?
 
 For container-to-container communication, I can create a bridge network and attach both containers to the same network. Containers can communicate using the container name instead of IP address. We use the network because the container IP can change when the container is recreated, but the container name remains stable.
 
