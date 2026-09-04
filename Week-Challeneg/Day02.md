@@ -63,10 +63,11 @@ We can define environment variables in the Dockerfile using ENV. We can also pas
 
 “Both are used to create multiple resources. With count, resources are created using an index, while with for_each, resources are created using map or set values.”
 
-``
+```
 count → resource[0], resource[1], resource[2]
 
 for_each → resource["dev"], resource["prod"]
+
 ```
 
 ### What happens when you run terraform apply?
