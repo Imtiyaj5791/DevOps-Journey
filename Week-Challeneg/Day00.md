@@ -1,8 +1,10 @@
+------
+
 Hi, Thank you for giving this opportunity.
 
 My name is Imtiyaj Ansari, and I have around 11 years of experience in the IT field.
 
-I started my career as a Desktop Support Engineer, and later I moved into a System Administrator role. For the last five years, I have been working as a System Engineer, primarily focusing on Linux and AWS.
+I started my career as a Desktop Support Engineer, and later I moved into a System Administrator role. For the last five years, I have been working as a Cloud Operation Engineer, primarily focusing on Linux and AWS.
 
 During the first three years, my responsibilities were mainly focused on Linux and AWS operations, including infrastructure monitoring, server administration, troubleshooting, incident management, and maintaining system availability and performance. 
 
@@ -13,6 +15,7 @@ Over the last two years, my responsibilities have gradually moved towards DevOps
 I have also been involved in coordinating with different teams, such as development, database, networking, and security teams, for troubleshooting issues, supporting deployments, and ensuring smooth application and infrastructure operations.
 
 Currently, I am looking for an opportunity where I can utilize my DevOps knowledge and hands-on experience.
+
 
 ------
 
@@ -27,7 +30,7 @@ I also work with Kubernetes for deploying and managing containerized application
 Apart from this, I handle monitoring, health checks, troubleshooting, and coordinate with application, networking, and database teams for issue resolution.
 
 
-------------
+------
 
 My day starts with checking my emails and Teams to see if there are any important updates, production issues, maintenance activities, or tasks assigned to me.
 
