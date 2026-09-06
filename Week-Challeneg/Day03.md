@@ -10,7 +10,7 @@
 
 Git clone copies the remote repository to the local machine, while Git pull downloads the latest changes from the remote repository and merges them automatically.
 
-###How do you undo the last Git commit?
+### How do you undo the last Git commit?
 
 To undo the last commit, I can use git revert or git reset --soft HEAD~1, depending on whether the commit is already pushed or still local.”
 
@@ -69,7 +69,8 @@ Terraform state contains information about the resources created or managed by T
 Both count and for_each are used to create multiple instances of a resource. With count, resources are created using numeric indexes, while with for_each, resources are created using keys from a map or set, such as app and db.
 
 # Jenkins — 3
-Explain the CI/CD pipeline you have worked on or practiced in your project.
+
+### Explain the CI/CD pipeline you have worked on or practiced in your project.
 
 In my organization, we mainly use Jenkins for CI/CD pipelines. Our pipeline consists of multiple stages.
 
