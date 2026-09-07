@@ -50,6 +50,9 @@ I Know
 🔹 Terraform — 5
 ### What is a Terraform Dynamic Block, and why do we use it?
 
+“A Dynamic Block in Terraform allows us to create nested blocks dynamically from a set of input values, instead of defining each block separately.”
+
+For example, instead of manually writing multiple ingress blocks in a Security Group, we can use a Dynamic Block to generate them automatically.
 
 
 ### What is terraform init, and why is it required?
