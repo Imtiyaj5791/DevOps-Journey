@@ -101,6 +101,8 @@ Jenkins gets the source code from the Git repository using the Git plugin. We co
 
 ### How does a Pod access AWS S3 securely?
 
+“After creating the IAM policy and IAM role with the EKS OIDC trust relationship, we attach the policy to the role. Then we create a Kubernetes ServiceAccount and associate the IAM Role ARN with it. This mechanism is called IRSA (IAM Roles for Service Accounts). Finally, we configure the Pod to use that ServiceAccount.”
+
 ### What is the difference between Deployment and StatefulSet? *
 
 ### What is HPA, and how does it work? *
