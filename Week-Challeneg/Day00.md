@@ -32,16 +32,15 @@ Apart from this, I handle monitoring, health checks, troubleshooting, and coordi
 
 ------
 
-My day starts with checking my emails and Teams to see if there are any important updates, production issues, maintenance activities, or tasks assigned to me.
+My day typically starts with checking emails and Teams for any production issues, maintenance activities, or assigned tasks. I then review our monitoring dashboards — CloudWatch and Grafana — to check for active alerts or anomalies in the infrastructure or applications.
 
-After that, I review the monitoring dashboards to check for any active alerts or abnormalities related to applications or infrastructure.
+After that, I join the daily stand-up with the development, QA, and product teams, where we align on ongoing tasks, blockers, and planned activities for the day.
 
-Next, I attend the daily stand-up meeting with the development, QA, and product teams, where we discuss ongoing tasks, issues, blockers, and planned activities.
+Once that's done, I work through my assigned tickets based on priority — this could be infrastructure changes, Terraform updates, CI/CD pipeline issues, application deployments, or Kubernetes troubleshooting. When production issues come up, I analyze logs and metrics, coordinate with the relevant teams, and troubleshoot based on priority and impact.
 
-After the stand-up, I work on my assigned tickets based on priority and requirement. Depending on the ticket, it can be related to infrastructure changes, Terraform changes, CI/CD pipeline issues, application deployments, AWS infrastructure issues, or Kubernetes troubleshooting.
+For deployments, I perform post-deployment health checks to confirm the application and its dependent services are functioning correctly. I close the loop by updating Jira with the troubleshooting details, actions taken, and current status, and follow up on anything still pending.
 
-I also handle production issues and alerts, analyze logs and metrics, coordinate with the required teams, and troubleshoot the issue based on the priority and impact.
 
-For deployment-related activities, I perform the required health checks after deployment and verify that the application and related services are working properly.
+### What exactly do you check during post-deployment health checks?
 
-Finally, I update the Jira tickets with the troubleshooting details, actions taken, and current status, and follow up on any pending activities.
+I verify the deployment status, check whether the application pods or services are healthy, test the application or health endpoint, review logs and monitoring dashboards for errors, and, if applicable, verify that the load balancer targets are healthy.
