@@ -8,9 +8,9 @@ I started my career as a Desktop Support Engineer, and later I moved into a Syst
 
 During the first three years, my responsibilities were mainly focused on Linux and AWS operations, including infrastructure monitoring, server administration, troubleshooting, incident management, and maintaining system availability and performance. 
 
-I have worked with AWS services such as EC2, S3, IAM, VPC, EBS, CloudWatch, Load Balancer, and Auto Scaling.
+After that, my responsibilities gradually moved towards the DevOps and Cloud domain. In DevOps, I have worked with Git and Jenkins for version control and CI/CD automation. I have hands-on experience with Docker and Kubernetes for containerization and application deployments, and Terraform for Infrastructure as Code and AWS infrastructure provisioning. I have also worked with Prometheus and Grafana for monitoring and alerting.
 
-Over the last two years, my responsibilities have gradually moved towards DevOps. I have been involved in DevOps-related activities such as automation, CI/CD, infrastructure as code, containerization, and deployment processes. I have worked with tools such as Git, Jenkins, Docker, Terraform, and Kubernetes as part of these responsibilities and hands-on implementations.
+On the cloud side, I primarily work with AWS services such as EC2, VPC, S3, IAM, Load Balancer, Auto Scaling, CloudWatch, ECR, and EKS, along with other related services.
 
 I have also been involved in coordinating with different teams, such as development, database, networking, and security teams, for troubleshooting issues, supporting deployments, and ensuring smooth application and infrastructure operations.
 
@@ -34,10 +34,14 @@ Apart from this, I handle monitoring, health checks, troubleshooting, and coordi
 
 My day starts with checking my emails and Teams to see if there are any important updates, production issues, maintenance activities, or tasks assigned to me.
 
-After that, I check the monitoring dashboards to make sure all applications and infrastructure are running smoothly.
+After that, I review the monitoring dashboards to check for any active alerts or abnormalities related to applications or infrastructure.
 
-Next, I attend the daily stand-up meeting with the development, QA, and product teams, where we discuss ongoing tasks, issues, and planned activities.
+Next, I attend the daily stand-up meeting with the development, QA, and product teams, where we discuss ongoing tasks, issues, blockers, and planned activities.
 
-After the stand-up, I work on my assigned tasks, such as infrastructure changes, Terraform activities, CI/CD pipeline support, deployments, and troubleshooting.
+After the stand-up, I work on my assigned tickets based on priority and requirement. Depending on the ticket, it can be related to infrastructure changes, Terraform changes, CI/CD pipeline issues, application deployments, AWS infrastructure issues, or Kubernetes troubleshooting.
 
-I also handle production issues, coordinate with the required teams, update Jira tickets, and perform health checks after deployments.
+I also handle production issues and alerts, analyze logs and metrics, coordinate with the required teams, and troubleshoot the issue based on the priority and impact.
+
+For deployment-related activities, I perform the required health checks after deployment and verify that the application and related services are working properly.
+
+Finally, I update the Jira tickets with the troubleshooting details, actions taken, and current status, and follow up on any pending activities.
