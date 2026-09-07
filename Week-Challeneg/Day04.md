@@ -32,7 +32,7 @@
 
 I know it
 
-How would you check which process is listening on a particular port in Linux?
+### How would you check which process is listening on a particular port in Linux?
 
 ss -tulnp | grep :80
 
