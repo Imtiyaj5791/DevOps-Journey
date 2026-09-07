@@ -48,7 +48,7 @@ ansible --version
 
 ## Create inventory file
 
-``
+```
 mkdir -p ~/ansible
 cd ~/ansible
 nano inventory
