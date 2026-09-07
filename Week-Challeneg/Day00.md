@@ -38,9 +38,4 @@ After that, I join the daily stand-up with the development, QA, and product team
 
 Once that's done, I work through my assigned tickets based on priority — this could be infrastructure changes, Terraform updates, CI/CD pipeline issues, application deployments, or Kubernetes troubleshooting. When production issues come up, I analyze logs and metrics, coordinate with the relevant teams, and troubleshoot based on priority and impact.
 
-For deployments, I perform post-deployment health checks to confirm the application and its dependent services are functioning correctly. I close the loop by updating Jira with the troubleshooting details, actions taken, and current status, and follow up on anything still pending.
-
-
-### What exactly do you check during post-deployment health checks?
-
-I verify the deployment status, check whether the application pods or services are healthy, test the application or health endpoint, review logs and monitoring dashboards for errors, and, if applicable, verify that the load balancer targets are healthy.
+“We handle a mix of DevOps, application, and infrastructure incidents. On the DevOps side, common incidents include Jenkins pipeline failures, CI/CD deployment failures, Docker image build or push issues, and Kubernetes issues such as CrashLoopBackOff, ImagePullBackOff, pods not ready, and deployment failures. We also handle infrastructure incidents such as high CPU, memory, disk utilization, service failures, and load balancer health issues.”
