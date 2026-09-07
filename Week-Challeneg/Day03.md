@@ -106,7 +106,9 @@ Jenkins gets the source code from the Git repository using the Git plugin. We co
 
 ### What is Prometheus, How does Grafana get data and have you create any dashboard in Grafana.
 
-Prometheus is a monitoring tool that collects and stores metrics such as CPU, memory, disk and application metrics. Grafana gets the metrics from Prometheus and visualizes them using dashboards and graphs. To create a Grafana dashboard, I first configure Prometheus as a data source, then create a dashboard, add panels, select the required metrics, choose the visualization, and save the dashboard.
+Prometheus is a monitoring tool that collects and stores metrics such as CPU, memory, disk, and application metrics. Grafana does not collect the metrics itself; it reads the metrics from Prometheus and visualizes them.
+
+To create a custom dashboard, I create a new dashboard in Grafana, add a panel, select Prometheus as the data source, use a PromQL query to fetch the required metric such as CPU utilization, select the required visualization, and save the dashboard. We can also import an existing Grafana dashboard using a JSON configuration.
 
 # Ansible — 2
 
