@@ -1,33 +1,27 @@
 ------
 
-Hi, Thank you for giving this opportunity.
+Hi, thank you for giving me this opportunity.
 
-My name is Imtiyaj Ansari, and I have around 11 years of experience in the IT field.
+My name is **Imtiyaz Ansari**, and I have around **11 years of experience in the IT industry**, including **3.6 years of hands-on experience in DevOps**. Currently, I am working as a **DevOps Engineer with Flexis India Pvt. Ltd.**
 
-I started my career as a Desktop Support Engineer, and later I moved into a System Administrator role. For the last five years, I have been working as a Cloud Operation Engineer, primarily focusing on Linux and AWS.
+I started my career as a **Desktop Support Engineer** and later worked as a **System Administrator**, where I supported both Linux and Windows environments. 
 
-During the first three years, my responsibilities were mainly focused on Linux and AWS operations, including infrastructure monitoring, server administration, troubleshooting, incident management, and maintaining system availability and performance. 
+Later, I moved into the **DevOps and Cloud domain**, where I started working on automation, CI/CD, cloud infrastructure, containers, and monitoring.
 
-After that, my responsibilities gradually moved towards the DevOps and Cloud domain. In DevOps, I have worked with Git and Jenkins for version control and CI/CD automation. I have hands-on experience with Docker and Kubernetes for containerization and application deployments, and Terraform for Infrastructure as Code and AWS infrastructure provisioning. I have also worked with Prometheus and Grafana for monitoring and alerting.
+In my current role, my primary responsibility is design and maintain CI/CD pipeline to automate the complete process and ensure the application is reliable, secure, and highly available.
 
-On the cloud side, I primarily work with AWS services such as EC2, VPC, S3, IAM, Load Balancer, Auto Scaling, CloudWatch, ECR, and EKS, along with other related services.
+To achieve this We use **Git and GitHub for version control and Jenkins for CI/CD automation**.
 
-I have also been involved in coordinating with different teams, such as development, database, networking, and security teams, for troubleshooting issues, supporting deployments, and ensuring smooth application and infrastructure operations.
+I work with **Docker for containerization** and **Kubernetes for application deployment and management**. On the infrastructure side, I use **Terraform to provision and manage AWS resources** such as EC2, EKS, VPC, IAM, Route 53, and Auto Scaling.
 
-Currently, I am looking for an opportunity where I can utilize my DevOps knowledge and hands-on experience.
+For code quality and security, I have integrated tools such as **SonarQube, and Trivy** into our CI/CD pipelines. For monitoring and alerting, I work with **Prometheus and Grafana** to monitor applications and infrastructure and identify critical issues.
 
+On the AWS side, I primarily work with services such as **EC2, VPC, S3, ELB, CloudWatch, EKS, ECR**, and other related services.
 
-------
+I work closely with **Development, QA, and Operations teams** to ensure smooth releases and stable production environments.
 
-In this project, my role is mainly focused on AWS infrastructure, DevOps, CI/CD, and Kubernetes.
+I am now looking for an opportunity where I can utilize my **DevOps skills and hands-on experience**, work on challenging production environments, and continue growing professionally.
 
-I am responsible for managing AWS infrastructure using services like VPC, EC2, ALB, IAM, and CloudWatch, and I use Terraform for infrastructure provisioning and management.
-
-For CI/CD, I work with GitHub and Jenkins, where Jenkins is integrated with Docker and Amazon ECR for building and pushing container images.
-
-I also work with Kubernetes for deploying and managing containerized applications using Deployments, Services, ConfigMaps, Secrets, and Ingress.
-
-Apart from this, I handle monitoring, health checks, troubleshooting, and coordinate with application, networking, and database teams for issue resolution.
 
 
 ------
