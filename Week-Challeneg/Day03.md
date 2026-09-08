@@ -75,15 +75,21 @@ Both count and for_each are used to create multiple instances of a resource. Wit
 
 ### Explain the CI/CD pipeline you have worked on or practiced in your project.
 
-In my organization, we mainly use Jenkins for CI/CD pipelines. Our pipeline consists of multiple stages.
+In my organization, we mainly use Jenkins for CI/CD pipelines, and our pipeline consists of multiple stages.
 
-First, Jenkins checks out the source code from Git. Then we run unit tests to validate the code. After that, we build the application and generate the artifact.
+First, Jenkins checks out the source code from Git. Then we run unit tests to validate the application code.
 
-Next, we perform code quality analysis using SonarQube and security scanning using Trivy. The generated artifact is stored in Nexus/AWS CodeArtifact Repository.
+After that, we build the application and generate the required artifact. We perform code quality analysis using SonarQube and security scanning using Trivy.
 
-After that, we build the Docker image and perform a vulnerability scan on the Docker image using Trivy. Once the image passes the required checks, we push it to Amazon ECR.
+The generated artifact is then stored in our artifact repository, such as Nexus or AWS CodeArtifact.
 
-Then we deploy the application to the target environment. Finally, we perform smoke testing to verify that the application is working correctly after deployment.
+Next, we build the Docker image and scan the image for vulnerabilities using Trivy. If the image meets our defined security thresholds, we push it to Amazon ECR.
+
+After that, we deploy the application to the target environment, typically Kubernetes/EKS.
+
+Finally, we perform smoke testing to verify that the application is running correctly after deployment.
+
+So overall, the pipeline automates the complete process from code checkout to build, testing, quality and security checks, artifact and image management, deployment, and post-deployment validation.
 
 ### What are Jenkins Pipeline stages, and why do we use them?
 
