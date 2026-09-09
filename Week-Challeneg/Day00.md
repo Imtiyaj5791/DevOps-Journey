@@ -2,7 +2,7 @@
 
 Hi, thank you for giving me this opportunity.
 
-My name is **Imtiyaz Ansari**, and I have around **11 years of experience in the IT industry**, including **3.6 years of hands-on experience in DevOps**. Currently, I am working as a **DevOps Engineer with Flexis India Pvt. Ltd.**
+My name is **Imtiyaz Ansari**, and I have around **11 years of experience in the IT industry**, including **5.6 years of hands-on experience in Cloud & DevOps**. Currently, I am working as a **Cloud & DevOps Engineer with Flexis India Pvt. Ltd.**
 
 I started my career as a **Desktop Support Engineer** and later worked as a **System Administrator**, where I supported both Linux and Windows environments. 
 
