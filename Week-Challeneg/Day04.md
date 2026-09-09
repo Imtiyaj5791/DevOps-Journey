@@ -98,7 +98,31 @@ I know it
 
 ### Your Kubernetes Deployment is successfully created, but users are getting a 503 error and cannot access the application. How would you troubleshoot it? 
 
-“If the Deployment is successful but users are getting 503, first I will check the Ingress and Ingress Controller. Then I will verify that the Ingress is pointing to the correct Service and port. After that, I will check the Service endpoints and make sure healthy Pods are available. I will also check the readiness probe because a Pod can be running but not Ready, so the Service will not send traffic to it. Finally, I will check the Pod and Ingress Controller logs to identify the root cause.”
+503 error means the service/server is currently not available or not ready to serve the request.
+
+First, I will check the Ingress and Ingress Controller through:
+
+kubectl get ingress -n <namespace> kubectl get pods -n <ingress-controller-namespace>
+
+Then I will describe the Ingress to check any error or configuration issue:
+
+kubectl describe ingress <ingress-name> -n <namespace>
+
+Then I will check the Service to verify that Ingress is connected to the correct backend Service:
+
+kubectl get svc -n <namespace> kubectl describe svc <service-name> -n <namespace>
+
+Then I will check the Endpoints to verify that the Service has backend Pods available:
+
+kubectl get endpoints <service-name> -n <namespace>
+
+Then I will check whether the Pod is running and ready:
+
+kubectl get pods -n <namespace>
+
+Finally, I will check the Pod logs and describe the Pod to find the actual issue:
+
+kubectl logs <pod-name> -n <namespace> kubectl describe pod <pod-name> -n <namespace>
 
 ### A Pod is repeatedly crashing after deployment. How would you troubleshoot the issue? 
 
