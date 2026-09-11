@@ -10,8 +10,9 @@ I started my career in Desktop Support and System Administration, where I built 
 In my current role, my primary responsibility is to design and manage reliable CI/CD pipelines and ensure the application environment is secure, highly available, and reliable. 
 
 On the CI/CD side, we use Git and GitHub for version control and Jenkins for pipeline execution. I have also integrated tools like SonarQube for code quality and Trivy
+for container image security scanning.  
 
-for container image security scanning.  For Containerization & IaC, I work with Docker and Kubernetes for application deployments, and Terraform to provision AWS infrastructure like VPC, EC2, IAM, Route 53, and Auto Scaling.  
+For Containerization & IaC, I work with Docker and Kubernetes for application deployments, and Terraform to provision AWS infrastructure like VPC, EC2, IAM, Route 53, and Auto Scaling.  
 
 For Monitoring and Observability, I use existing Prometheus, Grafana, and CloudWatch dashboards to track infrastructure health, monitor CPU/Memory metrics, and respond to critical operational alerts. 
 
