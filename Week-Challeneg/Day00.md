@@ -1,26 +1,23 @@
 ------
 
-Hi, thank you for giving me this opportunity.
+"Hi, thank you for giving me this opportunity.
 
-My name is **Imtiyaz Ansari**, and I have around **11 years of experience in the IT industry**, including **5 years of hands-on experience in Cloud & DevOps**. Currently, I am working as a **Cloud & DevOps Engineer with Flexis India Pvt. Ltd.**
+My name is Imtiyaz Ansari. I have around 11 years of total IT experience, with 5 years of hands-on experience in Cloud, Linux, and DevOps engineering. Currently, I am working as a Cloud & DevOps Engineer with Flexis India Pvt. Ltd.  
 
-I started my career as a **Desktop Support Engineer** and later worked as a **System Administrator**, where I supported both Linux and Windows environments. 
+I started my career in Desktop Support and System Administration, where I built a strong foundation in Linux, networking, and OS troubleshooting. Over time, I moved into Cloud and DevOps, where I started working on Infrastructure as Code, CI/CD pipelines, Docker, Kubernetes, and monitoring. 
 
-Later, I moved into the **DevOps and Cloud domain**, where I started working on automation, CI/CD, cloud infrastructure, containers, and monitoring.
 
-In my current role, my primary responsibility is design and maintain CI/CD pipeline to automate the complete process and ensure the application is reliable, secure, and highly available.
+In my current role, my primary responsibility is to design and manage reliable CI/CD pipelines and ensure the application environment is secure, highly available, and reliable. 
 
-To achieve this We use **Git and GitHub for version control and Jenkins for CI/CD automation**.
+On the CI/CD side, we use Git and GitHub for version control and Jenkins for pipeline execution. I have also integrated tools like SonarQube for code quality and Trivy
 
-I work with **Docker for containerization** and **Kubernetes for application deployment and management**. On the infrastructure side, I use **Terraform to provision and manage AWS resources** such as EC2, EKS, VPC, IAM, Route 53, and Auto Scaling.
+for container image security scanning.  For Containerization & IaC, I work with Docker and Kubernetes for application deployments, and Terraform to provision AWS infrastructure like VPC, EC2, IAM, Route 53, and Auto Scaling.  
 
-For code quality and security, I have integrated tools such as **SonarQube, and Trivy** into our CI/CD pipelines. For monitoring and alerting, I work with **Prometheus and Grafana** to monitor applications and infrastructure and identify critical issues.
+For Monitoring and Observability, I use existing Prometheus, Grafana, and CloudWatch dashboards to track infrastructure health, monitor CPU/Memory metrics, and respond to critical operational alerts. 
 
-On the AWS side, I primarily work with services such as **EC2, VPC, S3, ELB, CloudWatch, EKS, ECR**, and other related services.
+I work closely with Development, QA, and Operations teams to ensure smooth releases and stable production environments.
 
-I work closely with **Development, QA, and Operations teams** to ensure smooth releases and stable production environments.
-
-I am now looking for an opportunity where I can utilize my **DevOps skills and hands-on experience**, work on challenging production environments, and continue growing professionally.
+Now, I am looking for a challenging Senior Cloud/DevOps role where I can utilize my hands-on experience, handle production reliability, and continue growing professionally."
 
 
 
