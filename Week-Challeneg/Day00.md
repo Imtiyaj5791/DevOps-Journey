@@ -2,7 +2,7 @@
 
 "Hi, thank you for giving me this opportunity.
 
-My name is Imtiyaz Ansari.  I have around 11 years of experience in IT Infrastructure, with 5 years of hands-on experience in Cloud, Linux, and DevOps engineering. Currently, I am working as a Cloud & DevOps Engineer with Flexis India Pvt. Ltd.  
+My name is Imtiyaz Ansari.  I have around 11 years of experience in IT Infrastructure, For the last five years I have been working as Cloud, Linux, and DevOps engineering.
 
 I started my career in Desktop Support and System Administration, where I built a strong foundation in Linux, networking, and OS troubleshooting. Over time, I moved into Cloud and DevOps, where I started working on Infrastructure as Code, CI/CD pipelines, Docker, Kubernetes, and monitoring. 
 
