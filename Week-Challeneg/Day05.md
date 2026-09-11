@@ -125,18 +125,46 @@ Based on the root cause, I will resolve the issue and verify the application aga
 
 ### 20 Application is running in Kubernetes, but it cannot connect to MySQL. How will you troubleshoot it?
 
+“First, I will check the application logs to identify the exact MySQL connection error. Then I will check the MySQL host, port, credentials and configuration. After that, I will check network connectivity from the Pod to MySQL on port 3306. Finally, I will check whether MySQL is running and accepting connections.”
+
 # HTTP / Application Troubleshooting — 2
 
-### 21 Users report that the frontend is working, but API calls are returning 502/503. How will you troubleshoot from frontend to backend?
-### 22 Explain how you would differentiate and troubleshoot 400, 401, 403, 404, 429, 500, 502, 503 and 504 errors in a production environment.
+### 21 Explain how you would differentiate and troubleshoot 400, 401, 403, 404, 429, 500, 502, 503 and 504 errors in a production environment.
+
+****4xx = Request/client side problem****
+400 → request galat
+401 → authentication
+403 → permission
+404 → resource nahi mila
+429 → requests bahut zyada
+
+****5xx = Server/backend side problem****
+500 → application/server error
+502 → gateway ko backend se proper response nahi mila
+503 → backend/service available nahi
+504 → gateway ne response ke liye wait kiya, timeout
 
 # MySQL + ITIL / Production — 2
 
 ### 23 MySQL is running, but queries have suddenly become very slow. How will you troubleshoot the database?
+
+First, I will check the database server in CloudWatch and see CPU, memory, connections and disk usage to identify where the issue is.
+
+Then I will check whether read traffic is high. If read load is high, I will use a Read Replica for read queries so the database load can be divided.
+
+If required, I will also check slow queries and indexes.
+
 ### 24 You receive a P1 incident: production application is down and the customer is impacted. What will be your approach from detection to recovery and RCA?
 
-# Monitoring — 1
+First, I will check the monitoring alert and my initial findings to understand the impact and what exactly is down.
 
-### 26 What is the difference between Logging, Monitoring, and Alerting? Explain with a production example.
+Since it is a P1 and customers are impacted, I will immediately inform the required stakeholders and application team and start troubleshooting in parallel.
 
-### 27  What is the difference between SLI, SLO, and SLA? Explain with a real production example.
+Then I will check the application, server, database, network and recent changes to identify the root cause. If there is a recent deployment or configuration change causing the issue, I will follow the rollback or recovery process as per the SOP.
+
+Once the issue is fixed, I will verify that the application is working properly and confirm that customer impact is resolved.
+
+After recovery, I will prepare the RCA — what happened, what was the root cause, why the issue occurred, how we recovered it and what preventive action we can take to avoid the same issue again.
+
+
+
