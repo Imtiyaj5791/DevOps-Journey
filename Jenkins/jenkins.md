@@ -59,9 +59,13 @@ Create a first freestyle job--- select free style--- build step--- execue shell
 # Triggers
 
 ****Build after other projects are built****: Triggers a build after another specified Jenkins project completes successfully.
+
 ****Build periodically****: Automatically runs a build at a scheduled time or regular interval using a cron expression.
+
 ****GitHub hook trigger for GITScm polling****: Automatically triggers a build when GitHub sends a webhook after a repository change.
+
 ****Poll SCM****: Periodically checks the SCM repository for changes and triggers a build when changes are detected.
+
 ****Trigger builds remotely****: Allows an external script or tool to trigger a Jenkins build using a URL and authentication.
 
 # Demo Pipeline
