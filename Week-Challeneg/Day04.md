@@ -50,6 +50,43 @@ I know it
 
 “docker stop gracefully stops a container by giving the application time to shut down properly, while docker kill forcefully stops the container immediately without giving the application time for graceful cleanup.”
 
+### What is a Docker image layer, and why are layers useful?
+
+Docker image is made up of multiple layers. Instructions like RUN, COPY, and ADD can create layers. When we rebuild the image,
+Docker uses the cached layers if there are no changes, which saves build time.
+
+### How does containerization work in deployments?
+
+We create a Docker image from the Dockerfile and push the image to a container registry like ECR. 
+Then we provide the ECR image reference in the Kubernetes Deployment. Kubernetes pulls the image and creates a Pod with the container, where our application runs.
+
+### Write a simple Dockerfile for a Node.js application
+
+```
+FROM node:20
+WORKDIR /app
+COPY package*.json .
+RUN npm install
+COPY . .
+EXPOSE 3000
+CMD ["npm", "start"]
+```
+### How would you write the same Node.js Dockerfile using a multi-stage build?
+
+```
+FROM node:20 AS builder
+WORKDIR /app
+COPY package*.json .
+RUN npm install
+COPY . .
+
+FROM node:alpine
+WORKDIR /app
+COPY --from=builder /app /app
+EXPOSE 3000
+CMD ["npm", "start"]
+```
+
 # Terraform — 5
 
 ### What is depends_on in Terraform, and when do you use it?
