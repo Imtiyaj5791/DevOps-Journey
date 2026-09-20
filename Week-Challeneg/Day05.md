@@ -38,6 +38,33 @@ I know it
 
 “First, I will check the container logs and docker inspect to identify the exact error. Then I will verify that the application is running and listening on the expected container port. I will check the Docker port mapping and test the application locally from the host. I will also verify the Dockerfile, CMD, environment variables and configuration. If the application works locally but is not accessible externally, I will then check the Security Group and NACL for any blocked traffic. Based on the findings, I will identify the root cause and resolve the issue.”
 
+### Where do you configure Docker credentials in Jenkins?
+
+ECR on AWS: Prefer IAM role attached to the EC2/Jenkins agent, with required ECR permissions, instead of storing long-lived AWS credentials in Jenkins.
+Docker Hub: Store Docker Hub username/token in Jenkins Credentials, then reference the credential ID in the Jenkinsfile.
+
+### A database is running inside a Docker container. If the database container is accidentally deleted, how would you make sure backups are available in the future?
+
+I will keep the database data in a persistent volume and configure regular database backups using tools like pg_dump for PostgreSQL. 
+I will store the backups outside the Docker host, for example in S3, and periodically test the restore process to make sure the backups are usable.
+
+docker exec postgres pg_dump -U postgres mydb > /home/ec2-user/backup.sql
+aws s3 cp /home/ec2-user/backup.sql s3://my-db-backup/
+
+### You have Frontend, Backend, and Database containers. Would you use one Dockerfile for all three, or separate Dockerfiles? Explain why.
+
+I would use separate Dockerfiles for the frontend and backend because they have different dependencies and build processes. For the database, 
+I would generally use the official database image instead of creating a custom Dockerfile unless customization is required. 
+Then I can use Docker Compose to manage all the services together and allow them to communicate through the same network.
+
+### Your Docker container is consuming 100% CPU in production. How would you troubleshoot and handle the issue?
+
+First, I will check the container logs and docker stats to identify the CPU-consuming container. Then I will use docker exec and top inside the container
+to identify which process is consuming the resources. I will check with the concerned team whether any planned backup, query, or batch process is running.
+Based on their confirmation, I will either restart or stop the process/container with proper approval. If the workload is legitimate and more resources are required,
+I will coordinate with the higher team and increase the CPU resources.
+
+
 # Terraform — 4
 
 ### 9 terraform plan suddenly shows changes to a production resource that you did not expect. What will you do?
