@@ -47,6 +47,12 @@ I Know
 
 “I will use docker stats to check CPU and memory utilization of the container. If required, I can also go inside the container using docker exec and check processes using top and memory using free -h.”
 
+### What is the difference between COPY and ADD in a Dockerfile?
+
+COPY and ADD both are used to copy files or code from host to the Docker image. But ADD has some extra features, 
+like it can extract archive files and can also download files from a URL.
+
+
 🔹 Terraform — 5
 ### What is a Terraform Dynamic Block, and why do we use it?
 
