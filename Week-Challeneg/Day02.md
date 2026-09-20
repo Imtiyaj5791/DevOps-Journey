@@ -35,7 +35,27 @@ A branch is a separate copy of the code where we can develop and test new change
 
 ### What is a Docker volume and why do we use it?
 
-### *A Docker container starts and immediately exits. How will you troubleshoot it?
+### Your Docker container is running, but after deploying a new image, the application is not working. How will you troubleshoot it?
+
+First, I will check the container logs and docker inspect to identify the issue. Since this is a production issue after a new image deployment, 
+I will connect with the concerned team and get approval to roll back to the previous working image to restore the application. In parallel, 
+I will troubleshoot the new image by checking application errors, configuration, dependencies, and other issues. After fixing the issue, 
+I will test the new image properly and then deploy it to production.
+
+### How would you limit CPU and memory usage for a Docker container in production?
+
+We can set CPU and memory limits while creating the container using Docker run options like --cpus and --memory.
+This helps prevent one container from consuming excessive host resources.
+
+docker run -d --name app --cpus="2" --memory="512m" myapp:latest
+
+### What is a Docker health check, and why is it useful in production?
+
+Docker health check is used to check whether the application inside the container is healthy and responding properly. 
+A container can be running but the application may not be working. Health checks help us identify this condition.
+
+HEALTHCHECK --interval=30s --timeout=5s --retries=3 \
+CMD curl -f http://localhost:3000/health || exit 1
 
 ### What is the difference between EXPOSE and publishing a port with -p?
 
