@@ -52,6 +52,18 @@ I Know
 COPY and ADD both are used to copy files or code from host to the Docker image. But ADD has some extra features, 
 like it can extract archive files and can also download files from a URL.
 
+### What is the difference between a Docker bridge network and host network?
+
+Bridge network provides a separate network for containers, and containers on the same network can communicate with each other. 
+We can publish container ports to the host using -p.  Host network uses the host's network directly, so the container shares the host network namespace and does not need port mapping
+
+### 10 What is the difference between docker run and docker start?
+
+docker run is used to create and start a new container from an image. If the image is not available locally, Docker pulls it from the registry. 
+docker start is used to start an existing stopped container.
+
+
+
 
 🔹 Terraform — 5
 ### What is a Terraform Dynamic Block, and why do we use it?
