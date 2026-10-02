@@ -9,15 +9,23 @@ Kubernetes provides all of that declaratively, which is why we use EKS in produc
 ## 2. Explain K8s Architecture.
 
 " K8s has 2 parts - Control Plane and Worker Nodes.
+
 Control Plane has 4 components:
+
 API Server - entry point, all requests go through 
+
 etcd - key-value database, stores all cluster state
+
 Scheduler - decides which node pod will go to based on resource
+
 Controller Manager - maintains desired state, like ensuring 3 replicas are running
 
 Worker Node has 3 components:
+
 Kubelet - agent that ensures pods are running on that node
+
 Kube-proxy - handles networking and service routing
+
 Container Runtime - containerd, which actually runs containersIn EKS, AWS manages control plane, we only manage worker nodes."
 
 ## 3. What is etcd and how do you backup/restore it?
@@ -54,11 +62,17 @@ Example: kube-apiserver, etcd, controller-manager are static pods
 ## 9. What happens when you run kubectl apply -f deployment.yaml?
 
 "When we run kubectl apply, this is the flow:
+
 kubectl sends the YAML file to the API Server.
+
 API Server authenticates the request and validates the YAML.
+
 API Server saves the deployment data in etcd.
+
 Scheduler sees there is a new pod to schedule, and it selects a worker node based on resources.
+
 Controller Manager sees the desired state is 3 replicas but current is 0, so it creates the pods.
+
 Kubelet on each worker node watches the API Server, and when it sees a pod assigned to its node, it tells the container runtime (containerd) to run the pod."
 
 ## 10. What is difference between Docker and ContainerD?
@@ -281,4 +295,26 @@ Scaling: HPA on CPU/memory + Cluster Autoscaler/Karpenter.
 Observability: Prometheus + Grafana for metrics, Loki for logs, CloudWatch + Alertmanager.
 Security: IRSA for AWS permissions, Secrets via External Secrets Operator + Secrets Manager, KMS encryption, RBAC.
 CI/CD: Jenkins/GitHub Actions builds image -> ECR -> ArgoCD auto-sync to EKS.
+
+## 41 How to Use secret in K8s Aws seret manager
+
+Step 1: Create IAM role with EKS Pod Identity and secretsmanager:GetSecretValue.
+Step 2: Create secret in AWS Secrets Manager.
+Step 3: Create EKS Pod Identity Association and map IAM role to ServiceAccount.
+Step 4: Install/enable Secrets Store CSI Driver + AWS provider.
+Step 5: Create SecretProviderClass for the AWS secret.
+Step 6: Mount the CSI volume in the Deployment so the Pod can read the secret.
+
+
+## 42 How to use EBS as storage in K8s
+
+Step 1: Create IAM role for the EBS CSI Driver with the required EBS permissions using EKS Pod Identity.
+Step 2: Install/enable the Amazon EBS CSI Driver EKS add-on and associate the IAM role with it.
+Step 3: Create a PVC requesting the required storage size.
+Step 4: Apply the PVC; Kubernetes dynamically provisions a PV through the StorageClass and EBS CSI Driver.
+Step 5: AWS EBS volume is provisioned and the PV gets Bound to the PVC.
+Step 6: Reference the PVC in the Deployment and mount it inside the Pod, for example at /data.
+Step 7: Verify that the Pod is using the PVC and the EBS volume is successfully attached.
+
+PVC → StorageClass/CSI → PV → EBS → Pod
 
