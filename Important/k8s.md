@@ -1,203 +1,284 @@
-# Day 5 — Architecture Revision Questions 
+# SECTION A: CORE ARCHITECTURE - 10 Qs
 
-## Q1. Explain Kubernetes architecture and its major components.
+## 1. What is Kubernetes and why do we use?
 
-Kubernetes architecture consists of two main parts:
+Kubernetes is a container orchestration tools for managing containers at scale.
+In production with microservices, we need auto-healing, auto-scaling, service discovery, load balancing and zero-downtime deployments. 
+Kubernetes provides all of that declaratively, which is why we use EKS in production. 
 
-## Control Plane:- 
-The Control Plane manages the cluster state and includes components like 
+## 2. Explain K8s Architecture.
 
-### API Server:- 
-API Server is the main gatekeeper of Kubernetes. To communicate between two Kubernetes resources/components, the communication goes through API Server.
-### etcd:- 
-etcd is like a database in Kubernetes. It stores all the cluster information in key-value format, such as: Nodes, Pods, Deployments.
-### Scheduler:- 
-Scheduler decides on which Worker Node the new Pod will run, based on available resources.
-### Controller Manager:- 
-Controller Manager continuously checks the current and desired state of the cluster. If there is any mismatch, it takes action to match the current state with the desired state.
+" K8s has 2 parts - Control Plane and Worker Nodes.
+Control Plane has 4 components:
+API Server - entry point, all requests go through 
+etcd - key-value database, stores all cluster state
+Scheduler - decides which node pod will go to based on resource
+Controller Manager - maintains desired state, like ensuring 3 replicas are running
 
+Worker Node has 3 components:
+Kubelet - agent that ensures pods are running on that node
+Kube-proxy - handles networking and service routing
+Container Runtime - containerd, which actually runs containersIn EKS, AWS manages control plane, we only manage worker nodes."
 
-## Worker Nodes:- 
-Worker Nodes are where our application runs and include 
+## 3. What is etcd and how do you backup/restore it?
 
-### kubelet:- 
-Kubelet is an agent running on every Worker Node. Its main job is to make sure all assigned Pods and containers are running properly on that Worker Node.
-### Container runtime :- 
-Container Runtime is responsible for creating and running containers inside the Pod.
-### kube-proxy:- 
-kube-proxy manages network traffic and sends Service traffic to the correct Pod.
+etcd is the cluster database storing all data in key-value format. We take snapshot backup using etcdctl snapshot save command. 
+But since we use EKS, AWS manages etcd backup automatically, we don't do it manually.
 
+## 4. What is Pod? Why we use Deployment not Pod?
 
-## Q2. Explain the complete flow when you run: kubectl create deployment nginx --image=nginx from kubectl → API Server → etcd → Scheduler → kubelet → container. 
+Pod is the smallest deployable unit in Kubernetes. It can have 1 or multiple containers, but those containers share same network,
+same storage and same lifecycle. They are tightly coupled.
 
-When we run a kubectl command, the request first goes to the API Server. API Server validates the request and stores the desired state in etcd. Scheduler identifies a suitable Worker Node for the Pod. After that kubelet on the selected node communicates with the container runtime to pull the image and run the container.
+## 5. Deployment vs StatefulSet vs DaemonSet?
 
-## Q3. A Pod is created but remains Pending. Which Kubernetes architecture component is responsible for selecting the node, and how would you troubleshoot it? 
+Deployment is mainly used for stateless applications. It manages ReplicaSets and provides features like application updates and rollback.
+StatefulSet is used for stateful applications where Pods need stable names, stable network identity, and persistent storage.
+DaemonSet is run on worker nodes and it is basically used for monitoring and logging. It ensures one Pod runs on each worker node.
 
-kube-scheduler is responsible for assigning Pods to Worker Nodes. If a Pod is stuck in Pending state, I will first check ****kubectl describe pod**** events to identify the reason. Then I will check node resources,  and scheduling constraints to find why the scheduler is unable to assign the Pod
+## 6. What is Namespace and why use it?
 
-## Q4. What happens when a worker node becomes NotReady?
+Namespace helps us logically separate, organize, and manage resources in the same Kubernetes cluster.
 
-First I will check node status using ****kubectl get nodes****, then ****kubectl describe node**** to check events. After that I will verify kubelet status, kubelet logs, container runtime and node resource/network issues
+## 7. What is Kubelet?
 
+"Kubelet is an agent, installed on every worker node. It checks health status of pod and it communicates with API server. 
+It makes sure pod is running."
 
-# 1. Pod Pending
+## 8. What are Static Pods?
 
-### Q1. A Pod is stuck in Pending state. How will you troubleshoot it?
+Static Pod is managed directly by Kubelet, not by API Server. Kubelet itself creates it. 
+We put manifest file in /etc/kubernetes/manifests folder, then Kubelet will read and create pod.
+Example: kube-apiserver, etcd, controller-manager are static pods
 
-For a Pending Pod, I will first run ****kubectl describe pod <pod-name>**** and check the Events section. Then I will verify node status using ****kubectl get nodes****, check resource availability using ****kubectl top nodes****, review scheduling constraints like node selectors and taints, and check PVC status if storage is involved. Based on the error message, I will fix the root cause.
+## 9. What happens when you run kubectl apply -f deployment.yaml?
 
-### Q2. A Pod is Pending because the cluster does not have enough CPU/memory. How will you identify and resolve it?
+"When we run kubectl apply, this is the flow:
+kubectl sends the YAML file to the API Server.
+API Server authenticates the request and validates the YAML.
+API Server saves the deployment data in etcd.
+Scheduler sees there is a new pod to schedule, and it selects a worker node based on resources.
+Controller Manager sees the desired state is 3 replicas but current is 0, so it creates the pods.
+Kubelet on each worker node watches the API Server, and when it sees a pod assigned to its node, it tells the container runtime (containerd) to run the pod."
 
-First, I will run ****kubectl describe pod <pod-name>**** and check Events for insufficient CPU or memory errors. Then I will check node capacity using ****kubectl describe node**** and utilization using ****kubectl top nodes****. If resource requests are too high, I will optimize them. Otherwise, I will increase cluster capacity by adding more Worker Nodes or scaling resources.
+## 10. What is difference between Docker and ContainerD?
 
-### Q3. A Pod is Pending even though the nodes have enough resources. What Kubernetes scheduling-related things will you check?
+Docker is a containerization tool which is used to build, run, manage and share application inside lightweight containers
+containerd is a part of Docker which actually runs the containers in background. Docker uses containerd inside.
 
-If a Pod is Pending despite available resources, I will first check ****kubectl describe pod <pod-name>**** events. Then I will verify scheduling rules like nodeSelector, node affinity, taints and tolerations, and resource requests. The Scheduler places a Pod only when all scheduling conditions are satisfied.
+SECTION B: WORKLOADS & CONFIG - 10 Qs
 
-# 2. CrashLoopBackOff
+## 11. What is difference between Request and Limit?
 
-### Q4. A Pod is showing CrashLoopBackOff. What will you check first and how will you troubleshoot it?
+Request is what Kubernetes needs to schedule the pod. Like if I say request 100MB, scheduler will find a node which has at least 100MB free
+Limit is the maximum a pod can use. Like if limit is 500MB, pod can use up to 500MB max, it cannot cross it.
+If pod tries to cross memory limit, it gets OOMKilled.
 
-For CrashLoopBackOff means the container is starting and repeatedly crashing, I first check ****kubectl describe pod**** and container logs using ****kubectl logs --previous**** to identify why the container is crashing. Then I check exit codes, application configuration, environment variables, probes and dependencies. After identifying the root cause, I fix the configuration or application issue and redeploy.
 
-### Q5. A container starts and immediately exits. How will you identify the root cause?
+## 12. What is ConfigMap and Secret? Best practice?
 
-If a container starts and immediately exits, I will first check ****kubectl logs**** and ****kubectl describe pod**** to identify the exit reason. Then I will verify the container command, arguments, application configuration, environment variables and external dependencies. Based on the error, I will fix the issue and redeploy the Pod.
+ConfigMap is used to store non-sensitive data like port number, app name, config.
+Secret is used to store sensitive data like DB password, API keys, secret keys. Secret data is base64 encoded.
 
-### Q6. A Pod was running earlier but now shows CrashLoopBackOff. How will you check logs from the previous container instance?
+## 13. Explain PV, PVC, StorageClass.
+PV is the actual storage, like a hard disk in cluster.
+PVC is the request for storage. Like pod says 'I need 10GB', that is PVC.
+StorageClass defines how storage will be provisioned for a Kubernetes application. In EKS, 
+it is commonly used to dynamically create EBS volumes through the EBS CSI driver
 
-For a Pod in CrashLoopBackOff, I will use ****kubectl logs <pod-name> --previous**** to check logs from the previous crashed container instance. I will also check ****kubectl describe pod**** for exit codes and termination reasons to identify the root cause
+## 14. Liveness vs Readiness vs Startup Probe?
 
-### Q7. A Pod is getting OOMKilled and then entering CrashLoopBackOff. How will you troubleshoot it?
+Liveness Probe: Checks if pod is alive. If dead, it restarts the pod.
+Readiness Probe: Checks if pod is ready for traffic. If not ready, no traffic is sent.
+Startup Probe: Checks if app has started. Used for slow-starting apps.
 
-For an OOMKilled Pod, I will first confirm the issue using ****kubectl describe pod**** and check the termination reason. Then I will check memory usage using kubectl top pod, review memory requests and limits, and check node resources. Based on the root cause, I will increase memory limits or optimize the application.
+## 15. What is Init Container and Sidecar?
 
-# 3. ImagePullBackOff / ErrImagePull
+Init container is a container that runs first to do setup work before main app starts.
+Sidecar is a second container in pod that helps main container, like sending logs.
 
-### Q8. A Pod is showing ImagePullBackOff. How will you troubleshoot it?
+## 16. What is HPA and how it works?
 
-ImagePullBackOff means Kubernetes is unable to pull the container image. First, I will check Pod events to identify the image pull error, then verify image name, registry access and authentication.
+HPA automatically increases or decreases pods based on resource utilization like CPU and Memory.
+For example, if traffic is high and CPU goes above 70%, HPA will add more pods. And if traffic is low, it will remove pods to save cost.
 
-### Q9. The Deployment was created successfully, but Pods are showing ErrImagePull. What will you check?
+## 17. What is Helm?
 
-If Deployment is created successfully but Pods show ErrImagePull, it means the Deployment configuration is accepted but the Pod is unable to pull the container image. I will check Pod events, image name/tag, registry access and authentication.
+Helm is a package manager for Kubernetes.
+It helps to install and manage full applications with one command.
+We use values.yaml file to change configuration and deploy easily. We don't need to apply many yaml files one by one.
 
-### Q10. The application image is stored in a private registry and the Pod cannot pull it. How will you troubleshoot it?
+helm create myapp
+helm install myapp ./myapp -n nginx-ns
+helm upgrade myapp ./myapp -n nginx-ns (pod 1 to 3)
 
-If a Pod cannot pull an image from a private registry, I will first check Pod events, verify registry credentials, check imagePullSecrets configuration and confirm that the node has access to the registry
+## 18. What is Job vs CronJob?
 
-# 4. Pod Not Ready
+Job runs only one time. After finishing work, it stops.Example: Database backup one time.
+CronJob runs on a schedule, again and again. Like an alarm.Example: Database backup every day at 10 PM.
 
-### Q11. A Pod is Running but READY shows 0/1. How will you troubleshoot it?
+## 19. What is Rolling Update strategy?
 
-### Q12. A Pod's readiness probe is continuously failing. What will you check?
+Rolling Update is a strategy to update application with zero downtime.
+It gradually replaces old pods with new pods one by one. So users face no downtime.
+If we have 5 pods, it will gradually delete old version and create new version until all pods are new.
 
-### Q13. Pods are Running but the Service has no usable backend because the Pods are NotReady. How will you troubleshoot it?
+## 20. How to do Canary or Blue-Green in K8s?
 
-# 5. Service Not Accessible
+In Canary, we send small traffic to new version first to test. If stable, we gradually send all traffic
+In Blue-Green, we have two environments. Blue is old live version, Green is new. After testing green, we switch all traffic from blue to green at once."
 
-### Q14. The Pod is Running but the application is not accessible through the Service. How will you troubleshoot it?
+SECTION C: NETWORKING & SECURITY - 10 Qs
 
-### Q15. A Service exists, but kubectl get endpoints shows no endpoints. What could be the reason?
+## 21. ClusterIP vs NodePort vs LoadBalancer vs Ingress?
 
-### Q16. The Service selector is not matching the Pod labels. How will you identify and fix it?
+ClusterIP is mainly used for internal communication within the Kubernetes cluster
 
-### Q17. The Service has endpoints, but traffic is still not reaching the application. What will you check?
+NodePort is used for external communication. It exposes the Service through: Node IP + NodePort
 
-### Q18. The Service port is 80 but targetPort is wrong. How will you identify the issue?
+LoadBalancer is used for external communication through an external/cloud Load Balancer. It provisions one AWS ELB per Service.
+It is costly so we avoid it in production.
 
-# 6. Deployment / Rollout Problems
+Ingress is used for external communication in production with a single Load Balancer. It provides path-based and host-based 
+routing through one AWS ALB. Example: /api -> backend-service, / -> frontend-service
 
-### Q19. A Deployment rollout is stuck and the new Pods are not becoming Ready. How will you troubleshoot it?
 
-### Q20. A new application version was deployed, but the application is failing. How will you check the rollout history and rollback?
+## 22. How does Service discovery work? What is CoreDNS?
 
-### Q21. During a Rolling Update, old Pods are terminating but new Pods are not becoming Ready. What will you investigate?
+Service discovery is the way Pods find each other by service name instead of IP address. When you create a Service, 
+Kubernetes gives it a fixed name and a fixed ClusterIP. So even if Pod IPs change, other Pods can still find it using that service name.
 
-### Q22. How will you determine which ReplicaSet is currently serving the new version and which one represents the old version?
+CoreDNS is the internal DNS server of Kubernetes. It stores the mapping of service name to ClusterIP.
+For example, if you have a service named backend-service, you can call http://backend-service from any Pod. 
+CoreDNS will resolve it to its ClusterIP.
 
-# 7. CPU / Memory Problems
+## 23. What is CNI? Which CNI you used?
 
-### Q23. A Pod is consuming very high CPU. How will you troubleshoot it?
+CNI stands for Container Network Interface. It is a plugin that gives IP addresses to Pods and allows Pods to talk to each other. 
+Without CNI, Pods cannot communicate.
+Which CNI I used: In our EKS project we used AWS VPC CNI. In this CNI, every Pod gets a real IP address from the VPC itself.
 
-### Q24. A Pod is consuming more memory than expected. How will you investigate it?
+## 24. What is NetworkPolicy?
 
-### Q25. A container is repeatedly getting OOMKilled. What will you check and what possible fixes would you consider?
+NetworkPolicy is like a firewall for Pods.By default, all Pods can talk to each other. NetworkPolicy is used to control which Pod can talk
+to which Pod.For example, you can create a rule that frontend Pod can only talk to backend Pod, but cannot talk to database Pod directly.
+ 
+## 25. What is RBAC?
 
-### 26. A Pod has CPU/memory requests and limits configured. Explain how you would troubleshoot a resource-related problem.
+RBAC stands for Role-Based Access Control.It is used to control who can do what in the Kubernetes cluster.
+Example: You can give developers permission to only view Pods, but not delete Pods. And give admin full access.
+Main parts of RBAC:
+Role / ClusterRole - What permissions (like get, list, delete pods)
+RoleBinding / ClusterRoleBinding - Who gets that permission (like a User or ServiceAccount)
 
-# 8. Node Problems
+## 26. How do you secure K8s in production?
 
-### Q27. A Kubernetes node suddenly changes to NotReady. How will you troubleshoot it?
+We secure K8s in production in 4 layers:
 
-### Q28. Pods are not getting scheduled on one particular node. What will you check?
+1. Cluster Access - RBAC:
+We use RBAC so developers get only view access, not delete access. No one uses admin directly.
 
-### Q29. A node has sufficient CPU/memory, but Pods are still not being scheduled there. What Kubernetes configuration could cause this?
+2. Pod Security - NetworkPolicy & SecurityContext:
+We use NetworkPolicy to control Pod to Pod communication. And we run containers as non-root user with read-only filesystem.
 
-### Q30. How would you check whether a node has taints that are preventing Pod scheduling?
+3. Secrets & Images:
+We never put passwords in YAML. We use AWS Secrets Manager / K8s Secrets. And we scan images for vulnerabilities and use only private ECR images.
 
-# 9. Ingress Problems
+4. Cluster Level:
+We enable private EKS cluster, enable audit logging, and keep Kubernetes version updated.
 
-### Q31. The Service works internally, but the application is not accessible through Ingress. How will you troubleshoot it?
+## 27. What is ServiceAccount and IRSA?
 
-### Q32. Ingress exists, but requests are going to the wrong Service. What will you check?
+ServiceAccount = The identity used by a Pod to authenticate to the Kubernetes API Server.
+IRSA: Stands for IAM Roles for Service Accounts.
+It is AWS EKS specific. It allows a Pod to access AWS services securely.
+Example: If your Pod wants to access S3, you attach an IAM Role (with S3 access) to the ServiceAccount. Then that Pod can access S3.
+No need to put AWS keys inside the Pod.
 
-### Q33. Ingress returns an error even though the backend Pods are Running. What components will you check?
+## 28. What is difference between Ingress and LoadBalancer Controller?
+Ingress - It is just a rulebook / a Kubernetes object. It only contains routing rules like if path is /api, go to api-service. 
+It cannot do anything by itself.
 
-### 34. Host-based routing is not working. How will you troubleshoot the Ingress rule?
+Ingress Controller / LoadBalancer Controller - It is the actual engine that implements those rules. e.g., NGINX Controller, 
+AWS Load Balancer Controller. Without a controller, Ingress rules do nothing.
 
-### Q35. Path-based routing /api is not working, but / works. What will you check?
+SECTION D: PRODUCTION & CLOUD - 10 Qs - MOST IMPORTANT FOR YOU
 
-# 10. ConfigMap / Secret Problems
+## 29. Pod is in CrashLoopBackOff, how to troubleshoot?
 
-### Q36. The Pod is Running, but the application is using the wrong configuration value from ConfigMap. How will you troubleshoot it?
+If a pod is in CrashLoopBackOff, first I check the logs using kubectl logs and kubectl logs --previous to see why the application crashed, 
+then I do kubectl describe pod to check the exit code and events for OOMKilled or probe failures. In most cases it's an application issue 
+like wrong environment variables, database connection failure, resource limits being too low, or liveness probe failing.
 
-### Q37. A Pod is failing because a required environment variable is missing. How will you check whether it is coming from ConfigMap or Secret?
+## 30. Pod is in Pending, why?
 
-### Q38. A Secret exists, but the application cannot access the expected value. What will you check?
+When a pod is in Pending, I check the describe section to see events, it is usually because of insufficient CPU or memory on nodes,
+PVC not bound, or nodeSelector and taint mismatch.
 
-# 11. PVC / Storage Problems
+## 31. Node is NotReady, what to do?
 
-### Q39. A PVC is stuck in Pending. How will you troubleshoot it?
+If a node is NotReady, I check the node status with kubectl describe node to see events, then I log into the node to check kubelet status, 
+disk pressure, memory pressure and network issues, and if needed I restart kubelet.
 
-### Q40. A Pod is stuck because its PVC cannot be mounted. What will you check?
+## 32. Your API returns 5xx but pod is Running - steps?
 
-### Q41. A Pod was recreated and the application data is still available. Explain how Kubernetes persistent storage made this possible.
+If API returns 5xx but pod is Running, the app inside may be down even though container is running. I check pod logs, 
+then describe pod for readiness probe failure, and check service endpoints whether it is pointing to the pod
+502 Bad Gateway means backend is not reachable, like app crashed or wrong port.
+For 502 I check if app is listening on correct port and check pod logs if app crashed.
 
-# 12. DNS / Pod Connectivity
+503 Service Unavailable means service has no ready endpoints, like readiness probe failing or pods are overloaded.
+For 503 I check kubectl get endpoints and readiness probe, because service has no ready pods.
 
-### Q42. One Pod cannot communicate with another Pod. How will you troubleshoot the connectivity issue?
+504 Gateway Timeout means backend is too slow to respond.
+For 504 I check if app is slow, increase timeout and check HPA and resource usage and DB slowness.
 
-### Q43. A Pod can reach another Pod by IP, but cannot reach it using the Kubernetes Service name. What will you investigate?
+## 33. How to rollback a bad deployment?
 
-### Q44. A Pod cannot resolve my-service.nginx-ns.svc.cluster.local. How will you troubleshoot Kubernetes DNS?
+I rollback using kubectl rollout undo deployment <name> to go to previous version, 
+and if I need a specific version then I use kubectl rollout undo deployment <name> --to-revision=<number>, 
+and after that I check rollout status.
 
-# 13. RBAC
+## 34. How to do zero-downtime deployment?
 
-### Q45. A user can access the Kubernetes cluster but receives Forbidden when trying to list Pods. How will you troubleshoot the RBAC issue?
+For zero-downtime I use RollingUpdate strategy with maxSurge and maxUnavailable set properly and add readiness probe 
+so traffic only goes to ready pods and old pods terminate only after new pods are ready.
 
-### Q46. A ServiceAccount is getting Forbidden when trying to access a Kubernetes resource. What will you check?
+## 35. How do you monitor K8s in production?
 
-# 🔥Combined Production Scenarios
+In production I monitor K8s using Prometheus for metrics, Grafana for dashboards, Loki or ELK for logs, and alertmanager for alerts, 
+and I monitor pod CPU memory, node health, pod restarts and API latency.
 
+## 36. How to reduce cost in EKS/GKE?
 
-### Q47. Application is deployed and Pods are Running, but users are getting 503 Service Unavailable. Explain your complete troubleshooting approach.
+To reduce cost I use cluster autoscaler and HPA to scale down unused nodes, use spot instances for non-critical workloads, 
+set proper resource requests and limits to avoid over-provisioning, and clean up unused PVCs, LoadBalancers and old images.
 
-### Q48. Pods are Running, Service exists, but Service has no endpoints. What will you check?
+## 37. What is Cluster Autoscaler vs Karpenter vs HPA?
 
-### Q49. Deployment is showing 3/3 Pods Ready, but users still cannot access the application. How will you troubleshoot from application → Pod → Service → Ingress?
+HPA scales pods based on CPU or memory or custom metrics, 
+Cluster Autoscaler scales nodes based on pending pods but slow and tied to node groups,
+Karpenter is faster and directly provisions right-sized nodes without node groups so more cost-efficient.
 
-### Q50. A new version was deployed successfully, but after deployment users started getting errors. What will you check and how would you rollback?
+## 38. How do you manage secrets in EKS?
 
-### Q51. Application was working yesterday. Today Pods are stuck in Pending. Nothing was changed in the Deployment YAML. How will you investigate?
+I manage secrets in EKS using AWS Secrets Manager or Parameter Store with External Secrets Operator, and enable encryption at rest using KMS, 
+and avoid using plain K8s secrets in git and use RBAC and short-lived secrets.
 
-### Q52. A Pod starts successfully but after some time gets OOMKilled. What commands will you use and what will you investigate?
+## 39. What is PDB and why needed?
 
-### Q53. Service is working for some Pods but not others. What could cause this and how will you troubleshoot it?
+PDB = PodDisruptionBudget. It defines minimum number of pods that must stay available during voluntary disruptions like node drain or upgrade.
+For example if I have 3 replicas and PDB says minAvailable 2, then Kubernetes will not drain or kill more than 1 pod at a time, so app stays up.
 
-### Q54. Ingress is working for / but /api returns an error. How will you troubleshoot the complete request path?
+## 40. Tell me about your EKS production setup? (They will ask this)
 
-### Q55. A Pod can communicate with another Pod using its IP but cannot communicate using the Service DNS name. What is your troubleshooting approach?
+My production EKS setup is like this:
 
-### Q56. A user says, "The application is slow." How will you determine whether the problem is CPU, memory, Pod, Service, node, or application related?
+Cluster: EKS 1.29+ private cluster across 3 AZs, managed node groups + Karpenter for spot.
+Networking: VPC with private subnets, ALB Ingress Controller for external traffic, Calico for network policies.
+Deployment: Helm + ArgoCD for GitOps, RollingUpdate with readiness/liveness probes, PDB for HA.
+Scaling: HPA on CPU/memory + Cluster Autoscaler/Karpenter.
+Observability: Prometheus + Grafana for metrics, Loki for logs, CloudWatch + Alertmanager.
+Security: IRSA for AWS permissions, Secrets via External Secrets Operator + Secrets Manager, KMS encryption, RBAC.
+CI/CD: Jenkins/GitHub Actions builds image -> ECR -> ArgoCD auto-sync to EKS.
+
