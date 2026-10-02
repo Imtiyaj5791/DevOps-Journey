@@ -66,7 +66,7 @@ Kubelet on each worker node watches the API Server, and when it sees a pod assig
 Docker is a containerization tool which is used to build, run, manage and share application inside lightweight containers
 containerd is a part of Docker which actually runs the containers in background. Docker uses containerd inside.
 
-SECTION B: WORKLOADS & CONFIG - 10 Qs
+# SECTION B: WORKLOADS & CONFIG - 10 Qs
 
 ## 11. What is difference between Request and Limit?
 
@@ -128,7 +128,7 @@ If we have 5 pods, it will gradually delete old version and create new version u
 In Canary, we send small traffic to new version first to test. If stable, we gradually send all traffic
 In Blue-Green, we have two environments. Blue is old live version, Green is new. After testing green, we switch all traffic from blue to green at once."
 
-SECTION C: NETWORKING & SECURITY - 10 Qs
+# SECTION C: NETWORKING & SECURITY - 10 Qs
 
 ## 21. ClusterIP vs NodePort vs LoadBalancer vs Ingress?
 
