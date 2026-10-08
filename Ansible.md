@@ -140,7 +140,7 @@ apt → package management
 service → service management
 copy → file copy
 file → file/directory create/delete/permissions
-
+```
 
 ```
 Command:- ansible -i inventory webservers -m command -a "df -h"
@@ -342,21 +342,22 @@ Instead of creating 100 different configuration files, we create one template an
 Ansible uses that one template and creates the appropriate configuration on each server.
 
 ### Inventory
-
+```
 [servers]
 s1 ansible_host=1.1.1.1 app_port=8080
 s2 ansible_host=2.2.2.2 app_port=8081
+```
 
 ### app.conf.j2
-
+```
 APP_NAME=ShopSphere
 DB_HOST=10.0.0.50
 DB_NAME=shopdb
 PORT={{ app_port }}
 LOG_LEVEL=INFO
-
+```
 ### Playbook
-
+```
 ---
 - name: Create application config
   hosts: servers
@@ -367,14 +368,14 @@ LOG_LEVEL=INFO
         src: app.conf.j2
         dest: /tmp/app.conf
 
-
+```
 
 # Ansible Role:
 
 Ansible Roles are used to organize playbooks and related files into a structured, reusable directory structure.
 
 The six components are:
-
+```
 myapp/
 ├── tasks/
 │   └── main.yml
@@ -386,21 +387,23 @@ myapp/
 │   └── main.yml
 └── defaults/
     └── main.yml
-
-
+```
+```
 taks/main.yml
 
 - name: Install nginx
   apt:
     name: nginx
     state: present
-
+```
+```
 playbook.yml
 
 - name: Configure application
   hosts: servers
   roles:
     - myapp
+```
 
 To create a role:- ansible-galaxy role init myapp
 
@@ -410,7 +413,7 @@ ansible-playbook -i inventory playbook.yml
 # import_role vs include_role
 
 import_role is static and processed at parse time, whereas include_role is dynamic and processed at runtime.
-
+```
 - name: Install Nginx
   apt:
     name: nginx
@@ -424,13 +427,13 @@ import_role is static and processed at parse time, whereas include_role is dynam
   apt:
     name: docker.io
     state: present
-
+```
 
 
 # Ansible Vault
 
 Ansible Vault is a feature in Ansible used to encrypt sensitive information such as passwords, API keys, and credentials so that secrets are not stored in plain text.
-
+```
 ansible-vault create secrets.yml
 
 ansible-vault edit secrets.yml
@@ -438,8 +441,8 @@ ansible-vault edit secrets.yml
 ansible-vault view secrets.yml
 
 ansible-vault decrypt secrets.yml
-
-
+```
+```
 - hosts: servers
   vars_files:
     - secrets.yml
@@ -448,7 +451,7 @@ ansible-vault decrypt secrets.yml
     - name: Show password
       debug:
         msg: "{{ db_password }}"
-
+```
 ansible-playbook -i inventory playbook.yml --ask-vault-pass
 
 
